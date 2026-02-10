@@ -9,7 +9,7 @@ import { FeaturesSection } from "@/components/features-section"
 
 export default function Home() {
   //make false for maintanace mode
-   if(false){
+   if(true){
   return (
    
     <div className="min-h-screen bg-background">
