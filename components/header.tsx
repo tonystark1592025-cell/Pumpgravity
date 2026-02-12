@@ -9,7 +9,7 @@ import { useTheme } from "next-themes"
 import { useRouter, usePathname } from "next/navigation"
 import Fuse from "fuse.js"
 import { cn } from "@/lib/utils"
-import { convertersData } from "@/lib/converters-data"
+import { converters } from "@/lib/converters-data"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,7 +25,7 @@ function SearchComponent({ isMobile = false }: { isMobile?: boolean }) {
 
   // Initialize Fuse.js for fuzzy search
   const fuse = useMemo(() => {
-    return new Fuse(convertersData, {
+    return new Fuse(converters, {
       keys: [
         { name: 'name', weight: 0.4 },
         { name: 'category', weight: 0.2 },
@@ -80,8 +80,8 @@ function SearchComponent({ isMobile = false }: { isMobile?: boolean }) {
 
   const handleSuggestionClick = (suggestion: any) => {
     if (suggestion.converter) {
-      // Navigate to converters page with the converter hash
-      router.push(`/converters#${suggestion.converter.id}`)
+      // Navigate to the category page
+      router.push(`/converters/${suggestion.converter.category}`)
       setShowSuggestions(false)
       setSearchQuery("")
     }
