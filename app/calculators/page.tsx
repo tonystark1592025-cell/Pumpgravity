@@ -1,9 +1,15 @@
+"use client"
+
 import Link from "next/link"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+import { SearchBar } from "@/components/search-bar"
 import { Calculator, Activity, Zap, Power } from "lucide-react"
+import { useState, useMemo } from "react"
 
 export default function CalculatorsPage() {
+  const [searchQuery, setSearchQuery] = useState("")
+
   const calculators = [
     {
       title: "Pump Affinity Laws Calculator",
@@ -12,7 +18,8 @@ export default function CalculatorsPage() {
       href: "/calculators/pump-affinity-calculator",
       color: "text-blue-500",
       bgColor: "bg-blue-500/10",
-      features: ["Speed Changes", "Diameter Changes", "Flow, Head & Power"]
+      features: ["Speed Changes", "Diameter Changes", "Flow, Head & Power"],
+      keywords: ["pump", "affinity", "speed", "diameter", "flow", "head", "power", "performance"]
     },
     {
       title: "Pump Power Calculator",
@@ -21,9 +28,25 @@ export default function CalculatorsPage() {
       href: "/calculators/pump-power-calculator",
       color: "text-green-500",
       bgColor: "bg-green-500/10",
-      features: ["Shaft Power", "Flow Rate", "Differential Head"]
+      features: ["Shaft Power", "Flow Rate", "Differential Head"],
+      keywords: ["pump", "power", "shaft", "flow", "head", "gravity", "efficiency", "hydraulic"]
     }
   ]
+
+  const filteredCalculators = useMemo(() => {
+    if (!searchQuery.trim()) return calculators
+
+    const query = searchQuery.toLowerCase()
+    
+    return calculators.filter(calc => {
+      return (
+        calc.title.toLowerCase().includes(query) ||
+        calc.description.toLowerCase().includes(query) ||
+        calc.features.some(feature => feature.toLowerCase().includes(query)) ||
+        calc.keywords.some(keyword => keyword.toLowerCase().includes(query))
+      )
+    })
+  }, [searchQuery, calculators])
 
   return (
     <div className="min-h-screen bg-background">
@@ -31,7 +54,7 @@ export default function CalculatorsPage() {
       <main className="py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* Page Header */}
-          <div className="mb-12 text-center">
+          <div className="mb-8 text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
               <Calculator className="h-8 w-8 text-primary" />
             </div>
@@ -41,46 +64,61 @@ export default function CalculatorsPage() {
             </p>
           </div>
 
-          {/* Calculator Grid */}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {calculators.map((calc) => {
-              const Icon = calc.icon
-              return (
-                <Link
-                  key={calc.href}
-                  href={calc.href}
-                  className="group relative overflow-hidden rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-lg hover:border-primary/50"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg ${calc.bgColor}`}>
-                      <Icon className={`h-6 w-6 ${calc.color}`} />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                        {calc.title}
-                      </h3>
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        {calc.description}
-                      </p>
-                      {calc.features && (
-                        <div className="mt-4 flex flex-wrap gap-2">
-                          {calc.features.map((feature) => (
-                            <span
-                              key={feature}
-                              className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground"
-                            >
-                              {feature}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="absolute bottom-0 right-0 h-24 w-24 translate-x-8 translate-y-8 rounded-full bg-primary/5 transition-transform group-hover:scale-150" />
-                </Link>
-              )
-            })}
+          {/* Search Bar */}
+          <div className="mb-8 max-w-2xl mx-auto">
+            <SearchBar
+              placeholder="Search calculators... (e.g., pump, power, flow, affinity)"
+              onSearch={setSearchQuery}
+            />
           </div>
+
+          {/* Calculator Grid */}
+          {filteredCalculators.length > 0 ? (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {filteredCalculators.map((calc) => {
+                const Icon = calc.icon
+                return (
+                  <Link
+                    key={calc.href}
+                    href={calc.href}
+                    className="group relative overflow-hidden rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-lg hover:border-primary/50"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg ${calc.bgColor}`}>
+                        <Icon className={`h-6 w-6 ${calc.color}`} />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                          {calc.title}
+                        </h3>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          {calc.description}
+                        </p>
+                        {calc.features && (
+                          <div className="mt-4 flex flex-wrap gap-2">
+                            {calc.features.map((feature) => (
+                              <span
+                                key={feature}
+                                className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground"
+                              >
+                                {feature}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="absolute bottom-0 right-0 h-24 w-24 translate-x-8 translate-y-8 rounded-full bg-primary/5 transition-transform group-hover:scale-150" />
+                  </Link>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground text-lg">No calculators found matching "{searchQuery}"</p>
+              <p className="text-muted-foreground text-sm mt-2">Try searching for "pump", "power", "flow", or "affinity"</p>
+            </div>
+          )}
 
           {/* Coming Soon Section */}
           <div className="mt-12 rounded-xl border border-dashed border-border bg-muted/30 p-8 text-center">
