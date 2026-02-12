@@ -353,7 +353,7 @@ export default function PumpAffinityCalculator() {
             <div className="mb-6">
               <h4 className="font-bold text-slate-900 mb-2 uppercase text-sm">Instructions:</h4>
               <p className="text-slate-700 text-sm leading-relaxed">
-                Enter any 3 values (both {symbol}₁ and {symbol}₂ + one other value). Leave the value you want to find empty. Click Calculate.
+                Enter any 3 values . Leave the value you want to find empty. Click Calculate.
               </p>
             </div>
 
