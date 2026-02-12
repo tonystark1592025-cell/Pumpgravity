@@ -311,6 +311,8 @@ export function ConverterWidget() {
             <p className="mt-1 text-sm text-muted-foreground">Convert between different units instantly</p>
           </div>
 
+        
+
           {/* Preset Selector */}
           <div className="mb-6 flex flex-wrap gap-2">
             {presets.map((preset) => (
@@ -327,6 +329,14 @@ export function ConverterWidget() {
                 {preset.label}
               </button>
             ))}
+          </div>
+
+            {/* About Section */}
+          <div className="mb-6 rounded-lg border border-border bg-muted/30 p-4">
+            <h3 className="mb-2 text-sm font-semibold text-foreground">About Quick Converter</h3>
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              Our Quick Converter makes unit conversions effortless. Select a category, enter your value, and instantly see results across all available units. Perfect for engineers, scientists, and anyone needing fast, accurate conversions for flow rates, pressure, temperature, mass, length, volume, and gas measurements.
+            </p>
           </div>
 
           {/* Info Banner */}

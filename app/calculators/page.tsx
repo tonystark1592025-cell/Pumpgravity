@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
-import { Calculator, Activity, Zap } from "lucide-react"
+import { Calculator, Activity, Zap, Power } from "lucide-react"
 
 export default function CalculatorsPage() {
   const calculators = [
@@ -13,6 +13,15 @@ export default function CalculatorsPage() {
       color: "text-blue-500",
       bgColor: "bg-blue-500/10",
       features: ["Speed Changes", "Diameter Changes", "Flow, Head & Power"]
+    },
+    {
+      title: "Pump Power Calculator",
+      description: "Calculate shaft power required for pumps based on flow rate, head, specific gravity, and efficiency.",
+      icon: Power,
+      href: "/calculators/pump-power-calculator",
+      color: "text-green-500",
+      bgColor: "bg-green-500/10",
+      features: ["Shaft Power", "Flow Rate", "Differential Head"]
     }
   ]
 
