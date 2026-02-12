@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { Sparkles, Droplets, Gauge, Thermometer, Scale, Ruler, Beaker } from "lucide-react"
+import { Sparkles, Droplets, Gauge, Thermometer, Scale, Ruler, Beaker ,Sigma } from "lucide-react"
 
 const converterTypes = [
   {
@@ -106,9 +106,14 @@ export function HeroSection() {
                   Choose Your Converter
                 </Button>
               </Link>
-              <Link href="/ai-chat">
+              {/* <Link href="/ai-chat">
                 <Button size="lg" variant="outline" className="border-border bg-transparent text-foreground hover:bg-secondary">
                   Ask AI Assistant <Sparkles className="ml-2 h-4 w-4" />
+                </Button>
+              </Link> */}
+              <Link href="/calculators">
+                <Button size="lg" variant="outline" className="border-border bg-transparent text-foreground hover:bg-secondary">
+                  Check Calculators <Sigma className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
             </div>
