@@ -331,14 +331,6 @@ export function ConverterWidget() {
             ))}
           </div>
 
-            {/* About Section */}
-          <div className="mb-6 rounded-lg border border-border bg-muted/30 p-4">
-            <h3 className="mb-2 text-sm font-semibold text-foreground">About Quick Converter</h3>
-            <p className="text-sm leading-relaxed text-muted-foreground">
-              Our Quick Converter makes unit conversions effortless. Select a category, enter your value, and instantly see results across all available units. Perfect for engineers, scientists, and anyone needing fast, accurate conversions for flow rates, pressure, temperature, mass, length, volume, and gas measurements.
-            </p>
-          </div>
-
           {/* Info Banner */}
           <div className="mb-6 rounded-lg border border-primary/30 bg-primary/10 p-4 text-sm text-foreground">
             You can also press the arrow so you can select other units that you could convert.
@@ -548,7 +540,17 @@ export function ConverterWidget() {
               </div>
             )}
           </div>
+          
+            {/* About Section */}
+          <div className="mb-6 rounded-lg border border-border bg-muted/30 p-4 mt-4 ">
+            <h3 className="mb-2 text-sm font-semibold text-foreground">About Quick Converter</h3>
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              Our Quick Converter makes unit conversions effortless. Select a category, enter your value, and instantly see results across all available units. Perfect for engineers, scientists, and anyone needing fast, accurate conversions for flow rates, pressure, temperature, mass, length, volume, and gas measurements.
+            </p>
+          </div>
+
         </div>
+        
       </div>
     </section>
   )

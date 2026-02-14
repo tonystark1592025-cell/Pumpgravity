@@ -11,9 +11,14 @@ export default function PumpAffinityCalculator() {
   const [mode, setMode] = useState<LawMode>("CONSTANT_DIAMETER")
   const [activeSection, setActiveSection] = useState<string>("flow") // Track which accordion is open
 
-  // All inputs start empty
-  const [val1, setVal1] = useState<string>("")
-  const [val2, setVal2] = useState<string>("")
+  // All inputs start empty - separate D1/D2 for each section
+  const [flowVal1, setFlowVal1] = useState<string>("")
+  const [flowVal2, setFlowVal2] = useState<string>("")
+  const [headVal1, setHeadVal1] = useState<string>("")
+  const [headVal2, setHeadVal2] = useState<string>("")
+  const [powerVal1, setPowerVal1] = useState<string>("")
+  const [powerVal2, setPowerVal2] = useState<string>("")
+  
   const [q1, setQ1] = useState<string>("")
   const [q2, setQ2] = useState<string>("")
   const [h1, setH1] = useState<string>("")
@@ -30,8 +35,21 @@ export default function PumpAffinityCalculator() {
   })
 
   const handleCalculate = () => {
-    const v1 = val1 ? parseFloat(val1) : null
-    const v2 = val2 ? parseFloat(val2) : null
+    // Get values based on active section
+    let v1: number | null = null
+    let v2: number | null = null
+    
+    if (activeSection === "flow") {
+      v1 = flowVal1 ? parseFloat(flowVal1) : null
+      v2 = flowVal2 ? parseFloat(flowVal2) : null
+    } else if (activeSection === "head") {
+      v1 = headVal1 ? parseFloat(headVal1) : null
+      v2 = headVal2 ? parseFloat(headVal2) : null
+    } else if (activeSection === "power") {
+      v1 = powerVal1 ? parseFloat(powerVal1) : null
+      v2 = powerVal2 ? parseFloat(powerVal2) : null
+    }
+
     const flow1 = q1 ? parseFloat(q1) : null
     const flow2 = q2 ? parseFloat(q2) : null
     const head1 = h1 ? parseFloat(h1) : null
@@ -39,78 +57,107 @@ export default function PumpAffinityCalculator() {
     const power1 = p1 ? parseFloat(p1) : null
     const power2 = p2 ? parseFloat(p2) : null
 
-    if (!v1 || !v2) {
-      setResult({ value: "", label: `Please enter both ${symbol}₁ and ${symbol}₂`, calculated: false })
+    // Count filled values in active section
+    const values = [v1, v2]
+    let sectionValues: (number | null)[] = []
+    
+    if (activeSection === "flow") {
+      sectionValues = [flow1, flow2]
+    } else if (activeSection === "head") {
+      sectionValues = [head1, head2]
+    } else if (activeSection === "power") {
+      sectionValues = [power1, power2]
+    }
+
+    const allValues = [...values, ...sectionValues]
+    const filledCount = allValues.filter(v => v !== null).length
+
+    // Need exactly 3 values filled
+    if (filledCount < 3) {
+      setResult({ value: "", label: "Please enter any 3 values to calculate the 4th", calculated: false })
       return
     }
 
-    const ratio = v2 / v1
-
-    // Count filled values in each section
-    const flowFilled = [flow1, flow2].filter(v => v !== null).length
-    const headFilled = [head1, head2].filter(v => v !== null).length
-    const powerFilled = [power1, power2].filter(v => v !== null).length
-
-    // Check if user filled both values in a section (error case)
-    if (flowFilled === 2) {
-      setResult({ value: "", label: "Please leave ONE value empty in Flow Rate section", calculated: false })
-      return
-    }
-    if (headFilled === 2) {
-      setResult({ value: "", label: "Please leave ONE value empty in Head section", calculated: false })
-      return
-    }
-    if (powerFilled === 2) {
-      setResult({ value: "", label: "Please leave ONE value empty in Power section", calculated: false })
+    if (filledCount > 3) {
+      setResult({ value: "", label: "Please leave ONE value empty to calculate", calculated: false })
       return
     }
 
-    // Check if no values filled in any section
-    if (flowFilled === 0 && headFilled === 0 && powerFilled === 0) {
-      setResult({ value: "", label: "Please enter at least one value from Flow/Head/Power", calculated: false })
-      return
+    // Now we have exactly 3 values, calculate the missing one
+    if (activeSection === "flow") {
+      // Flow Rate: Q1/Q2 = N1/N2 (or D1/D2)
+      if (v1 !== null && v2 !== null && flow1 !== null && flow2 === null) {
+        // Calculate Q2
+        const calc = (flow1 * (v2 / v1)).toFixed(2)
+        setQ2(calc)
+        setResult({ value: calc, label: "Q₂ (m³/h)", calculated: true })
+      } else if (v1 !== null && v2 !== null && flow2 !== null && flow1 === null) {
+        // Calculate Q1
+        const calc = (flow2 * (v1 / v2)).toFixed(2)
+        setQ1(calc)
+        setResult({ value: calc, label: "Q₁ (m³/h)", calculated: true })
+      } else if (v1 !== null && flow1 !== null && flow2 !== null && v2 === null) {
+        // Calculate N2/D2: N2 = N1 * (Q2/Q1)
+        const calc = (v1 * (flow2 / flow1)).toFixed(2)
+        setFlowVal2(calc)
+        setResult({ value: calc, label: `${symbol}₂ (${unit})`, calculated: true })
+      } else if (v2 !== null && flow1 !== null && flow2 !== null && v1 === null) {
+        // Calculate N1/D1: N1 = N2 * (Q1/Q2)
+        const calc = (v2 * (flow1 / flow2)).toFixed(2)
+        setFlowVal1(calc)
+        setResult({ value: calc, label: `${symbol}₁ (${unit})`, calculated: true })
+      }
     }
 
-    // Flow Rate calculations
-    if (flow1 !== null && flow2 === null) {
-      const calc = (flow1 * ratio).toFixed(2)
-      setQ2(calc)
-      setResult({ value: calc, label: "Q₂ (m³/h)", calculated: true })
-      return
-    } else if (flow2 !== null && flow1 === null) {
-      const calc = (flow2 / ratio).toFixed(2)
-      setQ1(calc)
-      setResult({ value: calc, label: "Q₁ (m³/h)", calculated: true })
-      return
+    if (activeSection === "head") {
+      // Head: H1/H2 = (N1/N2)^2 (or (D1/D2)^2)
+      if (v1 !== null && v2 !== null && head1 !== null && head2 === null) {
+        // Calculate H2
+        const calc = (head1 * Math.pow(v2 / v1, 2)).toFixed(2)
+        setH2(calc)
+        setResult({ value: calc, label: "H₂ (m)", calculated: true })
+      } else if (v1 !== null && v2 !== null && head2 !== null && head1 === null) {
+        // Calculate H1
+        const calc = (head2 * Math.pow(v1 / v2, 2)).toFixed(2)
+        setH1(calc)
+        setResult({ value: calc, label: "H₁ (m)", calculated: true })
+      } else if (v1 !== null && head1 !== null && head2 !== null && v2 === null) {
+        // Calculate N2/D2: N2 = N1 * sqrt(H2/H1)
+        const calc = (v1 * Math.sqrt(head2 / head1)).toFixed(2)
+        setHeadVal2(calc)
+        setResult({ value: calc, label: `${symbol}₂ (${unit})`, calculated: true })
+      } else if (v2 !== null && head1 !== null && head2 !== null && v1 === null) {
+        // Calculate N1/D1: N1 = N2 * sqrt(H1/H2)
+        const calc = (v2 * Math.sqrt(head1 / head2)).toFixed(2)
+        setHeadVal1(calc)
+        setResult({ value: calc, label: `${symbol}₁ (${unit})`, calculated: true })
+      }
     }
 
-    // Head calculations
-    if (head1 !== null && head2 === null) {
-      const calc = (head1 * Math.pow(ratio, 2)).toFixed(2)
-      setH2(calc)
-      setResult({ value: calc, label: "H₂ (m)", calculated: true })
-      return
-    } else if (head2 !== null && head1 === null) {
-      const calc = (head2 / Math.pow(ratio, 2)).toFixed(2)
-      setH1(calc)
-      setResult({ value: calc, label: "H₁ (m)", calculated: true })
-      return
+    if (activeSection === "power") {
+      // Power: P1/P2 = (N1/N2)^3 (or (D1/D2)^3)
+      if (v1 !== null && v2 !== null && power1 !== null && power2 === null) {
+        // Calculate P2
+        const calc = (power1 * Math.pow(v2 / v1, 3)).toFixed(2)
+        setP2(calc)
+        setResult({ value: calc, label: "P₂ (kW)", calculated: true })
+      } else if (v1 !== null && v2 !== null && power2 !== null && power1 === null) {
+        // Calculate P1
+        const calc = (power2 * Math.pow(v1 / v2, 3)).toFixed(2)
+        setP1(calc)
+        setResult({ value: calc, label: "P₁ (kW)", calculated: true })
+      } else if (v1 !== null && power1 !== null && power2 !== null && v2 === null) {
+        // Calculate N2/D2: N2 = N1 * cbrt(P2/P1)
+        const calc = (v1 * Math.cbrt(power2 / power1)).toFixed(2)
+        setPowerVal2(calc)
+        setResult({ value: calc, label: `${symbol}₂ (${unit})`, calculated: true })
+      } else if (v2 !== null && power1 !== null && power2 !== null && v1 === null) {
+        // Calculate N1/D1: N1 = N2 * cbrt(P1/P2)
+        const calc = (v2 * Math.cbrt(power1 / power2)).toFixed(2)
+        setPowerVal1(calc)
+        setResult({ value: calc, label: `${symbol}₁ (${unit})`, calculated: true })
+      }
     }
-
-    // Power calculations
-    if (power1 !== null && power2 === null) {
-      const calc = (power1 * Math.pow(ratio, 3)).toFixed(2)
-      setP2(calc)
-      setResult({ value: calc, label: "P₂ (kW)", calculated: true })
-      return
-    } else if (power2 !== null && power1 === null) {
-      const calc = (power2 / Math.pow(ratio, 3)).toFixed(2)
-      setP1(calc)
-      setResult({ value: calc, label: "P₁ (kW)", calculated: true })
-      return
-    }
-
-    setResult({ value: "", label: "Please enter exactly 3 values (both speeds + 1 other value)", calculated: false })
   }
 
   const symbol = mode === "CONSTANT_DIAMETER" ? "N" : "D"
@@ -192,7 +239,7 @@ export default function PumpAffinityCalculator() {
                        <div className="flex items-center gap-2">
                           <span className="font-serif font-bold w-8 shrink-0">{symbol}₁=</span>
                           <div className="relative flex-1 min-w-0">
-                            <input type="number" value={val1} onChange={e => setVal1(e.target.value)} placeholder="?" className="w-full border border-border bg-background rounded px-2 py-1.5 text-right pr-12" />
+                            <input type="number" value={flowVal1} onChange={e => setFlowVal1(e.target.value)} placeholder="?" className="w-full border border-border bg-background rounded px-2 py-1.5 text-right pr-12" />
                             <span className="absolute right-2 top-1.5 text-xs text-muted-foreground">{unit}</span>
                           </div>
                        </div>
@@ -206,7 +253,7 @@ export default function PumpAffinityCalculator() {
                        <div className="flex items-center gap-2">
                           <span className="font-serif font-bold w-8 shrink-0">{symbol}₂=</span>
                           <div className="relative flex-1 min-w-0">
-                            <input type="number" value={val2} onChange={e => setVal2(e.target.value)} placeholder="?" className="w-full border border-border bg-background rounded px-2 py-1.5 text-right pr-12" />
+                            <input type="number" value={flowVal2} onChange={e => setFlowVal2(e.target.value)} placeholder="?" className="w-full border border-border bg-background rounded px-2 py-1.5 text-right pr-12" />
                             <span className="absolute right-2 top-1.5 text-xs text-muted-foreground">{unit}</span>
                           </div>
                        </div>
@@ -248,11 +295,11 @@ export default function PumpAffinityCalculator() {
                             <span className="absolute right-2 top-1.5 text-xs text-muted-foreground">m</span>
                           </div>
                        </div>
-                       <div className="flex items-center gap-2 opacity-50">
+                       <div className="flex items-center gap-2">
                           <span className="font-serif font-bold w-8 shrink-0">{symbol}₁=</span>
                           <div className="relative flex-1 min-w-0">
-                             <input type="text" disabled value={val1} placeholder="?" className="w-full bg-muted border border-border rounded px-2 py-1.5 text-right pr-12 text-muted-foreground" />
-                             <span className="absolute right-2 top-1.5 text-xs text-muted-foreground">{unit}</span>
+                            <input type="number" value={headVal1} onChange={e => setHeadVal1(e.target.value)} placeholder="?" className="w-full border border-border bg-background rounded px-2 py-1.5 text-right pr-12" />
+                            <span className="absolute right-2 top-1.5 text-xs text-muted-foreground">{unit}</span>
                           </div>
                        </div>
                        <div className="flex items-center gap-2">
@@ -262,11 +309,11 @@ export default function PumpAffinityCalculator() {
                             <span className="absolute right-2 top-1.5 text-xs text-muted-foreground">m</span>
                           </div>
                        </div>
-                       <div className="flex items-center gap-2 opacity-50">
+                       <div className="flex items-center gap-2">
                           <span className="font-serif font-bold w-8 shrink-0">{symbol}₂=</span>
                           <div className="relative flex-1 min-w-0">
-                             <input type="text" disabled value={val2} placeholder="?" className="w-full bg-muted border border-border rounded px-2 py-1.5 text-right pr-12 text-muted-foreground" />
-                             <span className="absolute right-2 top-1.5 text-xs text-muted-foreground">{unit}</span>
+                            <input type="number" value={headVal2} onChange={e => setHeadVal2(e.target.value)} placeholder="?" className="w-full border border-border bg-background rounded px-2 py-1.5 text-right pr-12" />
+                            <span className="absolute right-2 top-1.5 text-xs text-muted-foreground">{unit}</span>
                           </div>
                        </div>
                     </div>
@@ -307,11 +354,11 @@ export default function PumpAffinityCalculator() {
                             <span className="absolute right-2 top-1.5 text-xs text-muted-foreground">kW</span>
                           </div>
                        </div>
-                       <div className="flex items-center gap-2 opacity-50">
+                       <div className="flex items-center gap-2">
                           <span className="font-serif font-bold w-8 shrink-0">{symbol}₁=</span>
                           <div className="relative flex-1 min-w-0">
-                             <input type="text" disabled value={val1} placeholder="?" className="w-full bg-muted border border-border rounded px-2 py-1.5 text-right pr-12 text-muted-foreground" />
-                             <span className="absolute right-2 top-1.5 text-xs text-muted-foreground">{unit}</span>
+                            <input type="number" value={powerVal1} onChange={e => setPowerVal1(e.target.value)} placeholder="?" className="w-full border border-border bg-background rounded px-2 py-1.5 text-right pr-12" />
+                            <span className="absolute right-2 top-1.5 text-xs text-muted-foreground">{unit}</span>
                           </div>
                        </div>
                        <div className="flex items-center gap-2">
@@ -321,11 +368,11 @@ export default function PumpAffinityCalculator() {
                             <span className="absolute right-2 top-1.5 text-xs text-muted-foreground">kW</span>
                           </div>
                        </div>
-                       <div className="flex items-center gap-2 opacity-50">
+                       <div className="flex items-center gap-2">
                           <span className="font-serif font-bold w-8 shrink-0">{symbol}₂=</span>
                           <div className="relative flex-1 min-w-0">
-                             <input type="text" disabled value={val2} placeholder="?" className="w-full bg-muted border border-border rounded px-2 py-1.5 text-right pr-12 text-muted-foreground" />
-                             <span className="absolute right-2 top-1.5 text-xs text-muted-foreground">{unit}</span>
+                            <input type="number" value={powerVal2} onChange={e => setPowerVal2(e.target.value)} placeholder="?" className="w-full border border-border bg-background rounded px-2 py-1.5 text-right pr-12" />
+                            <span className="absolute right-2 top-1.5 text-xs text-muted-foreground">{unit}</span>
                           </div>
                        </div>
                     </div>

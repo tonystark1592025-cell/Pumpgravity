@@ -253,15 +253,7 @@ export default function CategoryConverterPage() {
                   <p className="mt-1 text-sm text-muted-foreground">{categoryInfo?.description}</p>
                 </div>
 
-                {/* About Section */}
-                {filteredConverters.length === 1 && (
-                  <div className="mb-6 rounded-lg border border-border bg-muted/30 p-4">
-                    <h3 className="mb-2 text-sm font-semibold text-foreground">About {filteredConverters[0].name}</h3>
-                    <p className="text-sm leading-relaxed text-muted-foreground">
-                      {filteredConverters[0].about}
-                    </p>
-                  </div>
-                )}
+               
 
                 {category === "all" && (
                   <div className="mb-6 rounded-lg border border-border bg-muted/30 p-4">
@@ -407,6 +399,16 @@ export default function CategoryConverterPage() {
                     </div>
                   )}
                 </div>
+
+                 {/* About Section */}
+                {filteredConverters.length === 1 && (
+                  <div className="mb-6 rounded-lg border border-border bg-muted/30 p-4 mt-4 ">
+                    <h3 className="mb-2 text-sm font-semibold text-foreground">About {filteredConverters[0].name}</h3>
+                    <p className="text-sm leading-relaxed text-muted-foreground">
+                      {filteredConverters[0].about}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </section>
