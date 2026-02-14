@@ -119,28 +119,28 @@ export default function PumpAffinityCalculator() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
-      <main className="flex-1 bg-white p-4 md:p-8 font-sans text-slate-900 flex flex-col items-center">
+      <main className="flex-1 bg-background p-4 md:p-8 font-sans text-foreground flex flex-col items-center">
       
       <div className="text-center mb-8">
-        <p className="text-sm font-medium text-slate-500 uppercase tracking-widest mb-1">
+        <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest mb-1">
           A World-Class Engineering Tool
         </p>
-        <h1 className="text-3xl md:text-4xl font-black text-black uppercase tracking-tight">
+        <h1 className="text-3xl md:text-4xl font-black text-foreground uppercase tracking-tight">
           Pump Affinity Law Calculator
         </h1>
       </div>
 
       <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-6">
         
-        <div className="bg-white rounded-lg shadow-sm border border-slate-300 overflow-hidden flex flex-col">
+        <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden flex flex-col">
           
-          <div className="flex border-b border-slate-300">
+          <div className="flex border-b border-border">
             <button
               onClick={() => { setMode("CONSTANT_SPEED"); setResult({...result, calculated: false}); }}
-              className={`flex-1 py-3 text-sm font-bold uppercase tracking-wide border-r border-slate-300 transition-colors ${
+              className={`flex-1 py-3 text-sm font-bold uppercase tracking-wide border-r border-border transition-colors ${
                 mode === "CONSTANT_SPEED" 
-                  ? "bg-white text-blue-600 border-t-4 border-t-blue-600" 
-                  : "bg-slate-100 text-slate-500 hover:bg-white"
+                  ? "bg-card text-blue-600 border-t-4 border-t-blue-600" 
+                  : "bg-muted text-muted-foreground hover:bg-card"
               }`}
             >
               Constant Speed <span className="text-[10px] lowercase opacity-70">(Change Diameter)</span>
@@ -149,8 +149,8 @@ export default function PumpAffinityCalculator() {
               onClick={() => { setMode("CONSTANT_DIAMETER"); setResult({...result, calculated: false}); }}
               className={`flex-1 py-3 text-sm font-bold uppercase tracking-wide transition-colors ${
                 mode === "CONSTANT_DIAMETER" 
-                  ? "bg-white text-blue-600 border-t-4 border-t-blue-600" 
-                  : "bg-slate-100 text-slate-500 hover:bg-white"
+                  ? "bg-card text-blue-600 border-t-4 border-t-blue-600" 
+                  : "bg-muted text-muted-foreground hover:bg-card"
               }`}
             >
               Constant Diameter <span className="text-[10px] lowercase opacity-70">(Change Speed)</span>
@@ -161,21 +161,21 @@ export default function PumpAffinityCalculator() {
             
             <Accordion type="single" value={activeSection} onValueChange={(value) => setActiveSection(value || "flow")} className="space-y-2 [&>*]:!border-b-0">
               
-              <AccordionItem value="flow" className="border border-slate-200 rounded-lg px-4 bg-white [&:not(:last-child)]:mb-2">
+              <AccordionItem value="flow" className="border border-border rounded-lg px-4 bg-card [&:not(:last-child)]:mb-2">
                 <AccordionTrigger className="hover:no-underline">
                   <h3 className="font-bold text-lg">1. Flow Rate (Q)</h3>
                 </AccordionTrigger>
                 <AccordionContent>
                   <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6 pt-4">
-                    <div className="bg-white p-4 flex justify-center border border-white rounded shrink-0">
+                    <div className="bg-muted p-4 flex justify-center border border-border rounded shrink-0">
                        <div className="font-serif text-2xl flex items-center gap-3">
                           <div className="flex flex-col items-center">
-                            <span className="border-b border-black px-1">Q₁</span>
+                            <span className="border-b border-foreground px-1">Q₁</span>
                             <span>Q₂</span>
                           </div>
                           <span>=</span>
                           <div className="flex flex-col items-center">
-                            <span className="border-b border-black px-1">{symbol}₁</span>
+                            <span className="border-b border-foreground px-1">{symbol}₁</span>
                             <span>{symbol}₂</span>
                           </div>
                        </div>
@@ -185,29 +185,29 @@ export default function PumpAffinityCalculator() {
                        <div className="flex items-center gap-2">
                           <span className="font-serif font-bold w-8 shrink-0">Q₁=</span>
                           <div className="relative flex-1 min-w-0">
-                            <input type="number" value={q1} onChange={e => setQ1(e.target.value)} placeholder="?" className="w-full border border-slate-300 rounded px-2 py-1.5 text-right pr-12" />
-                            <span className="absolute right-2 top-1.5 text-xs text-slate-400">m³/h</span>
+                            <input type="number" value={q1} onChange={e => setQ1(e.target.value)} placeholder="?" className="w-full border border-border bg-background rounded px-2 py-1.5 text-right pr-12" />
+                            <span className="absolute right-2 top-1.5 text-xs text-muted-foreground">m³/h</span>
                           </div>
                        </div>
                        <div className="flex items-center gap-2">
                           <span className="font-serif font-bold w-8 shrink-0">{symbol}₁=</span>
                           <div className="relative flex-1 min-w-0">
-                            <input type="number" value={val1} onChange={e => setVal1(e.target.value)} placeholder="?" className="w-full border border-slate-300 rounded px-2 py-1.5 text-right pr-12" />
-                            <span className="absolute right-2 top-1.5 text-xs text-slate-400">{unit}</span>
+                            <input type="number" value={val1} onChange={e => setVal1(e.target.value)} placeholder="?" className="w-full border border-border bg-background rounded px-2 py-1.5 text-right pr-12" />
+                            <span className="absolute right-2 top-1.5 text-xs text-muted-foreground">{unit}</span>
                           </div>
                        </div>
                        <div className="flex items-center gap-2">
                           <span className="font-serif font-bold w-8 shrink-0">Q₂=</span>
                           <div className="relative flex-1 min-w-0">
-                            <input type="number" value={q2} onChange={e => setQ2(e.target.value)} placeholder="?" className="w-full border border-slate-300 rounded px-2 py-1.5 text-right pr-12" />
-                            <span className="absolute right-2 top-1.5 text-xs text-slate-400">m³/h</span>
+                            <input type="number" value={q2} onChange={e => setQ2(e.target.value)} placeholder="?" className="w-full border border-border bg-background rounded px-2 py-1.5 text-right pr-12" />
+                            <span className="absolute right-2 top-1.5 text-xs text-muted-foreground">m³/h</span>
                           </div>
                        </div>
                        <div className="flex items-center gap-2">
                           <span className="font-serif font-bold w-8 shrink-0">{symbol}₂=</span>
                           <div className="relative flex-1 min-w-0">
-                            <input type="number" value={val2} onChange={e => setVal2(e.target.value)} placeholder="?" className="w-full border border-slate-300 rounded px-2 py-1.5 text-right pr-12" />
-                            <span className="absolute right-2 top-1.5 text-xs text-slate-400">{unit}</span>
+                            <input type="number" value={val2} onChange={e => setVal2(e.target.value)} placeholder="?" className="w-full border border-border bg-background rounded px-2 py-1.5 text-right pr-12" />
+                            <span className="absolute right-2 top-1.5 text-xs text-muted-foreground">{unit}</span>
                           </div>
                        </div>
                     </div>
@@ -215,26 +215,26 @@ export default function PumpAffinityCalculator() {
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="head" className="border border-slate-200 rounded-lg px-4 bg-white [&:not(:last-child)]:mb-2">
+              <AccordionItem value="head" className="border border-border rounded-lg px-4 bg-card [&:not(:last-child)]:mb-2">
                 <AccordionTrigger className="hover:no-underline">
                   <h3 className="font-bold text-lg">2. Head (H)</h3>
                 </AccordionTrigger>
                 <AccordionContent>
                   <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6 pt-4">
-                    <div className="bg-white p-4 flex justify-center border border-white rounded shrink-0">
+                    <div className="bg-muted p-4 flex justify-center border border-border rounded shrink-0">
                        <div className="font-serif text-2xl flex items-center gap-3">
                           <div className="flex flex-col items-center">
-                            <span className="border-b border-black px-1">H₁</span>
+                            <span className="border-b border-foreground px-1">H₁</span>
                             <span>H₂</span>
                           </div>
                           <span>=</span>
                           <div className="flex items-center">
-                            <span className="text-4xl text-slate-300 font-light">(</span>
+                            <span className="text-4xl text-muted-foreground font-light">(</span>
                             <div className="flex flex-col items-center">
-                              <span className="border-b border-black px-1">{symbol}₁</span>
+                              <span className="border-b border-foreground px-1">{symbol}₁</span>
                               <span>{symbol}₂</span>
                             </div>
-                            <span className="text-4xl text-slate-300 font-light">)</span>
+                            <span className="text-4xl text-muted-foreground font-light">)</span>
                             <sup className="text-sm font-bold mb-6">2</sup>
                           </div>
                        </div>
@@ -244,29 +244,29 @@ export default function PumpAffinityCalculator() {
                        <div className="flex items-center gap-2">
                           <span className="font-serif font-bold w-8 shrink-0">H₁=</span>
                           <div className="relative flex-1 min-w-0">
-                            <input type="number" value={h1} onChange={e => setH1(e.target.value)} placeholder="?" className="w-full border border-slate-300 rounded px-2 py-1.5 text-right pr-12" />
-                            <span className="absolute right-2 top-1.5 text-xs text-slate-400">m</span>
+                            <input type="number" value={h1} onChange={e => setH1(e.target.value)} placeholder="?" className="w-full border border-border bg-background rounded px-2 py-1.5 text-right pr-12" />
+                            <span className="absolute right-2 top-1.5 text-xs text-muted-foreground">m</span>
                           </div>
                        </div>
                        <div className="flex items-center gap-2 opacity-50">
                           <span className="font-serif font-bold w-8 shrink-0">{symbol}₁=</span>
                           <div className="relative flex-1 min-w-0">
-                             <input type="text" disabled value={val1} placeholder="?" className="w-full bg-slate-100 border border-slate-200 rounded px-2 py-1.5 text-right pr-12 text-slate-500" />
-                             <span className="absolute right-2 top-1.5 text-xs text-slate-400">{unit}</span>
+                             <input type="text" disabled value={val1} placeholder="?" className="w-full bg-muted border border-border rounded px-2 py-1.5 text-right pr-12 text-muted-foreground" />
+                             <span className="absolute right-2 top-1.5 text-xs text-muted-foreground">{unit}</span>
                           </div>
                        </div>
                        <div className="flex items-center gap-2">
                           <span className="font-serif font-bold w-8 shrink-0">H₂=</span>
                           <div className="relative flex-1 min-w-0">
-                            <input type="number" value={h2} onChange={e => setH2(e.target.value)} placeholder="?" className="w-full border border-slate-300 rounded px-2 py-1.5 text-right pr-12" />
-                            <span className="absolute right-2 top-1.5 text-xs text-slate-400">m</span>
+                            <input type="number" value={h2} onChange={e => setH2(e.target.value)} placeholder="?" className="w-full border border-border bg-background rounded px-2 py-1.5 text-right pr-12" />
+                            <span className="absolute right-2 top-1.5 text-xs text-muted-foreground">m</span>
                           </div>
                        </div>
                        <div className="flex items-center gap-2 opacity-50">
                           <span className="font-serif font-bold w-8 shrink-0">{symbol}₂=</span>
                           <div className="relative flex-1 min-w-0">
-                             <input type="text" disabled value={val2} placeholder="?" className="w-full bg-slate-100 border border-slate-200 rounded px-2 py-1.5 text-right pr-12 text-slate-500" />
-                             <span className="absolute right-2 top-1.5 text-xs text-slate-400">{unit}</span>
+                             <input type="text" disabled value={val2} placeholder="?" className="w-full bg-muted border border-border rounded px-2 py-1.5 text-right pr-12 text-muted-foreground" />
+                             <span className="absolute right-2 top-1.5 text-xs text-muted-foreground">{unit}</span>
                           </div>
                        </div>
                     </div>
@@ -274,26 +274,26 @@ export default function PumpAffinityCalculator() {
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="power" className="border border-slate-200 rounded-lg px-4 bg-white mb-1">
+              <AccordionItem value="power" className="border border-border rounded-lg px-4 bg-card mb-1">
                 <AccordionTrigger className="hover:no-underline">
                   <h3 className="font-bold text-lg">3. Power (P)</h3>
                 </AccordionTrigger>
                 <AccordionContent>
                   <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6 pt-4">
-                    <div className="bg-white p-4 flex justify-center border border-white rounded shrink-0">
+                    <div className="bg-muted p-4 flex justify-center border border-border rounded shrink-0">
                        <div className="font-serif text-2xl flex items-center gap-3">
                           <div className="flex flex-col items-center">
-                            <span className="border-b border-black px-1">P₁</span>
+                            <span className="border-b border-foreground px-1">P₁</span>
                             <span>P₂</span>
                           </div>
                           <span>=</span>
                           <div className="flex items-center">
-                            <span className="text-4xl text-slate-300 font-light">(</span>
+                            <span className="text-4xl text-muted-foreground font-light">(</span>
                             <div className="flex flex-col items-center">
-                              <span className="border-b border-black px-1">{symbol}₁</span>
+                              <span className="border-b border-foreground px-1">{symbol}₁</span>
                               <span>{symbol}₂</span>
                             </div>
-                            <span className="text-4xl text-slate-300 font-light">)</span>
+                            <span className="text-4xl text-muted-foreground font-light">)</span>
                             <sup className="text-sm font-bold mb-6">3</sup>
                           </div>
                        </div>
@@ -303,29 +303,29 @@ export default function PumpAffinityCalculator() {
                        <div className="flex items-center gap-2">
                           <span className="font-serif font-bold w-8 shrink-0">P₁=</span>
                           <div className="relative flex-1 min-w-0">
-                            <input type="number" value={p1} onChange={e => setP1(e.target.value)} placeholder="?" className="w-full border border-slate-300 rounded px-2 py-1.5 text-right pr-12" />
-                            <span className="absolute right-2 top-1.5 text-xs text-slate-400">kW</span>
+                            <input type="number" value={p1} onChange={e => setP1(e.target.value)} placeholder="?" className="w-full border border-border bg-background rounded px-2 py-1.5 text-right pr-12" />
+                            <span className="absolute right-2 top-1.5 text-xs text-muted-foreground">kW</span>
                           </div>
                        </div>
                        <div className="flex items-center gap-2 opacity-50">
                           <span className="font-serif font-bold w-8 shrink-0">{symbol}₁=</span>
                           <div className="relative flex-1 min-w-0">
-                             <input type="text" disabled value={val1} placeholder="?" className="w-full bg-slate-100 border border-slate-200 rounded px-2 py-1.5 text-right pr-12 text-slate-500" />
-                             <span className="absolute right-2 top-1.5 text-xs text-slate-400">{unit}</span>
+                             <input type="text" disabled value={val1} placeholder="?" className="w-full bg-muted border border-border rounded px-2 py-1.5 text-right pr-12 text-muted-foreground" />
+                             <span className="absolute right-2 top-1.5 text-xs text-muted-foreground">{unit}</span>
                           </div>
                        </div>
                        <div className="flex items-center gap-2">
                           <span className="font-serif font-bold w-8 shrink-0">P₂=</span>
                           <div className="relative flex-1 min-w-0">
-                            <input type="number" value={p2} onChange={e => setP2(e.target.value)} placeholder="?" className="w-full border border-slate-300 rounded px-2 py-1.5 text-right pr-12" />
-                            <span className="absolute right-2 top-1.5 text-xs text-slate-400">kW</span>
+                            <input type="number" value={p2} onChange={e => setP2(e.target.value)} placeholder="?" className="w-full border border-border bg-background rounded px-2 py-1.5 text-right pr-12" />
+                            <span className="absolute right-2 top-1.5 text-xs text-muted-foreground">kW</span>
                           </div>
                        </div>
                        <div className="flex items-center gap-2 opacity-50">
                           <span className="font-serif font-bold w-8 shrink-0">{symbol}₂=</span>
                           <div className="relative flex-1 min-w-0">
-                             <input type="text" disabled value={val2} placeholder="?" className="w-full bg-slate-100 border border-slate-200 rounded px-2 py-1.5 text-right pr-12 text-slate-500" />
-                             <span className="absolute right-2 top-1.5 text-xs text-slate-400">{unit}</span>
+                             <input type="text" disabled value={val2} placeholder="?" className="w-full bg-muted border border-border rounded px-2 py-1.5 text-right pr-12 text-muted-foreground" />
+                             <span className="absolute right-2 top-1.5 text-xs text-muted-foreground">{unit}</span>
                           </div>
                        </div>
                     </div>
@@ -344,37 +344,37 @@ export default function PumpAffinityCalculator() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-slate-300 overflow-hidden flex flex-col h-full">
-          <div className="bg-slate-100 px-6 py-4 border-b border-slate-200">
-             <h2 className="font-bold text-xl uppercase text-slate-800">Calculation & Result</h2>
+        <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden flex flex-col h-full">
+          <div className="bg-muted px-6 py-4 border-b border-border">
+             <h2 className="font-bold text-xl uppercase text-foreground">Calculation & Result</h2>
           </div>
 
           <div className="p-6 flex-1 flex flex-col">
             <div className="mb-6">
-              <h4 className="font-bold text-slate-900 mb-2 uppercase text-sm">Instructions:</h4>
-              <p className="text-slate-700 text-sm leading-relaxed">
+              <h4 className="font-bold text-foreground mb-2 uppercase text-sm">Instructions:</h4>
+              <p className="text-muted-foreground text-sm leading-relaxed">
                 Enter any 3 values . Leave the value you want to find empty. Click Calculate.
               </p>
             </div>
 
             {/* Formula Display based on active section */}
-            <div className="mb-6 bg-slate-50 rounded-lg p-6 border border-slate-200">
-              <h4 className="font-bold text-slate-900 mb-4 uppercase text-sm text-center">Active Formula</h4>
+            <div className="mb-6 bg-muted rounded-lg p-6 border border-border">
+              <h4 className="font-bold text-foreground mb-4 uppercase text-sm text-center">Active Formula</h4>
               
               {activeSection === "flow" && (
                 <div className="flex flex-col items-center gap-4">
                   <div className="font-serif text-3xl flex items-center gap-4">
                     <div className="flex flex-col items-center">
-                      <span className="border-b-2 border-black px-2">Q₁</span>
+                      <span className="border-b-2 border-foreground px-2">Q₁</span>
                       <span className="mt-1">Q₂</span>
                     </div>
                     <span>=</span>
                     <div className="flex flex-col items-center">
-                      <span className="border-b-2 border-black px-2">{symbol}₁</span>
+                      <span className="border-b-2 border-foreground px-2">{symbol}₁</span>
                       <span className="mt-1">{symbol}₂</span>
                     </div>
                   </div>
-                  <p className="text-sm text-slate-600 text-center">Flow Rate (Linear Relationship)</p>
+                  <p className="text-sm text-muted-foreground text-center">Flow Rate (Linear Relationship)</p>
                 </div>
               )}
 
@@ -382,21 +382,21 @@ export default function PumpAffinityCalculator() {
                 <div className="flex flex-col items-center gap-4">
                   <div className="font-serif text-3xl flex items-center gap-4">
                     <div className="flex flex-col items-center">
-                      <span className="border-b-2 border-black px-2">H₁</span>
+                      <span className="border-b-2 border-foreground px-2">H₁</span>
                       <span className="mt-1">H₂</span>
                     </div>
                     <span>=</span>
                     <div className="flex items-center">
-                      <span className="text-5xl text-slate-300 font-light">(</span>
+                      <span className="text-5xl text-muted-foreground font-light">(</span>
                       <div className="flex flex-col items-center">
-                        <span className="border-b-2 border-black px-2">{symbol}₁</span>
+                        <span className="border-b-2 border-foreground px-2">{symbol}₁</span>
                         <span className="mt-1">{symbol}₂</span>
                       </div>
-                      <span className="text-5xl text-slate-300 font-light">)</span>
+                      <span className="text-5xl text-muted-foreground font-light">)</span>
                       <sup className="text-lg font-bold -ml-1" style={{verticalAlign: 'super'}}>2</sup>
                     </div>
                   </div>
-                  <p className="text-sm text-slate-600 text-center">Head (Square Relationship)</p>
+                  <p className="text-sm text-muted-foreground text-center">Head (Square Relationship)</p>
                 </div>
               )}
 
@@ -404,27 +404,27 @@ export default function PumpAffinityCalculator() {
                 <div className="flex flex-col items-center gap-4">
                   <div className="font-serif text-3xl flex items-center gap-4">
                     <div className="flex flex-col items-center">
-                      <span className="border-b-2 border-black px-2">P₁</span>
+                      <span className="border-b-2 border-foreground px-2">P₁</span>
                       <span className="mt-1">P₂</span>
                     </div>
                     <span>=</span>
                     <div className="flex items-center">
-                      <span className="text-5xl text-slate-300 font-light">(</span>
+                      <span className="text-5xl text-muted-foreground font-light">(</span>
                       <div className="flex flex-col items-center">
-                        <span className="border-b-2 border-black px-2">{symbol}₁</span>
+                        <span className="border-b-2 border-foreground px-2">{symbol}₁</span>
                         <span className="mt-1">{symbol}₂</span>
                       </div>
-                      <span className="text-5xl text-slate-300 font-light">)</span>
+                      <span className="text-5xl text-muted-foreground font-light">)</span>
                       <sup className="text-lg font-bold -ml-1" style={{verticalAlign: 'super'}}>3</sup>
                     </div>
                   </div>
-                  <p className="text-sm text-slate-600 text-center">Power (Cubic Relationship)</p>
+                  <p className="text-sm text-muted-foreground text-center">Power (Cubic Relationship)</p>
                 </div>
               )}
             </div>
 
             <div className="mt-auto">
-              <div className={`rounded-lg p-8 text-center text-white shadow-lg transition-all duration-500 ${result.calculated ? "bg-gradient-to-br from-green-500 to-green-600" : "bg-slate-300"}`}>
+              <div className={`rounded-lg p-8 text-center text-white shadow-lg transition-all duration-500 ${result.calculated ? "bg-gradient-to-br from-green-500 to-green-600" : "bg-muted"}`}>
                  <h2 className="text-2xl font-bold mb-4 uppercase opacity-90">
                    {result.calculated ? "Calculated Value" : "Result"}
                  </h2>

@@ -136,6 +136,34 @@
   }
 }
 
+/* Grid Pattern Background */
+.bg-grid-pattern {
+  background-image: 
+    linear-gradient(to right, rgb(203 213 225 / 0.3) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(203 213 225 / 0.3) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.dark .bg-grid-pattern {
+  background-image: 
+    linear-gradient(to right, rgb(51 65 85 / 0.3) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(51 65 85 / 0.3) 1px, transparent 1px);
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Article content enhancements */
+article img {
+  transition: transform 0.3s ease;
+}
+
+article img:hover {
+  transform: scale(1.02);
+}
+
 /* Rich Text Editor Styles */
 .ProseMirror {
   outline: none;
