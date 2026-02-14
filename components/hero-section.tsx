@@ -277,10 +277,9 @@ export function HeroSection() {
 
               {/* Status Light at Top Right */}
               <div className="absolute right-4 top-4 flex items-center gap-2">
-                 <span className="text-[10px] font-mono text-muted-foreground">SYS.OK</span>
                  <span className="relative flex h-2 w-2">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500"></span>
+                    
+                   
                   </span>
               </div>
 
