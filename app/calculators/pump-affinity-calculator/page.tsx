@@ -10,9 +10,7 @@ import {
   convertFromSI, 
   flowUnits, 
   headUnits, 
-  powerUnits,
-  speedUnits,
-  diameterUnits
+  powerUnits
 } from "@/lib/unit-conversions"
 
 type LawMode = "CONSTANT_DIAMETER" | "CONSTANT_SPEED"
@@ -21,35 +19,41 @@ export default function PumpAffinityCalculator() {
   const [mode, setMode] = useState<LawMode>("CONSTANT_DIAMETER")
   const [activeSection, setActiveSection] = useState<string>("flow")
 
-  // Flow section states with units
+  // Flow section states with units (for CONSTANT_DIAMETER mode - uses N)
   const [q1, setQ1] = useState<string>("")
   const [q1Unit, setQ1Unit] = useState<string>("m3h")
   const [q2, setQ2] = useState<string>("")
   const [q2Unit, setQ2Unit] = useState<string>("m3h")
-  const [flowVal1, setFlowVal1] = useState<string>("")
-  const [flowVal1Unit, setFlowVal1Unit] = useState<string>("rpm")
-  const [flowVal2, setFlowVal2] = useState<string>("")
-  const [flowVal2Unit, setFlowVal2Unit] = useState<string>("rpm")
+  const [n1_flow, setN1Flow] = useState<string>("")
+  const [n2_flow, setN2Flow] = useState<string>("")
 
-  // Head section states with units
+  // Flow section for CONSTANT_SPEED mode (uses D)
+  const [d1_flow, setD1Flow] = useState<string>("")
+  const [d2_flow, setD2Flow] = useState<string>("")
+
+  // Head section states with units (for CONSTANT_DIAMETER mode - uses N)
   const [h1, setH1] = useState<string>("")
   const [h1Unit, setH1Unit] = useState<string>("m")
   const [h2, setH2] = useState<string>("")
   const [h2Unit, setH2Unit] = useState<string>("m")
-  const [headVal1, setHeadVal1] = useState<string>("")
-  const [headVal1Unit, setHeadVal1Unit] = useState<string>("rpm")
-  const [headVal2, setHeadVal2] = useState<string>("")
-  const [headVal2Unit, setHeadVal2Unit] = useState<string>("rpm")
+  const [n1_head, setN1Head] = useState<string>("")
+  const [n2_head, setN2Head] = useState<string>("")
 
-  // Power section states with units
+  // Head section for CONSTANT_SPEED mode (uses D)
+  const [d1_head, setD1Head] = useState<string>("")
+  const [d2_head, setD2Head] = useState<string>("")
+
+  // Power section states with units (for CONSTANT_DIAMETER mode - uses N)
   const [p1, setP1] = useState<string>("")
   const [p1Unit, setP1Unit] = useState<string>("kw")
   const [p2, setP2] = useState<string>("")
   const [p2Unit, setP2Unit] = useState<string>("kw")
-  const [powerVal1, setPowerVal1] = useState<string>("")
-  const [powerVal1Unit, setPowerVal1Unit] = useState<string>("rpm")
-  const [powerVal2, setPowerVal2] = useState<string>("")
-  const [powerVal2Unit, setPowerVal2Unit] = useState<string>("rpm")
+  const [n1_power, setN1Power] = useState<string>("")
+  const [n2_power, setN2Power] = useState<string>("")
+
+  // Power section for CONSTANT_SPEED mode (uses D)
+  const [d1_power, setD1Power] = useState<string>("")
+  const [d2_power, setD2Power] = useState<string>("")
 
   const [result, setResult] = useState<{
     value: string
@@ -65,324 +69,322 @@ export default function PumpAffinityCalculator() {
     steps: []
   })
 
-  // Update units when mode changes
-  const handleModeChange = (newMode: LawMode) => {
-    setMode(newMode)
-    const newUnit = newMode === "CONSTANT_DIAMETER" ? "rpm" : "mm"
-    
-    // Update all speed/diameter units
-    setFlowVal1Unit(newUnit)
-    setFlowVal2Unit(newUnit)
-    setHeadVal1Unit(newUnit)
-    setHeadVal2Unit(newUnit)
-    setPowerVal1Unit(newUnit)
-    setPowerVal2Unit(newUnit)
-    
-    setResult({...result, calculated: false})
-  }
-
   const handleCalculate = () => {
-    // Get current section's values and units
-    let v1_input: number | null = null
-    let v2_input: number | null = null
-    let v1_unit = ""
-    let v2_unit = ""
-    
-    if (activeSection === "flow") {
-      v1_input = flowVal1 ? parseFloat(flowVal1) : null
-      v2_input = flowVal2 ? parseFloat(flowVal2) : null
-      v1_unit = flowVal1Unit
-      v2_unit = flowVal2Unit
-    } else if (activeSection === "head") {
-      v1_input = headVal1 ? parseFloat(headVal1) : null
-      v2_input = headVal2 ? parseFloat(headVal2) : null
-      v1_unit = headVal1Unit
-      v2_unit = headVal2Unit
-    } else if (activeSection === "power") {
-      v1_input = powerVal1 ? parseFloat(powerVal1) : null
-      v2_input = powerVal2 ? parseFloat(powerVal2) : null
-      v1_unit = powerVal1Unit
-      v2_unit = powerVal2Unit
-    }
-
-    const flow1_input = q1 ? parseFloat(q1) : null
-    const flow2_input = q2 ? parseFloat(q2) : null
-    const head1_input = h1 ? parseFloat(h1) : null
-    const head2_input = h2 ? parseFloat(h2) : null
-    const power1_input = p1 ? parseFloat(p1) : null
-    const power2_input = p2 ? parseFloat(p2) : null
-
-    // Count filled values
-    const values = [v1_input, v2_input]
-    let sectionValues: (number | null)[] = []
-    
-    if (activeSection === "flow") {
-      sectionValues = [flow1_input, flow2_input]
-    } else if (activeSection === "head") {
-      sectionValues = [head1_input, head2_input]
-    } else if (activeSection === "power") {
-      sectionValues = [power1_input, power2_input]
-    }
-
-    const allValues = [...values, ...sectionValues]
-    const filledCount = allValues.filter(v => v !== null).length
-
-    if (filledCount < 3) {
-      setResult({ 
-        value: "", 
-        valueSI: "",
-        label: "Please enter any 3 values to calculate the 4th", 
-        calculated: false,
-        steps: []
-      })
-      return
-    }
-
-    if (filledCount > 3) {
-      setResult({ 
-        value: "", 
-        valueSI: "",
-        label: "Please leave ONE value empty to calculate", 
-        calculated: false,
-        steps: []
-      })
-      return
-    }
-
-    const symbol = mode === "CONSTANT_DIAMETER" ? "N" : "D"
-    const unitType = mode === "CONSTANT_DIAMETER" ? "speed" : "diameter"
-    const unitLabel = mode === "CONSTANT_DIAMETER" ? "RPM" : "mm"
-
     let steps: string[] = []
     let resultValue = ""
     let resultValueSI = ""
     let resultLabel = ""
 
+    // Determine which values to use based on mode
+    const isConstantDiameter = mode === "CONSTANT_DIAMETER"
+    const symbol = isConstantDiameter ? "N" : "D"
+    const unit = isConstantDiameter ? "RPM" : "mm"
+
     // FLOW SECTION CALCULATIONS
     if (activeSection === "flow") {
-      // Convert inputs to SI
-      const v1_SI = v1_input !== null ? convertToSI(v1_input, v1_unit, unitType) : null
-      const v2_SI = v2_input !== null ? convertToSI(v2_input, v2_unit, unitType) : null
-      const flow1_SI = flow1_input !== null ? convertToSI(flow1_input, q1Unit, 'flow') : null
-      const flow2_SI = flow2_input !== null ? convertToSI(flow2_input, q2Unit, 'flow') : null
+      const q1_input = q1 ? parseFloat(q1) : null
+      const q2_input = q2 ? parseFloat(q2) : null
+      
+      // Get N or D values based on mode
+      const v1_input = isConstantDiameter 
+        ? (n1_flow ? parseFloat(n1_flow) : null)
+        : (d1_flow ? parseFloat(d1_flow) : null)
+      const v2_input = isConstantDiameter 
+        ? (n2_flow ? parseFloat(n2_flow) : null)
+        : (d2_flow ? parseFloat(d2_flow) : null)
+
+      const allValues = [q1_input, q2_input, v1_input, v2_input]
+      const filledCount = allValues.filter(v => v !== null).length
+
+      if (filledCount < 3) {
+        setResult({ 
+          value: "", 
+          valueSI: "",
+          label: "Please enter any 3 values to calculate the 4th", 
+          calculated: false,
+          steps: []
+        })
+        return
+      }
+
+      if (filledCount > 3) {
+        setResult({ 
+          value: "", 
+          valueSI: "",
+          label: "Please leave ONE value empty to calculate", 
+          calculated: false,
+          steps: []
+        })
+        return
+      }
+
+      // Convert to SI
+      const q1_SI = q1_input !== null ? convertToSI(q1_input, q1Unit, 'flow') : null
+      const q2_SI = q2_input !== null ? convertToSI(q2_input, q2Unit, 'flow') : null
+      const v1_SI = v1_input // RPM or mm is already SI
+      const v2_SI = v2_input // RPM or mm is already SI
 
       steps.push("Step 1: Convert inputs to SI units")
-      if (v1_input !== null) steps.push(`  ${symbol}₁ = ${v1_input} ${v1_unit} = ${v1_SI?.toFixed(2)} ${unitLabel}`)
-      if (v2_input !== null) steps.push(`  ${symbol}₂ = ${v2_input} ${v2_unit} = ${v2_SI?.toFixed(2)} ${unitLabel}`)
-      if (flow1_input !== null) steps.push(`  Q₁ = ${flow1_input} ${flowUnits.find(u => u.value === q1Unit)?.label} = ${flow1_SI?.toFixed(2)} m³/h`)
-      if (flow2_input !== null) steps.push(`  Q₂ = ${flow2_input} ${flowUnits.find(u => u.value === q2Unit)?.label} = ${flow2_SI?.toFixed(2)} m³/h`)
+      if (q1_input !== null) steps.push(`  Q₁ = ${q1_input} ${flowUnits.find(u => u.value === q1Unit)?.label} = ${q1_SI?.toFixed(2)} m³/h`)
+      if (q2_input !== null) steps.push(`  Q₂ = ${q2_input} ${flowUnits.find(u => u.value === q2Unit)?.label} = ${q2_SI?.toFixed(2)} m³/h`)
+      if (v1_input !== null) steps.push(`  ${symbol}₁ = ${v1_input} ${unit}`)
+      if (v2_input !== null) steps.push(`  ${symbol}₂ = ${v2_input} ${unit}`)
       steps.push("")
-      steps.push("Step 2: Apply Affinity Law (Q₁/Q₂ = N₁/N₂)")
+      steps.push(`Step 2: Apply Affinity Law (Q₁/Q₂ = ${symbol}₁/${symbol}₂)`)
 
-      // Flow Rate: Q1/Q2 = N1/N2 (or D1/D2)
-      if (v1_SI !== null && v2_SI !== null && flow1_SI !== null && flow2_SI === null) {
+      // Flow Rate: Q1/Q2 = N1/N2 or D1/D2
+      if (v1_SI !== null && v2_SI !== null && q1_SI !== null && q2_SI === null) {
         // Calculate Q2
-        const calc_SI = (flow1_SI * (v2_SI / v1_SI))
+        const calc_SI = (q1_SI * (v2_SI / v1_SI))
         const calc_output = convertFromSI(calc_SI, q2Unit, 'flow')
         setQ2(calc_output.toFixed(2))
         resultValue = calc_output.toFixed(2)
         resultValueSI = calc_SI.toFixed(2)
         resultLabel = `Q₂ = ${calc_output.toFixed(2)} ${flowUnits.find(u => u.value === q2Unit)?.label}`
         steps.push(`  Q₂ = Q₁ × (${symbol}₂ / ${symbol}₁)`)
-        steps.push(`  Q₂ = ${flow1_SI.toFixed(2)} × (${v2_SI.toFixed(2)} / ${v1_SI.toFixed(2)})`)
+        steps.push(`  Q₂ = ${q1_SI.toFixed(2)} × (${v2_SI} / ${v1_SI})`)
         steps.push(`  Q₂ = ${calc_SI.toFixed(2)} m³/h (SI)`)
         steps.push("")
         steps.push(`Step 3: Convert to ${flowUnits.find(u => u.value === q2Unit)?.label}`)
         steps.push(`  Q₂ = ${calc_output.toFixed(2)} ${flowUnits.find(u => u.value === q2Unit)?.label}`)
-      } else if (v1_SI !== null && v2_SI !== null && flow2_SI !== null && flow1_SI === null) {
+      } else if (v1_SI !== null && v2_SI !== null && q2_SI !== null && q1_SI === null) {
         // Calculate Q1
-        const calc_SI = (flow2_SI * (v1_SI / v2_SI))
+        const calc_SI = (q2_SI * (v1_SI / v2_SI))
         const calc_output = convertFromSI(calc_SI, q1Unit, 'flow')
         setQ1(calc_output.toFixed(2))
         resultValue = calc_output.toFixed(2)
         resultValueSI = calc_SI.toFixed(2)
         resultLabel = `Q₁ = ${calc_output.toFixed(2)} ${flowUnits.find(u => u.value === q1Unit)?.label}`
         steps.push(`  Q₁ = Q₂ × (${symbol}₁ / ${symbol}₂)`)
-        steps.push(`  Q₁ = ${flow2_SI.toFixed(2)} × (${v1_SI.toFixed(2)} / ${v2_SI.toFixed(2)})`)
+        steps.push(`  Q₁ = ${q2_SI.toFixed(2)} × (${v1_SI} / ${v2_SI})`)
         steps.push(`  Q₁ = ${calc_SI.toFixed(2)} m³/h (SI)`)
         steps.push("")
         steps.push(`Step 3: Convert to ${flowUnits.find(u => u.value === q1Unit)?.label}`)
         steps.push(`  Q₁ = ${calc_output.toFixed(2)} ${flowUnits.find(u => u.value === q1Unit)?.label}`)
-      } else if (v1_SI !== null && flow1_SI !== null && flow2_SI !== null && v2_SI === null) {
-        // Calculate N2/D2
-        const calc_SI = (v1_SI * (flow2_SI / flow1_SI))
-        const calc_output = convertFromSI(calc_SI, v2_unit, unitType)
-        setFlowVal2(calc_output.toFixed(2))
-        resultValue = calc_output.toFixed(2)
-        resultValueSI = calc_SI.toFixed(2)
-        resultLabel = `${symbol}₂ = ${calc_output.toFixed(2)} ${v2_unit}`
+      } else if (v1_SI !== null && q1_SI !== null && q2_SI !== null && v2_SI === null) {
+        // Calculate N2 or D2
+        const calc = (v1_SI * (q2_SI / q1_SI))
+        if (isConstantDiameter) {
+          setN2Flow(calc.toFixed(2))
+        } else {
+          setD2Flow(calc.toFixed(2))
+        }
+        resultValue = calc.toFixed(2)
+        resultValueSI = calc.toFixed(2)
+        resultLabel = `${symbol}₂ = ${calc.toFixed(2)} ${unit}`
         steps.push(`  ${symbol}₂ = ${symbol}₁ × (Q₂ / Q₁)`)
-        steps.push(`  ${symbol}₂ = ${v1_SI.toFixed(2)} × (${flow2_SI.toFixed(2)} / ${flow1_SI.toFixed(2)})`)
-        steps.push(`  ${symbol}₂ = ${calc_SI.toFixed(2)} ${unitLabel} (SI)`)
-        steps.push("")
-        steps.push(`Step 3: Convert to ${v2_unit}`)
-        steps.push(`  ${symbol}₂ = ${calc_output.toFixed(2)} ${v2_unit}`)
-      } else if (v2_SI !== null && flow1_SI !== null && flow2_SI !== null && v1_SI === null) {
-        // Calculate N1/D1
-        const calc_SI = (v2_SI * (flow1_SI / flow2_SI))
-        const calc_output = convertFromSI(calc_SI, v1_unit, unitType)
-        setFlowVal1(calc_output.toFixed(2))
-        resultValue = calc_output.toFixed(2)
-        resultValueSI = calc_SI.toFixed(2)
-        resultLabel = `${symbol}₁ = ${calc_output.toFixed(2)} ${v1_unit}`
+        steps.push(`  ${symbol}₂ = ${v1_SI} × (${q2_SI.toFixed(2)} / ${q1_SI.toFixed(2)})`)
+        steps.push(`  ${symbol}₂ = ${calc.toFixed(2)} ${unit}`)
+      } else if (v2_SI !== null && q1_SI !== null && q2_SI !== null && v1_SI === null) {
+        // Calculate N1 or D1
+        const calc = (v2_SI * (q1_SI / q2_SI))
+        if (isConstantDiameter) {
+          setN1Flow(calc.toFixed(2))
+        } else {
+          setD1Flow(calc.toFixed(2))
+        }
+        resultValue = calc.toFixed(2)
+        resultValueSI = calc.toFixed(2)
+        resultLabel = `${symbol}₁ = ${calc.toFixed(2)} ${unit}`
         steps.push(`  ${symbol}₁ = ${symbol}₂ × (Q₁ / Q₂)`)
-        steps.push(`  ${symbol}₁ = ${v2_SI.toFixed(2)} × (${flow1_SI.toFixed(2)} / ${flow2_SI.toFixed(2)})`)
-        steps.push(`  ${symbol}₁ = ${calc_SI.toFixed(2)} ${unitLabel} (SI)`)
-        steps.push("")
-        steps.push(`Step 3: Convert to ${v1_unit}`)
-        steps.push(`  ${symbol}₁ = ${calc_output.toFixed(2)} ${v1_unit}`)
+        steps.push(`  ${symbol}₁ = ${v2_SI} × (${q1_SI.toFixed(2)} / ${q2_SI.toFixed(2)})`)
+        steps.push(`  ${symbol}₁ = ${calc.toFixed(2)} ${unit}`)
       }
     }
 
     // HEAD SECTION CALCULATIONS
     if (activeSection === "head") {
-      // Convert inputs to SI
-      const v1_SI = v1_input !== null ? convertToSI(v1_input, v1_unit, unitType) : null
-      const v2_SI = v2_input !== null ? convertToSI(v2_input, v2_unit, unitType) : null
-      const head1_SI = head1_input !== null ? convertToSI(head1_input, h1Unit, 'head') : null
-      const head2_SI = head2_input !== null ? convertToSI(head2_input, h2Unit, 'head') : null
+      const h1_input = h1 ? parseFloat(h1) : null
+      const h2_input = h2 ? parseFloat(h2) : null
+      const n1_input = n1_head ? parseFloat(n1_head) : null
+      const n2_input = n2_head ? parseFloat(n2_head) : null
+
+      const allValues = [h1_input, h2_input, n1_input, n2_input]
+      const filledCount = allValues.filter(v => v !== null).length
+
+      if (filledCount < 3) {
+        setResult({ 
+          value: "", 
+          valueSI: "",
+          label: "Please enter any 3 values to calculate the 4th", 
+          calculated: false,
+          steps: []
+        })
+        return
+      }
+
+      if (filledCount > 3) {
+        setResult({ 
+          value: "", 
+          valueSI: "",
+          label: "Please leave ONE value empty to calculate", 
+          calculated: false,
+          steps: []
+        })
+        return
+      }
+
+      // Convert to SI
+      const h1_SI = h1_input !== null ? convertToSI(h1_input, h1Unit, 'head') : null
+      const h2_SI = h2_input !== null ? convertToSI(h2_input, h2Unit, 'head') : null
+      const n1_SI = n1_input // RPM is already SI
+      const n2_SI = n2_input // RPM is already SI
 
       steps.push("Step 1: Convert inputs to SI units")
-      if (v1_input !== null) steps.push(`  ${symbol}₁ = ${v1_input} ${v1_unit} = ${v1_SI?.toFixed(2)} ${unitLabel}`)
-      if (v2_input !== null) steps.push(`  ${symbol}₂ = ${v2_input} ${v2_unit} = ${v2_SI?.toFixed(2)} ${unitLabel}`)
-      if (head1_input !== null) steps.push(`  H₁ = ${head1_input} ${headUnits.find(u => u.value === h1Unit)?.label} = ${head1_SI?.toFixed(2)} m`)
-      if (head2_input !== null) steps.push(`  H₂ = ${head2_input} ${headUnits.find(u => u.value === h2Unit)?.label} = ${head2_SI?.toFixed(2)} m`)
+      if (h1_input !== null) steps.push(`  H₁ = ${h1_input} ${headUnits.find(u => u.value === h1Unit)?.label} = ${h1_SI?.toFixed(2)} m`)
+      if (h2_input !== null) steps.push(`  H₂ = ${h2_input} ${headUnits.find(u => u.value === h2Unit)?.label} = ${h2_SI?.toFixed(2)} m`)
+      if (n1_input !== null) steps.push(`  N₁ = ${n1_input} RPM`)
+      if (n2_input !== null) steps.push(`  N₂ = ${n2_input} RPM`)
       steps.push("")
       steps.push("Step 2: Apply Affinity Law (H₁/H₂ = (N₁/N₂)²)")
 
-      // Head: H1/H2 = (N1/N2)^2 (or (D1/D2)^2)
-      if (v1_SI !== null && v2_SI !== null && head1_SI !== null && head2_SI === null) {
+      // Head: H1/H2 = (N1/N2)^2
+      if (n1_SI !== null && n2_SI !== null && h1_SI !== null && h2_SI === null) {
         // Calculate H2
-        const calc_SI = (head1_SI * Math.pow(v2_SI / v1_SI, 2))
+        const calc_SI = (h1_SI * Math.pow(n2_SI / n1_SI, 2))
         const calc_output = convertFromSI(calc_SI, h2Unit, 'head')
         setH2(calc_output.toFixed(2))
         resultValue = calc_output.toFixed(2)
         resultValueSI = calc_SI.toFixed(2)
         resultLabel = `H₂ = ${calc_output.toFixed(2)} ${headUnits.find(u => u.value === h2Unit)?.label}`
-        steps.push(`  H₂ = H₁ × (${symbol}₂ / ${symbol}₁)²`)
-        steps.push(`  H₂ = ${head1_SI.toFixed(2)} × (${v2_SI.toFixed(2)} / ${v1_SI.toFixed(2)})²`)
+        steps.push(`  H₂ = H₁ × (N₂ / N₁)²`)
+        steps.push(`  H₂ = ${h1_SI.toFixed(2)} × (${n2_SI} / ${n1_SI})²`)
         steps.push(`  H₂ = ${calc_SI.toFixed(2)} m (SI)`)
         steps.push("")
         steps.push(`Step 3: Convert to ${headUnits.find(u => u.value === h2Unit)?.label}`)
         steps.push(`  H₂ = ${calc_output.toFixed(2)} ${headUnits.find(u => u.value === h2Unit)?.label}`)
-      } else if (v1_SI !== null && v2_SI !== null && head2_SI !== null && head1_SI === null) {
+      } else if (n1_SI !== null && n2_SI !== null && h2_SI !== null && h1_SI === null) {
         // Calculate H1
-        const calc_SI = (head2_SI * Math.pow(v1_SI / v2_SI, 2))
+        const calc_SI = (h2_SI * Math.pow(n1_SI / n2_SI, 2))
         const calc_output = convertFromSI(calc_SI, h1Unit, 'head')
         setH1(calc_output.toFixed(2))
         resultValue = calc_output.toFixed(2)
         resultValueSI = calc_SI.toFixed(2)
         resultLabel = `H₁ = ${calc_output.toFixed(2)} ${headUnits.find(u => u.value === h1Unit)?.label}`
-        steps.push(`  H₁ = H₂ × (${symbol}₁ / ${symbol}₂)²`)
-        steps.push(`  H₁ = ${head2_SI.toFixed(2)} × (${v1_SI.toFixed(2)} / ${v2_SI.toFixed(2)})²`)
+        steps.push(`  H₁ = H₂ × (N₁ / N₂)²`)
+        steps.push(`  H₁ = ${h2_SI.toFixed(2)} × (${n1_SI} / ${n2_SI})²`)
         steps.push(`  H₁ = ${calc_SI.toFixed(2)} m (SI)`)
         steps.push("")
         steps.push(`Step 3: Convert to ${headUnits.find(u => u.value === h1Unit)?.label}`)
         steps.push(`  H₁ = ${calc_output.toFixed(2)} ${headUnits.find(u => u.value === h1Unit)?.label}`)
-      } else if (v1_SI !== null && head1_SI !== null && head2_SI !== null && v2_SI === null) {
-        // Calculate N2/D2
-        const calc_SI = (v1_SI * Math.sqrt(head2_SI / head1_SI))
-        const calc_output = convertFromSI(calc_SI, v2_unit, unitType)
-        setHeadVal2(calc_output.toFixed(2))
-        resultValue = calc_output.toFixed(2)
-        resultValueSI = calc_SI.toFixed(2)
-        resultLabel = `${symbol}₂ = ${calc_output.toFixed(2)} ${v2_unit}`
-        steps.push(`  ${symbol}₂ = ${symbol}₁ × √(H₂ / H₁)`)
-        steps.push(`  ${symbol}₂ = ${v1_SI.toFixed(2)} × √(${head2_SI.toFixed(2)} / ${head1_SI.toFixed(2)})`)
-        steps.push(`  ${symbol}₂ = ${calc_SI.toFixed(2)} ${unitLabel} (SI)`)
-        steps.push("")
-        steps.push(`Step 3: Convert to ${v2_unit}`)
-        steps.push(`  ${symbol}₂ = ${calc_output.toFixed(2)} ${v2_unit}`)
-      } else if (v2_SI !== null && head1_SI !== null && head2_SI !== null && v1_SI === null) {
-        // Calculate N1/D1
-        const calc_SI = (v2_SI * Math.sqrt(head1_SI / head2_SI))
-        const calc_output = convertFromSI(calc_SI, v1_unit, unitType)
-        setHeadVal1(calc_output.toFixed(2))
-        resultValue = calc_output.toFixed(2)
-        resultValueSI = calc_SI.toFixed(2)
-        resultLabel = `${symbol}₁ = ${calc_output.toFixed(2)} ${v1_unit}`
-        steps.push(`  ${symbol}₁ = ${symbol}₂ × √(H₁ / H₂)`)
-        steps.push(`  ${symbol}₁ = ${v2_SI.toFixed(2)} × √(${head1_SI.toFixed(2)} / ${head2_SI.toFixed(2)})`)
-        steps.push(`  ${symbol}₁ = ${calc_SI.toFixed(2)} ${unitLabel} (SI)`)
-        steps.push("")
-        steps.push(`Step 3: Convert to ${v1_unit}`)
-        steps.push(`  ${symbol}₁ = ${calc_output.toFixed(2)} ${v1_unit}`)
+      } else if (n1_SI !== null && h1_SI !== null && h2_SI !== null && n2_SI === null) {
+        // Calculate N2
+        const calc = (n1_SI * Math.sqrt(h2_SI / h1_SI))
+        setN2Head(calc.toFixed(2))
+        resultValue = calc.toFixed(2)
+        resultValueSI = calc.toFixed(2)
+        resultLabel = `N₂ = ${calc.toFixed(2)} RPM`
+        steps.push(`  N₂ = N₁ × √(H₂ / H₁)`)
+        steps.push(`  N₂ = ${n1_SI} × √(${h2_SI.toFixed(2)} / ${h1_SI.toFixed(2)})`)
+        steps.push(`  N₂ = ${calc.toFixed(2)} RPM`)
+      } else if (n2_SI !== null && h1_SI !== null && h2_SI !== null && n1_SI === null) {
+        // Calculate N1
+        const calc = (n2_SI * Math.sqrt(h1_SI / h2_SI))
+        setN1Head(calc.toFixed(2))
+        resultValue = calc.toFixed(2)
+        resultValueSI = calc.toFixed(2)
+        resultLabel = `N₁ = ${calc.toFixed(2)} RPM`
+        steps.push(`  N₁ = N₂ × √(H₁ / H₂)`)
+        steps.push(`  N₁ = ${n2_SI} × √(${h1_SI.toFixed(2)} / ${h2_SI.toFixed(2)})`)
+        steps.push(`  N₁ = ${calc.toFixed(2)} RPM`)
       }
     }
 
     // POWER SECTION CALCULATIONS
     if (activeSection === "power") {
-      // Convert inputs to SI
-      const v1_SI = v1_input !== null ? convertToSI(v1_input, v1_unit, unitType) : null
-      const v2_SI = v2_input !== null ? convertToSI(v2_input, v2_unit, unitType) : null
-      const power1_SI = power1_input !== null ? convertToSI(power1_input, p1Unit, 'power') : null
-      const power2_SI = power2_input !== null ? convertToSI(power2_input, p2Unit, 'power') : null
+      const p1_input = p1 ? parseFloat(p1) : null
+      const p2_input = p2 ? parseFloat(p2) : null
+      const n1_input = n1_power ? parseFloat(n1_power) : null
+      const n2_input = n2_power ? parseFloat(n2_power) : null
+
+      const allValues = [p1_input, p2_input, n1_input, n2_input]
+      const filledCount = allValues.filter(v => v !== null).length
+
+      if (filledCount < 3) {
+        setResult({ 
+          value: "", 
+          valueSI: "",
+          label: "Please enter any 3 values to calculate the 4th", 
+          calculated: false,
+          steps: []
+        })
+        return
+      }
+
+      if (filledCount > 3) {
+        setResult({ 
+          value: "", 
+          valueSI: "",
+          label: "Please leave ONE value empty to calculate", 
+          calculated: false,
+          steps: []
+        })
+        return
+      }
+
+      // Convert to SI
+      const p1_SI = p1_input !== null ? convertToSI(p1_input, p1Unit, 'power') : null
+      const p2_SI = p2_input !== null ? convertToSI(p2_input, p2Unit, 'power') : null
+      const n1_SI = n1_input // RPM is already SI
+      const n2_SI = n2_input // RPM is already SI
 
       steps.push("Step 1: Convert inputs to SI units")
-      if (v1_input !== null) steps.push(`  ${symbol}₁ = ${v1_input} ${v1_unit} = ${v1_SI?.toFixed(2)} ${unitLabel}`)
-      if (v2_input !== null) steps.push(`  ${symbol}₂ = ${v2_input} ${v2_unit} = ${v2_SI?.toFixed(2)} ${unitLabel}`)
-      if (power1_input !== null) steps.push(`  P₁ = ${power1_input} ${powerUnits.find(u => u.value === p1Unit)?.label} = ${power1_SI?.toFixed(2)} kW`)
-      if (power2_input !== null) steps.push(`  P₂ = ${power2_input} ${powerUnits.find(u => u.value === p2Unit)?.label} = ${power2_SI?.toFixed(2)} kW`)
+      if (p1_input !== null) steps.push(`  P₁ = ${p1_input} ${powerUnits.find(u => u.value === p1Unit)?.label} = ${p1_SI?.toFixed(2)} kW`)
+      if (p2_input !== null) steps.push(`  P₂ = ${p2_input} ${powerUnits.find(u => u.value === p2Unit)?.label} = ${p2_SI?.toFixed(2)} kW`)
+      if (n1_input !== null) steps.push(`  N₁ = ${n1_input} RPM`)
+      if (n2_input !== null) steps.push(`  N₂ = ${n2_input} RPM`)
       steps.push("")
       steps.push("Step 2: Apply Affinity Law (P₁/P₂ = (N₁/N₂)³)")
 
-      // Power: P1/P2 = (N1/N2)^3 (or (D1/D2)^3)
-      if (v1_SI !== null && v2_SI !== null && power1_SI !== null && power2_SI === null) {
+      // Power: P1/P2 = (N1/N2)^3
+      if (n1_SI !== null && n2_SI !== null && p1_SI !== null && p2_SI === null) {
         // Calculate P2
-        const calc_SI = (power1_SI * Math.pow(v2_SI / v1_SI, 3))
+        const calc_SI = (p1_SI * Math.pow(n2_SI / n1_SI, 3))
         const calc_output = convertFromSI(calc_SI, p2Unit, 'power')
         setP2(calc_output.toFixed(2))
         resultValue = calc_output.toFixed(2)
         resultValueSI = calc_SI.toFixed(2)
         resultLabel = `P₂ = ${calc_output.toFixed(2)} ${powerUnits.find(u => u.value === p2Unit)?.label}`
-        steps.push(`  P₂ = P₁ × (${symbol}₂ / ${symbol}₁)³`)
-        steps.push(`  P₂ = ${power1_SI.toFixed(2)} × (${v2_SI.toFixed(2)} / ${v1_SI.toFixed(2)})³`)
+        steps.push(`  P₂ = P₁ × (N₂ / N₁)³`)
+        steps.push(`  P₂ = ${p1_SI.toFixed(2)} × (${n2_SI} / ${n1_SI})³`)
         steps.push(`  P₂ = ${calc_SI.toFixed(2)} kW (SI)`)
         steps.push("")
         steps.push(`Step 3: Convert to ${powerUnits.find(u => u.value === p2Unit)?.label}`)
         steps.push(`  P₂ = ${calc_output.toFixed(2)} ${powerUnits.find(u => u.value === p2Unit)?.label}`)
-      } else if (v1_SI !== null && v2_SI !== null && power2_SI !== null && power1_SI === null) {
+      } else if (n1_SI !== null && n2_SI !== null && p2_SI !== null && p1_SI === null) {
         // Calculate P1
-        const calc_SI = (power2_SI * Math.pow(v1_SI / v2_SI, 3))
+        const calc_SI = (p2_SI * Math.pow(n1_SI / n2_SI, 3))
         const calc_output = convertFromSI(calc_SI, p1Unit, 'power')
         setP1(calc_output.toFixed(2))
         resultValue = calc_output.toFixed(2)
         resultValueSI = calc_SI.toFixed(2)
         resultLabel = `P₁ = ${calc_output.toFixed(2)} ${powerUnits.find(u => u.value === p1Unit)?.label}`
-        steps.push(`  P₁ = P₂ × (${symbol}₁ / ${symbol}₂)³`)
-        steps.push(`  P₁ = ${power2_SI.toFixed(2)} × (${v1_SI.toFixed(2)} / ${v2_SI.toFixed(2)})³`)
+        steps.push(`  P₁ = P₂ × (N₁ / N₂)³`)
+        steps.push(`  P₁ = ${p2_SI.toFixed(2)} × (${n1_SI} / ${n2_SI})³`)
         steps.push(`  P₁ = ${calc_SI.toFixed(2)} kW (SI)`)
         steps.push("")
         steps.push(`Step 3: Convert to ${powerUnits.find(u => u.value === p1Unit)?.label}`)
         steps.push(`  P₁ = ${calc_output.toFixed(2)} ${powerUnits.find(u => u.value === p1Unit)?.label}`)
-      } else if (v1_SI !== null && power1_SI !== null && power2_SI !== null && v2_SI === null) {
-        // Calculate N2/D2
-        const calc_SI = (v1_SI * Math.cbrt(power2_SI / power1_SI))
-        const calc_output = convertFromSI(calc_SI, v2_unit, unitType)
-        setPowerVal2(calc_output.toFixed(2))
-        resultValue = calc_output.toFixed(2)
-        resultValueSI = calc_SI.toFixed(2)
-        resultLabel = `${symbol}₂ = ${calc_output.toFixed(2)} ${v2_unit}`
-        steps.push(`  ${symbol}₂ = ${symbol}₁ × ∛(P₂ / P₁)`)
-        steps.push(`  ${symbol}₂ = ${v1_SI.toFixed(2)} × ∛(${power2_SI.toFixed(2)} / ${power1_SI.toFixed(2)})`)
-        steps.push(`  ${symbol}₂ = ${calc_SI.toFixed(2)} ${unitLabel} (SI)`)
-        steps.push("")
-        steps.push(`Step 3: Convert to ${v2_unit}`)
-        steps.push(`  ${symbol}₂ = ${calc_output.toFixed(2)} ${v2_unit}`)
-      } else if (v2_SI !== null && power1_SI !== null && power2_SI !== null && v1_SI === null) {
-        // Calculate N1/D1
-        const calc_SI = (v2_SI * Math.cbrt(power1_SI / power2_SI))
-        const calc_output = convertFromSI(calc_SI, v1_unit, unitType)
-        setPowerVal1(calc_output.toFixed(2))
-        resultValue = calc_output.toFixed(2)
-        resultValueSI = calc_SI.toFixed(2)
-        resultLabel = `${symbol}₁ = ${calc_output.toFixed(2)} ${v1_unit}`
-        steps.push(`  ${symbol}₁ = ${symbol}₂ × ∛(P₁ / P₂)`)
-        steps.push(`  ${symbol}₁ = ${v2_SI.toFixed(2)} × ∛(${power1_SI.toFixed(2)} / ${power2_SI.toFixed(2)})`)
-        steps.push(`  ${symbol}₁ = ${calc_SI.toFixed(2)} ${unitLabel} (SI)`)
-        steps.push("")
-        steps.push(`Step 3: Convert to ${v1_unit}`)
-        steps.push(`  ${symbol}₁ = ${calc_output.toFixed(2)} ${v1_unit}`)
+      } else if (n1_SI !== null && p1_SI !== null && p2_SI !== null && n2_SI === null) {
+        // Calculate N2
+        const calc = (n1_SI * Math.cbrt(p2_SI / p1_SI))
+        setN2Power(calc.toFixed(2))
+        resultValue = calc.toFixed(2)
+        resultValueSI = calc.toFixed(2)
+        resultLabel = `N₂ = ${calc.toFixed(2)} RPM`
+        steps.push(`  N₂ = N₁ × ∛(P₂ / P₁)`)
+        steps.push(`  N₂ = ${n1_SI} × ∛(${p2_SI.toFixed(2)} / ${p1_SI.toFixed(2)})`)
+        steps.push(`  N₂ = ${calc.toFixed(2)} RPM`)
+      } else if (n2_SI !== null && p1_SI !== null && p2_SI !== null && n1_SI === null) {
+        // Calculate N1
+        const calc = (n2_SI * Math.cbrt(p1_SI / p2_SI))
+        setN1Power(calc.toFixed(2))
+        resultValue = calc.toFixed(2)
+        resultValueSI = calc.toFixed(2)
+        resultLabel = `N₁ = ${calc.toFixed(2)} RPM`
+        steps.push(`  N₁ = N₂ × ∛(P₁ / P₂)`)
+        steps.push(`  N₁ = ${n2_SI} × ∛(${p1_SI.toFixed(2)} / ${p2_SI.toFixed(2)})`)
+        steps.push(`  N₁ = ${calc.toFixed(2)} RPM`)
       }
     }
 
@@ -394,10 +396,6 @@ export default function PumpAffinityCalculator() {
       steps
     })
   }
-
-  const symbol = mode === "CONSTANT_DIAMETER" ? "N" : "D"
-  const unitType = mode === "CONSTANT_DIAMETER" ? "speed" : "diameter"
-  const currentUnits = mode === "CONSTANT_DIAMETER" ? speedUnits : diameterUnits
 
 
   return (
@@ -417,7 +415,7 @@ export default function PumpAffinityCalculator() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
           <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
-            Auto Unit Conversion - Enter values in any unit!
+            Smart Unit Conversion - Enter values in any unit!
           </span>
         </div>
       </div>
@@ -428,7 +426,7 @@ export default function PumpAffinityCalculator() {
           
           <div className="flex border-b border-border">
             <button
-              onClick={() => handleModeChange("CONSTANT_SPEED")}
+              onClick={() => setMode("CONSTANT_SPEED")}
               className={`flex-1 py-3 text-sm font-bold uppercase tracking-wide border-r border-border transition-colors ${
                 mode === "CONSTANT_SPEED" 
                   ? "bg-card text-blue-600 border-t-4 border-t-blue-600" 
@@ -438,7 +436,7 @@ export default function PumpAffinityCalculator() {
               Constant Speed <span className="text-[10px] lowercase opacity-70">(Change Diameter)</span>
             </button>
             <button
-              onClick={() => handleModeChange("CONSTANT_DIAMETER")}
+              onClick={() => setMode("CONSTANT_DIAMETER")}
               className={`flex-1 py-3 text-sm font-bold uppercase tracking-wide transition-colors ${
                 mode === "CONSTANT_DIAMETER" 
                   ? "bg-card text-blue-600 border-t-4 border-t-blue-600" 
@@ -459,8 +457,9 @@ export default function PumpAffinityCalculator() {
                   <h3 className="font-bold text-lg">1. Flow Rate (Q)</h3>
                 </AccordionTrigger>
                 <AccordionContent>
-                  <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6 pt-4">
-                    <div className="bg-muted p-4 flex justify-center border border-border rounded shrink-0">
+                  <div className="pt-4 space-y-4">
+                    {/* Formula Box - On Top */}
+                    <div className="bg-muted p-4 flex justify-center border border-border rounded">
                        <div className="font-serif text-2xl flex items-center gap-3">
                           <div className="flex flex-col items-center">
                             <span className="border-b border-foreground px-1">Q₁</span>
@@ -468,14 +467,15 @@ export default function PumpAffinityCalculator() {
                           </div>
                           <span>=</span>
                           <div className="flex flex-col items-center">
-                            <span className="border-b border-foreground px-1">{symbol}₁</span>
-                            <span>{symbol}₂</span>
+                            <span className="border-b border-foreground px-1">{mode === "CONSTANT_DIAMETER" ? "N₁" : "D₁"}</span>
+                            <span>{mode === "CONSTANT_DIAMETER" ? "N₂" : "D₂"}</span>
                           </div>
                        </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
-                       {/* Q1 */}
+                    {/* Inputs Grid */}
+                    <div className="grid grid-cols-2 gap-4 w-full">
+                       {/* Q1 with unit selector */}
                        <div>
                           <label className="text-xs font-bold mb-1 block">Q₁:</label>
                           <div className="flex gap-2">
@@ -484,10 +484,10 @@ export default function PumpAffinityCalculator() {
                               value={q1} 
                               onChange={e => setQ1(e.target.value)} 
                               placeholder="?" 
-                              className="flex-1 border border-border bg-background rounded px-2 py-1.5 text-right"
+                              className="w-24 border border-border bg-background rounded px-2 py-1 text-right text-sm"
                             />
                             <Select value={q1Unit} onValueChange={setQ1Unit}>
-                              <SelectTrigger className="w-24 text-xs">
+                              <SelectTrigger className="w-24 h-8 text-xs border border-border">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent className="z-50">
@@ -499,31 +499,24 @@ export default function PumpAffinityCalculator() {
                           </div>
                        </div>
 
-                       {/* N1/D1 */}
+                       {/* N1/D1 - Fixed RPM or mm */}
                        <div>
-                          <label className="text-xs font-bold mb-1 block">{symbol}₁:</label>
+                          <label className="text-xs font-bold mb-1 block">{mode === "CONSTANT_DIAMETER" ? "N₁" : "D₁"}:</label>
                           <div className="flex gap-2">
                             <input 
                               type="number" 
-                              value={flowVal1} 
-                              onChange={e => setFlowVal1(e.target.value)} 
+                              value={mode === "CONSTANT_DIAMETER" ? n1_flow : d1_flow} 
+                              onChange={e => mode === "CONSTANT_DIAMETER" ? setN1Flow(e.target.value) : setD1Flow(e.target.value)} 
                               placeholder="?" 
-                              className="flex-1 border border-border bg-background rounded px-2 py-1.5 text-right"
+                              className="w-24 border border-border bg-background rounded px-2 py-1 text-right text-sm"
                             />
-                            <Select value={flowVal1Unit} onValueChange={setFlowVal1Unit}>
-                              <SelectTrigger className="w-24 text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent className="z-50">
-                                {currentUnits.map(u => (
-                                  <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <div className="w-24 h-8 flex items-center justify-center border border-border bg-muted rounded text-xs text-muted-foreground font-medium">
+                              {mode === "CONSTANT_DIAMETER" ? "RPM" : "mm"}
+                            </div>
                           </div>
                        </div>
 
-                       {/* Q2 */}
+                       {/* Q2 with unit selector */}
                        <div>
                           <label className="text-xs font-bold mb-1 block">Q₂:</label>
                           <div className="flex gap-2">
@@ -532,10 +525,10 @@ export default function PumpAffinityCalculator() {
                               value={q2} 
                               onChange={e => setQ2(e.target.value)} 
                               placeholder="?" 
-                              className="flex-1 border border-border bg-background rounded px-2 py-1.5 text-right"
+                              className="w-24 border border-border bg-background rounded px-2 py-1 text-right text-sm"
                             />
                             <Select value={q2Unit} onValueChange={setQ2Unit}>
-                              <SelectTrigger className="w-24 text-xs">
+                              <SelectTrigger className="w-24 h-8 text-xs border border-border">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent className="z-50">
@@ -547,27 +540,20 @@ export default function PumpAffinityCalculator() {
                           </div>
                        </div>
 
-                       {/* N2/D2 */}
+                       {/* N2/D2 - Fixed RPM or mm */}
                        <div>
-                          <label className="text-xs font-bold mb-1 block">{symbol}₂:</label>
+                          <label className="text-xs font-bold mb-1 block">{mode === "CONSTANT_DIAMETER" ? "N₂" : "D₂"}:</label>
                           <div className="flex gap-2">
                             <input 
                               type="number" 
-                              value={flowVal2} 
-                              onChange={e => setFlowVal2(e.target.value)} 
+                              value={mode === "CONSTANT_DIAMETER" ? n2_flow : d2_flow} 
+                              onChange={e => mode === "CONSTANT_DIAMETER" ? setN2Flow(e.target.value) : setD2Flow(e.target.value)} 
                               placeholder="?" 
-                              className="flex-1 border border-border bg-background rounded px-2 py-1.5 text-right"
+                              className="w-24 border border-border bg-background rounded px-2 py-1 text-right text-sm"
                             />
-                            <Select value={flowVal2Unit} onValueChange={setFlowVal2Unit}>
-                              <SelectTrigger className="w-24 text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent className="z-50">
-                                {currentUnits.map(u => (
-                                  <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <div className="w-24 h-8 flex items-center justify-center border border-border bg-muted rounded text-xs text-muted-foreground font-medium">
+                              {mode === "CONSTANT_DIAMETER" ? "RPM" : "mm"}
+                            </div>
                           </div>
                        </div>
                     </div>
@@ -582,8 +568,8 @@ export default function PumpAffinityCalculator() {
                   <h3 className="font-bold text-lg">2. Head (H)</h3>
                 </AccordionTrigger>
                 <AccordionContent>
-                  <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6 pt-4">
-                    <div className="bg-muted p-4 flex justify-center border border-border rounded shrink-0">
+                  <div className="pt-4 space-y-4">
+                    <div className="bg-muted p-4 flex justify-center border border-border rounded">
                        <div className="font-serif text-2xl flex items-center gap-3">
                           <div className="flex flex-col items-center">
                             <span className="border-b border-foreground px-1">H₁</span>
@@ -593,8 +579,8 @@ export default function PumpAffinityCalculator() {
                           <div className="flex items-center">
                             <span className="text-4xl text-muted-foreground font-light">(</span>
                             <div className="flex flex-col items-center">
-                              <span className="border-b border-foreground px-1">{symbol}₁</span>
-                              <span>{symbol}₂</span>
+                              <span className="border-b border-foreground px-1">{mode === "CONSTANT_DIAMETER" ? "N₁" : "D₁"}</span>
+                              <span>{mode === "CONSTANT_DIAMETER" ? "N₂" : "D₂"}</span>
                             </div>
                             <span className="text-4xl text-muted-foreground font-light">)</span>
                             <sup className="text-sm font-bold mb-6">2</sup>
@@ -602,20 +588,20 @@ export default function PumpAffinityCalculator() {
                        </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
-                       {/* H1 */}
+                    <div className="grid grid-cols-2 gap- 4 w-full">
+                       {/* H1 with unit selector */}
                        <div>
                           <label className="text-xs font-bold mb-1 block">H₁:</label>
-                          <div className="flex gap-2">
+                          <div className="flex gap- 2">
                             <input 
                               type="number" 
                               value={h1} 
                               onChange={e => setH1(e.target.value)} 
                               placeholder="?" 
-                              className="flex-1 border border-border bg-background rounded px-2 py-1.5 text-right"
+                              className="w-24 border border-border bg-background rounded px-2 py-1 text-right text-sm"
                             />
                             <Select value={h1Unit} onValueChange={setH1Unit}>
-                              <SelectTrigger className="w-24 text-xs">
+                              <SelectTrigger className="w-24 h-8 text-xs border border-border">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent className="z-50">
@@ -627,43 +613,36 @@ export default function PumpAffinityCalculator() {
                           </div>
                        </div>
 
-                       {/* N1/D1 */}
+                       {/* N1 - Fixed RPM */}
                        <div>
-                          <label className="text-xs font-bold mb-1 block">{symbol}₁:</label>
-                          <div className="flex gap-2">
+                          <label className="text-xs font-bold mb-1 block">{mode === "CONSTANT_DIAMETER" ? "N₁" : "D₁"}:</label>
+                          <div className="flex gap- 2">
                             <input 
                               type="number" 
-                              value={headVal1} 
-                              onChange={e => setHeadVal1(e.target.value)} 
+                              value={mode === "CONSTANT_DIAMETER" ? n1_head : d1_head} 
+                              onChange={e => mode === "CONSTANT_DIAMETER" ? setN1Head(e.target.value) : setD1Head(e.target.value)} 
                               placeholder="?" 
-                              className="flex-1 border border-border bg-background rounded px-2 py-1.5 text-right"
+                              className="w-24 border border-border bg-background rounded px-2 py-1 text-right text-sm"
                             />
-                            <Select value={headVal1Unit} onValueChange={setHeadVal1Unit}>
-                              <SelectTrigger className="w-24 text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent className="z-50">
-                                {currentUnits.map(u => (
-                                  <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <div className="w-24 h-8 flex items-center justify-center border border-border bg-muted rounded text-xs text-muted-foreground font-medium">
+                              {mode === "CONSTANT_DIAMETER" ? "RPM" : "mm"}
+                            </div>
                           </div>
                        </div>
 
-                       {/* H2 */}
+                       {/* H2 with unit selector */}
                        <div>
                           <label className="text-xs font-bold mb-1 block">H₂:</label>
-                          <div className="flex gap-2">
+                          <div className="flex gap- 2">
                             <input 
                               type="number" 
                               value={h2} 
                               onChange={e => setH2(e.target.value)} 
                               placeholder="?" 
-                              className="flex-1 border border-border bg-background rounded px-2 py-1.5 text-right"
+                              className="w-24 border border-border bg-background rounded px-2 py-1 text-right text-sm"
                             />
                             <Select value={h2Unit} onValueChange={setH2Unit}>
-                              <SelectTrigger className="w-24 text-xs">
+                              <SelectTrigger className="w-24 h-8 text-xs border border-border">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent className="z-50">
@@ -675,27 +654,20 @@ export default function PumpAffinityCalculator() {
                           </div>
                        </div>
 
-                       {/* N2/D2 */}
+                       {/* N2 - Fixed RPM */}
                        <div>
-                          <label className="text-xs font-bold mb-1 block">{symbol}₂:</label>
-                          <div className="flex gap-2">
+                          <label className="text-xs font-bold mb-1 block">{mode === "CONSTANT_DIAMETER" ? "N₂" : "D₂"}:</label>
+                          <div className="flex gap- 2">
                             <input 
                               type="number" 
-                              value={headVal2} 
-                              onChange={e => setHeadVal2(e.target.value)} 
+                              value={mode === "CONSTANT_DIAMETER" ? n2_head : d2_head} 
+                              onChange={e => mode === "CONSTANT_DIAMETER" ? setN2Head(e.target.value) : setD2Head(e.target.value)} 
                               placeholder="?" 
-                              className="flex-1 border border-border bg-background rounded px-2 py-1.5 text-right"
+                              className="w-24 border border-border bg-background rounded px-2 py-1 text-right text-sm"
                             />
-                            <Select value={headVal2Unit} onValueChange={setHeadVal2Unit}>
-                              <SelectTrigger className="w-24 text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent className="z-50">
-                                {currentUnits.map(u => (
-                                  <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <div className="w-24 h-8 flex items-center justify-center border border-border bg-muted rounded text-xs text-muted-foreground font-medium">
+                              {mode === "CONSTANT_DIAMETER" ? "RPM" : "mm"}
+                            </div>
                           </div>
                        </div>
                     </div>
@@ -710,8 +682,8 @@ export default function PumpAffinityCalculator() {
                   <h3 className="font-bold text-lg">3. Power (P)</h3>
                 </AccordionTrigger>
                 <AccordionContent>
-                  <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6 pt-4">
-                    <div className="bg-muted p-4 flex justify-center border border-border rounded shrink-0">
+                  <div className="pt-4 space-y-4">
+                    <div className="bg-muted p-4 flex justify-center border border-border rounded">
                        <div className="font-serif text-2xl flex items-center gap-3">
                           <div className="flex flex-col items-center">
                             <span className="border-b border-foreground px-1">P₁</span>
@@ -721,8 +693,8 @@ export default function PumpAffinityCalculator() {
                           <div className="flex items-center">
                             <span className="text-4xl text-muted-foreground font-light">(</span>
                             <div className="flex flex-col items-center">
-                              <span className="border-b border-foreground px-1">{symbol}₁</span>
-                              <span>{symbol}₂</span>
+                              <span className="border-b border-foreground px-1">{mode === "CONSTANT_DIAMETER" ? "N₁" : "D₁"}</span>
+                              <span>{mode === "CONSTANT_DIAMETER" ? "N₂" : "D₂"}</span>
                             </div>
                             <span className="text-4xl text-muted-foreground font-light">)</span>
                             <sup className="text-sm font-bold mb-6">3</sup>
@@ -730,20 +702,20 @@ export default function PumpAffinityCalculator() {
                        </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
-                       {/* P1 */}
+                    <div className="grid grid-cols-2 gap-4 w-full">
+                       {/* P1 with unit selector */}
                        <div>
                           <label className="text-xs font-bold mb-1 block">P₁:</label>
-                          <div className="flex gap-2">
+                          <div className="flex gap- 2">
                             <input 
                               type="number" 
                               value={p1} 
                               onChange={e => setP1(e.target.value)} 
                               placeholder="?" 
-                              className="flex-1 border border-border bg-background rounded px-2 py-1.5 text-right"
+                              className="w-24 border border-border bg-background rounded px-2 py-1 text-right text-sm"
                             />
                             <Select value={p1Unit} onValueChange={setP1Unit}>
-                              <SelectTrigger className="w-24 text-xs">
+                              <SelectTrigger className="w-24 h-8 text-xs border border-border">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent className="z-50">
@@ -755,43 +727,36 @@ export default function PumpAffinityCalculator() {
                           </div>
                        </div>
 
-                       {/* N1/D1 */}
+                       {/* N1 - Fixed RPM */}
                        <div>
-                          <label className="text-xs font-bold mb-1 block">{symbol}₁:</label>
-                          <div className="flex gap-2">
+                          <label className="text-xs font-bold mb-1 block">{mode === "CONSTANT_DIAMETER" ? "N₁" : "D₁"}:</label>
+                          <div className="flex gap- 2">
                             <input 
                               type="number" 
-                              value={powerVal1} 
-                              onChange={e => setPowerVal1(e.target.value)} 
+                              value={mode === "CONSTANT_DIAMETER" ? n1_power : d1_power} 
+                              onChange={e => mode === "CONSTANT_DIAMETER" ? setN1Power(e.target.value) : setD1Power(e.target.value)} 
                               placeholder="?" 
-                              className="flex-1 border border-border bg-background rounded px-2 py-1.5 text-right"
+                              className="w-24 border border-border bg-background rounded px-2 py-1 text-right text-sm"
                             />
-                            <Select value={powerVal1Unit} onValueChange={setPowerVal1Unit}>
-                              <SelectTrigger className="w-24 text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent className="z-50">
-                                {currentUnits.map(u => (
-                                  <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <div className="w-24 h-8 flex items-center justify-center border border-border bg-muted rounded text-xs text-muted-foreground font-medium">
+                              {mode === "CONSTANT_DIAMETER" ? "RPM" : "mm"}
+                            </div>
                           </div>
                        </div>
 
-                       {/* P2 */}
+                       {/* P2 with unit selector */}
                        <div>
                           <label className="text-xs font-bold mb-1 block">P₂:</label>
-                          <div className="flex gap-2">
+                          <div className="flex gap- 2">
                             <input 
                               type="number" 
                               value={p2} 
                               onChange={e => setP2(e.target.value)} 
                               placeholder="?" 
-                              className="flex-1 border border-border bg-background rounded px-2 py-1.5 text-right"
+                              className="w-24 border border-border bg-background rounded px-2 py-1 text-right text-sm"
                             />
                             <Select value={p2Unit} onValueChange={setP2Unit}>
-                              <SelectTrigger className="w-24 text-xs">
+                              <SelectTrigger className="w-24 h-8 text-xs border border-border">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent className="z-50">
@@ -803,27 +768,20 @@ export default function PumpAffinityCalculator() {
                           </div>
                        </div>
 
-                       {/* N2/D2 */}
+                       {/* N2 - Fixed RPM */}
                        <div>
-                          <label className="text-xs font-bold mb-1 block">{symbol}₂:</label>
-                          <div className="flex gap-2">
+                          <label className="text-xs font-bold mb-1 block">{mode === "CONSTANT_DIAMETER" ? "N₂" : "D₂"}:</label>
+                          <div className="flex gap- 2">
                             <input 
                               type="number" 
-                              value={powerVal2} 
-                              onChange={e => setPowerVal2(e.target.value)} 
+                              value={mode === "CONSTANT_DIAMETER" ? n2_power : d2_power} 
+                              onChange={e => mode === "CONSTANT_DIAMETER" ? setN2Power(e.target.value) : setD2Power(e.target.value)} 
                               placeholder="?" 
-                              className="flex-1 border border-border bg-background rounded px-2 py-1.5 text-right"
+                              className="w-24 border border-border bg-background rounded px-2 py-1 text-right text-sm"
                             />
-                            <Select value={powerVal2Unit} onValueChange={setPowerVal2Unit}>
-                              <SelectTrigger className="w-24 text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent className="z-50">
-                                {currentUnits.map(u => (
-                                  <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <div className="w-24 h-8 flex items-center justify-center border border-border bg-muted rounded text-xs text-muted-foreground font-medium">
+                              {mode === "CONSTANT_DIAMETER" ? "RPM" : "mm"}
+                            </div>
                           </div>
                        </div>
                     </div>
@@ -870,8 +828,8 @@ export default function PumpAffinityCalculator() {
                     </div>
                     <span>=</span>
                     <div className="flex flex-col items-center">
-                      <span className="border-b-2 border-foreground px-2">{symbol}₁</span>
-                      <span className="mt-1">{symbol}₂</span>
+                      <span className="border-b-2 border-foreground px-2">{mode === "CONSTANT_DIAMETER" ? "N₁" : "D₁"}</span>
+                      <span className="mt-1">{mode === "CONSTANT_DIAMETER" ? "N₂" : "D₂"}</span>
                     </div>
                   </div>
                   <p className="text-sm text-muted-foreground text-center">Flow Rate (Linear Relationship)</p>
@@ -889,8 +847,8 @@ export default function PumpAffinityCalculator() {
                     <div className="flex items-center">
                       <span className="text-5xl text-muted-foreground font-light">(</span>
                       <div className="flex flex-col items-center">
-                        <span className="border-b-2 border-foreground px-2">{symbol}₁</span>
-                        <span className="mt-1">{symbol}₂</span>
+                        <span className="border-b-2 border-foreground px-2">{mode === "CONSTANT_DIAMETER" ? "N₁" : "D₁"}</span>
+                        <span className="mt-1">{mode === "CONSTANT_DIAMETER" ? "N₂" : "D₂"}</span>
                       </div>
                       <span className="text-5xl text-muted-foreground font-light">)</span>
                       <sup className="text-lg font-bold -ml-1" style={{verticalAlign: 'super'}}>2</sup>
@@ -911,8 +869,8 @@ export default function PumpAffinityCalculator() {
                     <div className="flex items-center">
                       <span className="text-5xl text-muted-foreground font-light">(</span>
                       <div className="flex flex-col items-center">
-                        <span className="border-b-2 border-foreground px-2">{symbol}₁</span>
-                        <span className="mt-1">{symbol}₂</span>
+                        <span className="border-b-2 border-foreground px-2">{mode === "CONSTANT_DIAMETER" ? "N₁" : "D₁"}</span>
+                        <span className="mt-1">{mode === "CONSTANT_DIAMETER" ? "N₂" : "D₂"}</span>
                       </div>
                       <span className="text-5xl text-muted-foreground font-light">)</span>
                       <sup className="text-lg font-bold -ml-1" style={{verticalAlign: 'super'}}>3</sup>
@@ -947,7 +905,7 @@ export default function PumpAffinityCalculator() {
                    <div>
                      <div className="text-sm uppercase opacity-80 mb-2">{result.label}</div>
                      <div className="text-5xl font-black mb-2">{result.value}</div>
-                     {result.valueSI && (
+                     {result.valueSI && result.valueSI !== result.value && (
                        <div className="text-sm opacity-80 mt-2">
                          ({result.valueSI} in SI units)
                        </div>
@@ -969,4 +927,14 @@ export default function PumpAffinityCalculator() {
     </div>
   )
 }
+
+
+
+
+
+
+
+
+
+
 
