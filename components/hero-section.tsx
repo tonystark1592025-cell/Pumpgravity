@@ -120,13 +120,13 @@ export function HeroSection() {
               <div className="mt-8 flex flex-wrap gap-4">
                 <Link href="/converters">
                   <Button size="lg" className="h-12 px-8 shadow-lg shadow-primary/20">
-                    Launch Simulator
+                    Explore converters
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
                 <Link href="/calculators">
                   <Button size="lg" variant="outline" className="h-12 border-muted-foreground/20 bg-background/50 backdrop-blur">
-                    View Instruments <Sigma className="ml-2 h-4 w-4" />
+                    View Calculator  <Sigma className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
               </div>
