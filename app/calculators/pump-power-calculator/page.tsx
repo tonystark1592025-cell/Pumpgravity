@@ -3,32 +3,49 @@
 import { useState } from "react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { 
+  convertToSI, 
+  convertFromSI, 
+  flowUnits, 
+  headUnits, 
+  powerUnits 
+} from "@/lib/unit-conversions"
 
 export default function PumpPowerCalculator() {
   const [flowRate, setFlowRate] = useState<string>("")
+  const [flowUnit, setFlowUnit] = useState<string>("m3h")
+  
   const [head, setHead] = useState<string>("")
+  const [headUnit, setHeadUnit] = useState<string>("m")
+  
   const [specificGravity, setSpecificGravity] = useState<string>("1.0")
   const [efficiency, setEfficiency] = useState<string>("75")
+  
+  const [resultUnit, setResultUnit] = useState<string>("kw")
 
   const [result, setResult] = useState<{
     value: string
+    valueSI: string
     calculated: boolean
     steps: string[]
   }>({
     value: "",
+    valueSI: "",
     calculated: false,
     steps: []
   })
 
   const handleCalculate = () => {
-    const Q = flowRate ? parseFloat(flowRate) : null
-    const H = head ? parseFloat(head) : null
+    const Q_input = flowRate ? parseFloat(flowRate) : null
+    const H_input = head ? parseFloat(head) : null
     const SG = specificGravity ? parseFloat(specificGravity) : null
     const eta = efficiency ? parseFloat(efficiency) : null
 
-    if (!Q || !H || !SG || !eta) {
+    if (!Q_input || !H_input || !SG || !eta) {
       setResult({
         value: "",
+        valueSI: "",
         calculated: false,
         steps: ["Please enter all required values"]
       })
@@ -38,28 +55,50 @@ export default function PumpPowerCalculator() {
     if (eta <= 0 || eta > 100) {
       setResult({
         value: "",
+        valueSI: "",
         calculated: false,
         steps: ["Pump efficiency must be between 0 and 100%"]
       })
       return
     }
 
+    // Step 1: Convert inputs to SI units
+    const Q_SI = convertToSI(Q_input, flowUnit, 'flow') // m³/h
+    const H_SI = convertToSI(H_input, headUnit, 'head') // m
+
+    // Step 2: Calculate in SI units
     // Formula: Ps = (Q × H × SG) / (367.2 × η)
     // Where η is efficiency as decimal (75% = 0.75)
     const etaDecimal = eta / 100
-    const numerator = Q * H * SG
+    const numerator = Q_SI * H_SI * SG
     const denominator = 367.2 * etaDecimal
-    const power = numerator / denominator
+    const power_SI = numerator / denominator // kW
+
+    // Step 3: Convert result to user's preferred unit
+    const power_output = convertFromSI(power_SI, resultUnit, 'power')
+
+    const flowUnitLabel = flowUnits.find(u => u.value === flowUnit)?.label || flowUnit
+    const headUnitLabel = headUnits.find(u => u.value === headUnit)?.label || headUnit
+    const resultUnitLabel = powerUnits.find(u => u.value === resultUnit)?.label || resultUnit
 
     const steps = [
-      `Ps = (Q × H × SG) / (367.2 × η)`,
-      `Ps = (${Q} × ${H} × ${SG}) / (367.2 × ${etaDecimal})`,
-      `Ps = ${numerator.toFixed(1)} / ${denominator.toFixed(1)}`,
-      `Ps = ${power.toFixed(2)} kW`
+      `Step 1: Convert to SI units`,
+      `  Q = ${Q_input} ${flowUnitLabel} = ${Q_SI.toFixed(2)} m³/h`,
+      `  H = ${H_input} ${headUnitLabel} = ${H_SI.toFixed(2)} m`,
+      ``,
+      `Step 2: Calculate in SI (kW)`,
+      `  Ps = (Q × H × SG) / (367.2 × η)`,
+      `  Ps = (${Q_SI.toFixed(2)} × ${H_SI.toFixed(2)} × ${SG}) / (367.2 × ${etaDecimal})`,
+      `  Ps = ${numerator.toFixed(1)} / ${denominator.toFixed(1)}`,
+      `  Ps = ${power_SI.toFixed(2)} kW`,
+      ``,
+      `Step 3: Convert to ${resultUnitLabel}`,
+      `  Ps = ${power_output.toFixed(2)} ${resultUnitLabel}`
     ]
 
     setResult({
-      value: power.toFixed(2),
+      value: power_output.toFixed(2),
+      valueSI: power_SI.toFixed(2),
       calculated: true,
       steps
     })
@@ -77,6 +116,14 @@ export default function PumpPowerCalculator() {
         <h1 className="text-2xl md:text-3xl font-black text-foreground uppercase tracking-tight">
           Pump Power Calculator
         </h1>
+        <div className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
+            Smart Unit Conversion - Enter values in any unit!
+          </span>
+        </div>
       </div>
 
       <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -89,33 +136,55 @@ export default function PumpPowerCalculator() {
 
           <div className="p-4">
             
-            {/* Flow Rate Input */}
+            {/* Flow Rate Input with Unit Selector */}
             <div className="mb-4">
               <label className="block font-bold text-foreground mb-1.5 text-sm">Flow Rate (Q):</label>
-              <div className="relative">
-                <input 
-                  type="number" 
-                  value={flowRate} 
-                  onChange={e => setFlowRate(e.target.value)} 
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  value={flowRate}
+                  onChange={e => setFlowRate(e.target.value)}
                   placeholder="100"
-                  className="w-full border-2 border-border bg-background rounded-lg px-3 py-2 text-right pr-14 text-base focus:border-blue-500 focus:outline-none"
+                  className="flex-1 border-2 border-border bg-background rounded-lg px-3 py-2 text-right text-base focus:border-blue-500 focus:outline-none"
                 />
-                <span className="absolute right-3 top-2.5 text-xs text-muted-foreground font-medium">m³/h</span>
+                <Select value={flowUnit} onValueChange={setFlowUnit}>
+                  <SelectTrigger className="w-32 border-2 border-border bg-background text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="z-50">
+                    {flowUnits.map((u) => (
+                      <SelectItem key={u.value} value={u.value}>
+                        {u.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
-            {/* Differential Head Input */}
+            {/* Differential Head Input with Unit Selector */}
             <div className="mb-4">
               <label className="block font-bold text-foreground mb-1.5 text-sm">Differential Head (H):</label>
-              <div className="relative">
-                <input 
-                  type="number" 
-                  value={head} 
-                  onChange={e => setHead(e.target.value)} 
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  value={head}
+                  onChange={e => setHead(e.target.value)}
                   placeholder="50"
-                  className="w-full border-2 border-border bg-background rounded-lg px-3 py-2 text-right pr-14 text-base focus:border-blue-500 focus:outline-none"
+                  className="flex-1 border-2 border-border bg-background rounded-lg px-3 py-2 text-right text-base focus:border-blue-500 focus:outline-none"
                 />
-                <span className="absolute right-3 top-2.5 text-xs text-muted-foreground font-medium">m</span>
+                <Select value={headUnit} onValueChange={setHeadUnit}>
+                  <SelectTrigger className="w-32 border-2 border-border bg-background text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="z-50">
+                    {headUnits.map((u) => (
+                      <SelectItem key={u.value} value={u.value}>
+                        {u.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -149,6 +218,23 @@ export default function PumpPowerCalculator() {
                 />
                 <span className="absolute right-3 top-2.5 text-xs text-muted-foreground font-medium">%</span>
               </div>
+            </div>
+
+            {/* Result Unit Selector */}
+            <div className="mb-4">
+              <label className="block font-bold text-foreground mb-1.5 text-sm">Result Unit:</label>
+              <Select value={resultUnit} onValueChange={setResultUnit}>
+                <SelectTrigger className="w-full border-2 border-border bg-background text-base">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="z-50">
+                  {powerUnits.map((u) => (
+                    <SelectItem key={u.value} value={u.value}>
+                      {u.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Formula Display */}
@@ -187,8 +273,8 @@ export default function PumpPowerCalculator() {
             <div className="mb-4 bg-muted rounded-lg p-3 border border-border">
               <h4 className="font-bold text-foreground mb-2 uppercase text-xs">Given:</h4>
               <ul className="space-y-0.5 text-xs text-muted-foreground">
-                <li>• Flow Rate (Q) = {flowRate || "?"} m³/h</li>
-                <li>• Differential Head (H) = {head || "?"} m</li>
+                <li>• Flow Rate (Q) = {flowRate || "?"} {flowUnits.find(u => u.value === flowUnit)?.label}</li>
+                <li>• Differential Head (H) = {head || "?"} {headUnits.find(u => u.value === headUnit)?.label}</li>
                 <li>• Specific Gravity (SG) = {specificGravity || "?"}</li>
                 <li>• Pump Efficiency (η) = {efficiency || "?"}%</li>
               </ul>
@@ -233,7 +319,10 @@ export default function PumpPowerCalculator() {
                  {result.calculated ? (
                    <div>
                      <div className="text-4xl font-black mb-2">
-                       P<sub className="text-2xl">s</sub> = {result.value} kW
+                       P<sub className="text-2xl">s</sub> = {result.value} {powerUnits.find(u => u.value === resultUnit)?.label}
+                     </div>
+                     <div className="text-sm opacity-80 mt-2">
+                       ({result.valueSI} kW in SI units)
                      </div>
                    </div>
                  ) : (
