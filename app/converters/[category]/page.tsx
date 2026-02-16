@@ -101,9 +101,7 @@ export default function CategoryConverterPage() {
   const [copiedUnit, setCopiedUnit] = useState<string | null>(null)
   const [initialized, setInitialized] = useState(false)
 
-  const filteredConverters = category === "all" 
-    ? converters 
-    : converters.filter(c => c.category === category)
+  const filteredConverters = converters.filter(c => c.category === category)
 
   const allUnits = filteredConverters.flatMap(c => c.units)
   const uniqueUnits = Array.from(new Map(allUnits.map(u => [u.value, u])).values())
@@ -252,17 +250,6 @@ export default function CategoryConverterPage() {
                   </h2>
                   <p className="mt-1 text-sm text-muted-foreground">{categoryInfo?.description}</p>
                 </div>
-
-               
-
-                {category === "all" && (
-                  <div className="mb-6 rounded-lg border border-border bg-muted/30 p-4">
-                    <h3 className="mb-2 text-sm font-semibold text-foreground">About Unit Converter</h3>
-                    <p className="text-sm leading-relaxed text-muted-foreground">
-                      Our comprehensive unit converter supports conversions across multiple categories including mass, length, area, volume, temperature, time, speed, pressure, energy, power, digital storage, electrical units, mechanical properties, flow rates, and light measurements. Simply select your units and get instant, accurate conversions.
-                    </p>
-                  </div>
-                )}
 
                 {/* Info Banner */}
                 <div className="mb-6 rounded-lg border border-primary/30 bg-primary/10 p-4 text-sm text-foreground">

@@ -28,7 +28,6 @@ export interface CategoryConfig {
 }
 
 export const categories: CategoryConfig[] = [
-  { id: "all", name: "All Categories", icon: MoreHorizontal, color: "text-purple-500", bgColor: "bg-purple-500/10", description: "Convert between all available unit types" },
   { id: "mass", name: "Mass", icon: Weight, color: "text-blue-500", bgColor: "bg-blue-500/10", description: "Convert weight and mass units like kg, lb, oz" },
   { id: "length", name: "Length", icon: Ruler, color: "text-green-500", bgColor: "bg-green-500/10", description: "Convert distance and length units like m, ft, mi" },
   { id: "area", name: "Area", icon: Square, color: "text-yellow-500", bgColor: "bg-yellow-500/10", description: "Convert area units like m², acre, hectare" },

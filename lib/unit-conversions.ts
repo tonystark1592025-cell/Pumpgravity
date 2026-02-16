@@ -35,7 +35,6 @@ export const powerUnits: UnitDefinition[] = [
   { value: 'kw', label: 'kW', toSI: 1, fromSI: 1 },
   { value: 'hp', label: 'HP', toSI: 0.745699, fromSI: 1.34102 },
   { value: 'w', label: 'Watts (W)', toSI: 0.001, fromSI: 1000 },
-  { value: 'mw', label: 'MW', toSI: 1000, fromSI: 0.001 },
 ]
 
 // Speed Units (SI: RPM)

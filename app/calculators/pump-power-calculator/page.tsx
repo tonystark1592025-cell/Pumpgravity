@@ -24,6 +24,10 @@ export default function PumpPowerCalculator() {
   
   const [resultUnit, setResultUnit] = useState<string>("kw")
 
+  // Validation states
+  const [sgError, setSgError] = useState<string>("")
+  const [efficiencyError, setEfficiencyError] = useState<string>("")
+
   const [result, setResult] = useState<{
     value: string
     valueSI: string
@@ -36,11 +40,70 @@ export default function PumpPowerCalculator() {
     steps: []
   })
 
+  // Validate Specific Gravity
+  const validateSG = (value: string) => {
+    if (value === "") {
+      setSgError("")
+      return
+    }
+    const num = parseFloat(value)
+    if (isNaN(num)) {
+      setSgError("Please enter a valid number")
+    } else if (num < 0.01) {
+      setSgError("SG must be at least 0.01")
+    } else if (num > 23) {
+      setSgError("SG cannot exceed 23")
+    } else {
+      setSgError("")
+    }
+  }
+
+  // Validate Efficiency
+  const validateEfficiency = (value: string) => {
+    if (value === "") {
+      setEfficiencyError("")
+      return
+    }
+    const num = parseFloat(value)
+    if (isNaN(num)) {
+      setEfficiencyError("Please enter a valid number")
+    } else if (num < 0.01) {
+      setEfficiencyError("Efficiency must be at least 0.01%")
+    } else if (num > 100) {
+      setEfficiencyError("Efficiency cannot exceed 100%")
+    } else {
+      setEfficiencyError("")
+    }
+  }
+
+  // Handle SG change
+  const handleSGChange = (value: string) => {
+    setSpecificGravity(value)
+    validateSG(value)
+  }
+
+  // Handle Efficiency change
+  const handleEfficiencyChange = (value: string) => {
+    setEfficiency(value)
+    validateEfficiency(value)
+  }
+
   const handleCalculate = () => {
     const Q_input = flowRate ? parseFloat(flowRate) : null
     const H_input = head ? parseFloat(head) : null
     const SG = specificGravity ? parseFloat(specificGravity) : null
     const eta = efficiency ? parseFloat(efficiency) : null
+
+    // Check for validation errors
+    if (sgError || efficiencyError) {
+      setResult({
+        value: "",
+        valueSI: "",
+        calculated: false,
+        steps: ["Please fix validation errors before calculating"]
+      })
+      return
+    }
 
     if (!Q_input || !H_input || !SG || !eta) {
       setResult({
@@ -52,12 +115,22 @@ export default function PumpPowerCalculator() {
       return
     }
 
-    if (eta <= 0 || eta > 100) {
+    if (eta < 0.01 || eta > 100) {
       setResult({
         value: "",
         valueSI: "",
         calculated: false,
-        steps: ["Pump efficiency must be between 0 and 100%"]
+        steps: ["Pump efficiency must be between 0.01% and 100%"]
+      })
+      return
+    }
+
+    if (SG < 0.01 || SG > 23) {
+      setResult({
+        value: "",
+        valueSI: "",
+        calculated: false,
+        steps: ["Specific Gravity must be between 0.01 and 23"]
       })
       return
     }
@@ -195,12 +268,24 @@ export default function PumpPowerCalculator() {
                 <input 
                   type="number" 
                   value={specificGravity} 
-                  onChange={e => setSpecificGravity(e.target.value)} 
+                  onChange={e => handleSGChange(e.target.value)} 
                   placeholder="1.0"
-                  step="0.1"
-                  className="flex-1 border-2 border-border bg-background rounded-lg px-3 py-2 text-center text-base focus:border-blue-500 focus:outline-none"
+                  step="0.01"
+                  min="0.01"
+                  max="23"
+                  className={`flex-1 border-2 ${sgError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
                 />
               </div>
+              {sgError ? (
+                <div className="mt-1 flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="font-medium">{sgError}</span>
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground mt-1">Range: 0.01 to 23</p>
+              )}
             </div>
 
             {/* Pump Efficiency Input */}
@@ -210,14 +295,25 @@ export default function PumpPowerCalculator() {
                 <input 
                   type="number" 
                   value={efficiency} 
-                  onChange={e => setEfficiency(e.target.value)} 
+                  onChange={e => handleEfficiencyChange(e.target.value)} 
                   placeholder="75"
-                  min="0"
+                  min="0.01"
                   max="100"
-                  className="w-full border-2 border-border bg-background rounded-lg px-3 py-2 text-right pr-14 text-base focus:border-blue-500 focus:outline-none"
+                  step="0.01"
+                  className={`w-full border-2 ${efficiencyError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2 text-right pr-14 text-base focus:border-blue-500 focus:outline-none transition-colors`}
                 />
                 <span className="absolute right-3 top-2.5 text-xs text-muted-foreground font-medium">%</span>
               </div>
+              {efficiencyError ? (
+                <div className="mt-1 flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="font-medium">{efficiencyError}</span>
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground mt-1">Range: 0.01% to 100%</p>
+              )}
             </div>
 
             {/* Result Unit Selector */}
