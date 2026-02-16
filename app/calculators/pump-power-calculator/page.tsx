@@ -11,6 +11,7 @@ import {
   headUnits, 
   powerUnits 
 } from "@/lib/unit-conversions"
+import { multiply, divide, formatSignificant } from "@/lib/precision-math"
 
 export default function PumpPowerCalculator() {
   const [flowRate, setFlowRate] = useState<string>("")
@@ -139,13 +140,21 @@ export default function PumpPowerCalculator() {
     const Q_SI = convertToSI(Q_input, flowUnit, 'flow') // m³/h
     const H_SI = convertToSI(H_input, headUnit, 'head') // m
 
-    // Step 2: Calculate in SI units
+    // Step 2: Calculate in SI units using high-precision math
     // Formula: Ps = (Q × H × SG) / (367.2 × η)
     // Where η is efficiency as decimal (75% = 0.75)
-    const etaDecimal = eta / 100
-    const numerator = Q_SI * H_SI * SG
-    const denominator = 367.2 * etaDecimal
-    const power_SI = numerator / denominator // kW
+    const etaDecimal = parseFloat(divide(eta.toString(), '100'))
+    
+    // Calculate numerator: Q × H × SG
+    const qh = multiply(Q_SI.toString(), H_SI.toString())
+    const numerator = multiply(qh, SG.toString())
+    
+    // Calculate denominator: 367.2 × η
+    const denominator = multiply('367.2', etaDecimal.toString())
+    
+    // Calculate power: numerator / denominator
+    const power_SI_str = divide(numerator, denominator)
+    const power_SI = parseFloat(power_SI_str)
 
     // Step 3: Convert result to user's preferred unit
     const power_output = convertFromSI(power_SI, resultUnit, 'power')
@@ -156,22 +165,22 @@ export default function PumpPowerCalculator() {
 
     const steps = [
       `Step 1: Convert to SI units`,
-      `  Q = ${Q_input} ${flowUnitLabel} = ${Q_SI.toFixed(2)} m³/h`,
-      `  H = ${H_input} ${headUnitLabel} = ${H_SI.toFixed(2)} m`,
+      `  Q = ${Q_input} ${flowUnitLabel} = ${formatSignificant(Q_SI.toString(), 6)} m³/h`,
+      `  H = ${H_input} ${headUnitLabel} = ${formatSignificant(H_SI.toString(), 6)} m`,
       ``,
       `Step 2: Calculate in SI (kW)`,
       `  Ps = (Q × H × SG) / (367.2 × η)`,
-      `  Ps = (${Q_SI.toFixed(2)} × ${H_SI.toFixed(2)} × ${SG}) / (367.2 × ${etaDecimal})`,
-      `  Ps = ${numerator.toFixed(1)} / ${denominator.toFixed(1)}`,
-      `  Ps = ${power_SI.toFixed(2)} kW`,
+      `  Ps = (${formatSignificant(Q_SI.toString(), 6)} × ${formatSignificant(H_SI.toString(), 6)} × ${SG}) / (367.2 × ${etaDecimal})`,
+      `  Ps = ${formatSignificant(numerator, 6)} / ${formatSignificant(denominator, 6)}`,
+      `  Ps = ${formatSignificant(power_SI_str, 6)} kW`,
       ``,
       `Step 3: Convert to ${resultUnitLabel}`,
-      `  Ps = ${power_output.toFixed(2)} ${resultUnitLabel}`
+      `  Ps = ${formatSignificant(power_output.toString(), 6)} ${resultUnitLabel}`
     ]
 
     setResult({
-      value: power_output.toFixed(2),
-      valueSI: power_SI.toFixed(2),
+      value: formatSignificant(power_output.toString(), 6),
+      valueSI: formatSignificant(power_SI_str, 6),
       calculated: true,
       steps
     })

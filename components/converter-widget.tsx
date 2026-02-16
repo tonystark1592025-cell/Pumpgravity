@@ -12,12 +12,7 @@ import {
 } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
-
-// Rounding function to avoid floating point errors
-function newRound(num: number, keta: number = 6): number {
-  const shift = Math.pow(10, keta)
-  return Math.round(num * shift) / shift
-}
+import { precisionConvert, convertTemperature, displayFormat } from "@/lib/precision-converter"
 
 const presets = [
   { id: "all", label: "All" },
@@ -175,31 +170,24 @@ export function ConverterWidget() {
 
   const convert = () => {
     if (activePreset === "temperature") {
-      return convertTemperature()
+      return convertTemperatureWrapper()
     }
     const from = units.find((u) => u.value === fromUnit)
     const to = units.find((u) => u.value === toUnit)
     if (!from || !to) return "0"
-    const baseValue = parseFloat(fromValue) * from.factor
-    const result = baseValue / to.factor
-    return newRound(result, result < 0.01 ? 6 : 4).toString()
+    
+    // Use high-precision conversion
+    const result = precisionConvert(fromValue, from.factor, to.factor)
+    return displayFormat(result)
   }
 
-  const convertTemperature = () => {
+  const convertTemperatureWrapper = () => {
     const val = parseFloat(fromValue)
     if (isNaN(val)) return "0"
     
-    let celsius: number
-    if (fromUnit === "c") celsius = val
-    else if (fromUnit === "f") celsius = (val - 32) / 1.8
-    else celsius = val - 273.15
-
-    let result: number
-    if (toUnit === "c") result = celsius
-    else if (toUnit === "f") result = (celsius * 1.8) + 32
-    else result = celsius + 273.15
-
-    return newRound(result, 4).toString()
+    // Use high-precision temperature conversion
+    const result = convertTemperature(fromValue, fromUnit, toUnit)
+    return displayFormat(result)
   }
 
   const switchValues = () => {
@@ -245,21 +233,13 @@ export function ConverterWidget() {
       let convertedValue: string
       
       if (activePreset === "temperature") {
-        let celsius: number
-        if (fromUnit === "c") celsius = inputValue
-        else if (fromUnit === "f") celsius = (inputValue - 32) / 1.8
-        else celsius = inputValue - 273.15
-
-        let result: number
-        if (unit.value === "c") result = celsius
-        else if (unit.value === "f") result = (celsius * 1.8) + 32
-        else result = celsius + 273.15
-        
-        convertedValue = newRound(result, 4).toString()
+        // Use high-precision temperature conversion
+        const result = convertTemperature(fromValue, fromUnit, unit.value)
+        convertedValue = displayFormat(result)
       } else {
-        const baseValue = inputValue * fromUnitData.factor
-        const result = baseValue / unit.factor
-        convertedValue = newRound(result, result < 0.01 ? 6 : 4).toString()
+        // Use high-precision conversion
+        const result = precisionConvert(fromValue, fromUnitData.factor, unit.factor)
+        convertedValue = displayFormat(result)
       }
 
       return {

@@ -1,5 +1,8 @@
 // Unit Conversion Library for Calculators
 // All conversions go through SI base units
+// Uses high-precision math to ensure Casio calculator-level accuracy
+
+import { multiply, divide } from './precision-math'
 
 export type UnitType = 'flow' | 'head' | 'power' | 'speed' | 'diameter' | 'specificGravity'
 
@@ -60,22 +63,30 @@ export const specificGravityUnits: UnitDefinition[] = [
 
 /**
  * Convert a value from any unit to SI base unit
+ * Uses high-precision arithmetic to avoid floating-point errors
  */
 export function convertToSI(value: number, unit: string, unitType: UnitType): number {
   const unitList = getUnitList(unitType)
   const unitDef = unitList.find(u => u.value === unit)
   if (!unitDef) return value
-  return value * unitDef.toSI
+  
+  // Use precision math for conversion
+  const result = multiply(value.toString(), unitDef.toSI.toString())
+  return parseFloat(result)
 }
 
 /**
  * Convert a value from SI base unit to any unit
+ * Uses high-precision arithmetic to avoid floating-point errors
  */
 export function convertFromSI(value: number, unit: string, unitType: UnitType): number {
   const unitList = getUnitList(unitType)
   const unitDef = unitList.find(u => u.value === unit)
   if (!unitDef) return value
-  return value * unitDef.fromSI
+  
+  // Use precision math for conversion
+  const result = multiply(value.toString(), unitDef.fromSI.toString())
+  return parseFloat(result)
 }
 
 /**

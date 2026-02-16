@@ -12,6 +12,8 @@ import {
   headUnits, 
   powerUnits
 } from "@/lib/unit-conversions"
+import { calculateFlowRate, calculateHead, calculatePower, formatResult } from "@/lib/affinity-calculator"
+import { formatSignificant } from "@/lib/precision-math"
 
 type LawMode = "CONSTANT_DIAMETER" | "CONSTANT_SPEED"
 
@@ -125,70 +127,70 @@ export default function PumpAffinityCalculator() {
       const v2_SI = v2_input // RPM or mm is already SI
 
       steps.push("Step 1: Convert inputs to SI units")
-      if (q1_input !== null) steps.push(`  Q₁ = ${q1_input} ${flowUnits.find(u => u.value === q1Unit)?.label} = ${q1_SI?.toFixed(2)} m³/h`)
-      if (q2_input !== null) steps.push(`  Q₂ = ${q2_input} ${flowUnits.find(u => u.value === q2Unit)?.label} = ${q2_SI?.toFixed(2)} m³/h`)
+      if (q1_input !== null) steps.push(`  Q₁ = ${q1_input} ${flowUnits.find(u => u.value === q1Unit)?.label} = ${formatSignificant(q1_SI.toString(), 6)} m³/h`)
+      if (q2_input !== null) steps.push(`  Q₂ = ${q2_input} ${flowUnits.find(u => u.value === q2Unit)?.label} = ${formatSignificant(q2_SI.toString(), 6)} m³/h`)
       if (v1_input !== null) steps.push(`  ${symbol}₁ = ${v1_input} ${unit}`)
       if (v2_input !== null) steps.push(`  ${symbol}₂ = ${v2_input} ${unit}`)
       steps.push("")
       steps.push(`Step 2: Apply Affinity Law (Q₁/Q₂ = ${symbol}₁/${symbol}₂)`)
 
-      // Flow Rate: Q1/Q2 = N1/N2 or D1/D2
-      if (v1_SI !== null && v2_SI !== null && q1_SI !== null && q2_SI === null) {
-        // Calculate Q2
-        const calc_SI = (q1_SI * (v2_SI / v1_SI))
-        const calc_output = convertFromSI(calc_SI, q2Unit, 'flow')
-        setQ2(calc_output.toFixed(2))
-        resultValue = calc_output.toFixed(2)
-        resultValueSI = calc_SI.toFixed(2)
-        resultLabel = `Q₂ = ${calc_output.toFixed(2)} ${flowUnits.find(u => u.value === q2Unit)?.label}`
-        steps.push(`  Q₂ = Q₁ × (${symbol}₂ / ${symbol}₁)`)
-        steps.push(`  Q₂ = ${q1_SI.toFixed(2)} × (${v2_SI} / ${v1_SI})`)
-        steps.push(`  Q₂ = ${calc_SI.toFixed(2)} m³/h (SI)`)
-        steps.push("")
-        steps.push(`Step 3: Convert to ${flowUnits.find(u => u.value === q2Unit)?.label}`)
-        steps.push(`  Q₂ = ${calc_output.toFixed(2)} ${flowUnits.find(u => u.value === q2Unit)?.label}`)
-      } else if (v1_SI !== null && v2_SI !== null && q2_SI !== null && q1_SI === null) {
-        // Calculate Q1
-        const calc_SI = (q2_SI * (v1_SI / v2_SI))
-        const calc_output = convertFromSI(calc_SI, q1Unit, 'flow')
-        setQ1(calc_output.toFixed(2))
-        resultValue = calc_output.toFixed(2)
-        resultValueSI = calc_SI.toFixed(2)
-        resultLabel = `Q₁ = ${calc_output.toFixed(2)} ${flowUnits.find(u => u.value === q1Unit)?.label}`
-        steps.push(`  Q₁ = Q₂ × (${symbol}₁ / ${symbol}₂)`)
-        steps.push(`  Q₁ = ${q2_SI.toFixed(2)} × (${v1_SI} / ${v2_SI})`)
-        steps.push(`  Q₁ = ${calc_SI.toFixed(2)} m³/h (SI)`)
-        steps.push("")
-        steps.push(`Step 3: Convert to ${flowUnits.find(u => u.value === q1Unit)?.label}`)
-        steps.push(`  Q₁ = ${calc_output.toFixed(2)} ${flowUnits.find(u => u.value === q1Unit)?.label}`)
-      } else if (v1_SI !== null && q1_SI !== null && q2_SI !== null && v2_SI === null) {
-        // Calculate N2 or D2
-        const calc = (v1_SI * (q2_SI / q1_SI))
-        if (isConstantDiameter) {
-          setN2Flow(calc.toFixed(2))
-        } else {
-          setD2Flow(calc.toFixed(2))
+      // Use precision calculator
+      const result = calculateFlowRate(q1_SI, q2_SI, v1_SI, v2_SI)
+      
+      if (result) {
+        const calc_SI = parseFloat(result.value)
+        
+        if (result.variable === 'q2') {
+          const calc_output = convertFromSI(calc_SI, q2Unit, 'flow')
+          setQ2(formatResult(calc_output.toString()))
+          resultValue = formatResult(calc_output.toString())
+          resultValueSI = formatResult(result.value)
+          resultLabel = `Q₂ = ${formatResult(calc_output.toString())} ${flowUnits.find(u => u.value === q2Unit)?.label}`
+          steps.push(`  Q₂ = Q₁ × (${symbol}₂ / ${symbol}₁)`)
+          steps.push(`  Q₂ = ${formatSignificant(q1_SI!.toString(), 6)} × (${v2_SI} / ${v1_SI})`)
+          steps.push(`  Q₂ = ${formatResult(result.value)} m³/h (SI)`)
+          steps.push("")
+          steps.push(`Step 3: Convert to ${flowUnits.find(u => u.value === q2Unit)?.label}`)
+          steps.push(`  Q₂ = ${formatResult(calc_output.toString())} ${flowUnits.find(u => u.value === q2Unit)?.label}`)
+        } else if (result.variable === 'q1') {
+          const calc_output = convertFromSI(calc_SI, q1Unit, 'flow')
+          setQ1(formatResult(calc_output.toString()))
+          resultValue = formatResult(calc_output.toString())
+          resultValueSI = formatResult(result.value)
+          resultLabel = `Q₁ = ${formatResult(calc_output.toString())} ${flowUnits.find(u => u.value === q1Unit)?.label}`
+          steps.push(`  Q₁ = Q₂ × (${symbol}₁ / ${symbol}₂)`)
+          steps.push(`  Q₁ = ${formatSignificant(q2_SI!.toString(), 6)} × (${v1_SI} / ${v2_SI})`)
+          steps.push(`  Q₁ = ${formatResult(result.value)} m³/h (SI)`)
+          steps.push("")
+          steps.push(`Step 3: Convert to ${flowUnits.find(u => u.value === q1Unit)?.label}`)
+          steps.push(`  Q₁ = ${formatResult(calc_output.toString())} ${flowUnits.find(u => u.value === q1Unit)?.label}`)
+        } else if (result.variable === 'v2') {
+          const calc = parseFloat(result.value)
+          if (isConstantDiameter) {
+            setN2Flow(formatResult(result.value))
+          } else {
+            setD2Flow(formatResult(result.value))
+          }
+          resultValue = formatResult(result.value)
+          resultValueSI = formatResult(result.value)
+          resultLabel = `${symbol}₂ = ${formatResult(result.value)} ${unit}`
+          steps.push(`  ${symbol}₂ = ${symbol}₁ × (Q₂ / Q₁)`)
+          steps.push(`  ${symbol}₂ = ${v1_SI} × (${formatSignificant(q2_SI!.toString(), 6)} / ${formatSignificant(q1_SI!.toString(), 6)})`)
+          steps.push(`  ${symbol}₂ = ${formatResult(result.value)} ${unit}`)
+        } else if (result.variable === 'v1') {
+          const calc = parseFloat(result.value)
+          if (isConstantDiameter) {
+            setN1Flow(formatResult(result.value))
+          } else {
+            setD1Flow(formatResult(result.value))
+          }
+          resultValue = formatResult(result.value)
+          resultValueSI = formatResult(result.value)
+          resultLabel = `${symbol}₁ = ${formatResult(result.value)} ${unit}`
+          steps.push(`  ${symbol}₁ = ${symbol}₂ × (Q₁ / Q₂)`)
+          steps.push(`  ${symbol}₁ = ${v2_SI} × (${formatSignificant(q1_SI!.toString(), 6)} / ${formatSignificant(q2_SI!.toString(), 6)})`)
+          steps.push(`  ${symbol}₁ = ${formatResult(result.value)} ${unit}`)
         }
-        resultValue = calc.toFixed(2)
-        resultValueSI = calc.toFixed(2)
-        resultLabel = `${symbol}₂ = ${calc.toFixed(2)} ${unit}`
-        steps.push(`  ${symbol}₂ = ${symbol}₁ × (Q₂ / Q₁)`)
-        steps.push(`  ${symbol}₂ = ${v1_SI} × (${q2_SI.toFixed(2)} / ${q1_SI.toFixed(2)})`)
-        steps.push(`  ${symbol}₂ = ${calc.toFixed(2)} ${unit}`)
-      } else if (v2_SI !== null && q1_SI !== null && q2_SI !== null && v1_SI === null) {
-        // Calculate N1 or D1
-        const calc = (v2_SI * (q1_SI / q2_SI))
-        if (isConstantDiameter) {
-          setN1Flow(calc.toFixed(2))
-        } else {
-          setD1Flow(calc.toFixed(2))
-        }
-        resultValue = calc.toFixed(2)
-        resultValueSI = calc.toFixed(2)
-        resultLabel = `${symbol}₁ = ${calc.toFixed(2)} ${unit}`
-        steps.push(`  ${symbol}₁ = ${symbol}₂ × (Q₁ / Q₂)`)
-        steps.push(`  ${symbol}₁ = ${v2_SI} × (${q1_SI.toFixed(2)} / ${q2_SI.toFixed(2)})`)
-        steps.push(`  ${symbol}₁ = ${calc.toFixed(2)} ${unit}`)
       }
     }
 
