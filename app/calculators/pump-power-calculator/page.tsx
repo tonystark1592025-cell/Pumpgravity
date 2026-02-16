@@ -26,6 +26,8 @@ export default function PumpPowerCalculator() {
   const [resultUnit, setResultUnit] = useState<string>("kw")
 
   // Validation states
+  const [flowError, setFlowError] = useState<string>("")
+  const [headError, setHeadError] = useState<string>("")
   const [sgError, setSgError] = useState<string>("")
   const [efficiencyError, setEfficiencyError] = useState<string>("")
 
@@ -41,6 +43,42 @@ export default function PumpPowerCalculator() {
     steps: []
   })
 
+  // Validate Flow Rate
+  const validateFlow = (value: string) => {
+    if (value === "") {
+      setFlowError("")
+      return
+    }
+    const num = parseFloat(value)
+    if (isNaN(num)) {
+      setFlowError("Please enter a valid number")
+    } else if (num === 0) {
+      setFlowError("Flow rate cannot be zero")
+    } else if (num < 0) {
+      setFlowError("Flow rate must be positive")
+    } else {
+      setFlowError("")
+    }
+  }
+
+  // Validate Head
+  const validateHead = (value: string) => {
+    if (value === "") {
+      setHeadError("")
+      return
+    }
+    const num = parseFloat(value)
+    if (isNaN(num)) {
+      setHeadError("Please enter a valid number")
+    } else if (num === 0) {
+      setHeadError("Head cannot be zero")
+    } else if (num < 0) {
+      setHeadError("Head must be positive")
+    } else {
+      setHeadError("")
+    }
+  }
+
   // Validate Specific Gravity
   const validateSG = (value: string) => {
     if (value === "") {
@@ -50,6 +88,8 @@ export default function PumpPowerCalculator() {
     const num = parseFloat(value)
     if (isNaN(num)) {
       setSgError("Please enter a valid number")
+    } else if (num === 0) {
+      setSgError("SG cannot be zero")
     } else if (num < 0.01) {
       setSgError("SG must be at least 0.01")
     } else if (num > 23) {
@@ -68,6 +108,8 @@ export default function PumpPowerCalculator() {
     const num = parseFloat(value)
     if (isNaN(num)) {
       setEfficiencyError("Please enter a valid number")
+    } else if (num === 0) {
+      setEfficiencyError("Efficiency cannot be zero")
     } else if (num < 0.01) {
       setEfficiencyError("Efficiency must be at least 0.01%")
     } else if (num > 100) {
@@ -89,6 +131,18 @@ export default function PumpPowerCalculator() {
     validateEfficiency(value)
   }
 
+  // Handle Flow Rate change
+  const handleFlowChange = (value: string) => {
+    setFlowRate(value)
+    validateFlow(value)
+  }
+
+  // Handle Head change
+  const handleHeadChange = (value: string) => {
+    setHead(value)
+    validateHead(value)
+  }
+
   const handleCalculate = () => {
     const Q_input = flowRate ? parseFloat(flowRate) : null
     const H_input = head ? parseFloat(head) : null
@@ -96,7 +150,7 @@ export default function PumpPowerCalculator() {
     const eta = efficiency ? parseFloat(efficiency) : null
 
     // Check for validation errors
-    if (sgError || efficiencyError) {
+    if (flowError || headError || sgError || efficiencyError) {
       setResult({
         value: "",
         valueSI: "",
@@ -112,6 +166,47 @@ export default function PumpPowerCalculator() {
         valueSI: "",
         calculated: false,
         steps: ["Please enter all required values"]
+      })
+      return
+    }
+
+    // Additional zero checks
+    if (Q_input === 0) {
+      setResult({
+        value: "",
+        valueSI: "",
+        calculated: false,
+        steps: ["Flow rate cannot be zero"]
+      })
+      return
+    }
+
+    if (H_input === 0) {
+      setResult({
+        value: "",
+        valueSI: "",
+        calculated: false,
+        steps: ["Head cannot be zero"]
+      })
+      return
+    }
+
+    if (eta === 0) {
+      setResult({
+        value: "",
+        valueSI: "",
+        calculated: false,
+        steps: ["Efficiency cannot be zero"]
+      })
+      return
+    }
+
+    if (SG === 0) {
+      setResult({
+        value: "",
+        valueSI: "",
+        calculated: false,
+        steps: ["Specific Gravity cannot be zero"]
       })
       return
     }
@@ -216,21 +311,21 @@ export default function PumpPowerCalculator() {
              <h2 className="font-bold text-base uppercase text-foreground">Inputs & Parameters (Pump Power)</h2>
           </div>
 
-          <div className="p-4">
+          <div className="p-4 space-y-4">
             
-            {/* Flow Rate Input with Unit Selector */}
-            <div className="mb-4">
-              <label className="block font-bold text-foreground mb-1.5 text-sm">Flow Rate (Q):</label>
-              <div className="flex gap-2">
+            {/* Flow Rate Input with Unit Selector - One Line */}
+            <div>
+              <div className="flex items-center gap-3">
+                <label className="font-semibold text-foreground text-sm w-28 flex-shrink-0">Flow Rate :</label>
                 <input
                   type="number"
                   value={flowRate}
-                  onChange={e => setFlowRate(e.target.value)}
+                  onChange={e => handleFlowChange(e.target.value)}
                   placeholder="100"
-                  className="flex-1 border-2 border-border bg-background rounded-lg px-3 py-2 text-right text-base focus:border-blue-500 focus:outline-none"
+                  className={`flex-1 border-2 ${flowError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2.5 text-base focus:border-blue-500 focus:outline-none transition-colors`}
                 />
                 <Select value={flowUnit} onValueChange={setFlowUnit}>
-                  <SelectTrigger className="w-32 border-2 border-border bg-background text-sm">
+                  <SelectTrigger className="w-28 border-2 border-border bg-background text-sm h-11">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="z-50">
@@ -242,21 +337,29 @@ export default function PumpPowerCalculator() {
                   </SelectContent>
                 </Select>
               </div>
+              {flowError && (
+                <div className="mt-1 ml-32 flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="font-medium">{flowError}</span>
+                </div>
+              )}
             </div>
 
-            {/* Differential Head Input with Unit Selector */}
-            <div className="mb-4">
-              <label className="block font-bold text-foreground mb-1.5 text-sm">Differential Head (H):</label>
-              <div className="flex gap-2">
+            {/* Differential Head Input with Unit Selector - One Line */}
+            <div>
+              <div className="flex items-center gap-3">
+                <label className="font-semibold text-foreground text-sm w-28 flex-shrink-0">Head :</label>
                 <input
                   type="number"
                   value={head}
-                  onChange={e => setHead(e.target.value)}
+                  onChange={e => handleHeadChange(e.target.value)}
                   placeholder="50"
-                  className="flex-1 border-2 border-border bg-background rounded-lg px-3 py-2 text-right text-base focus:border-blue-500 focus:outline-none"
+                  className={`flex-1 border-2 ${headError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2.5 text-base focus:border-blue-500 focus:outline-none transition-colors`}
                 />
                 <Select value={headUnit} onValueChange={setHeadUnit}>
-                  <SelectTrigger className="w-32 border-2 border-border bg-background text-sm">
+                  <SelectTrigger className="w-28 border-2 border-border bg-background text-sm h-11">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="z-50">
@@ -268,12 +371,20 @@ export default function PumpPowerCalculator() {
                   </SelectContent>
                 </Select>
               </div>
+              {headError && (
+                <div className="mt-1 ml-32 flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="font-medium">{headError}</span>
+                </div>
+              )}
             </div>
 
-            {/* Specific Gravity Input */}
-            <div className="mb-4">
-              <label className="block font-bold text-foreground mb-1.5 text-sm">Specific Gravity (SG):</label>
-              <div className="relative flex items-center gap-3">
+            {/* Specific Gravity Input - One Line */}
+            <div>
+              <div className="flex items-center gap-3">
+                <label className="font-semibold text-foreground text-sm w-28 flex-shrink-0">SG :</label>
                 <input 
                   type="number" 
                   value={specificGravity} 
@@ -282,25 +393,26 @@ export default function PumpPowerCalculator() {
                   step="0.01"
                   min="0.01"
                   max="23"
-                  className={`flex-1 border-2 ${sgError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
+                  className={`flex-1 border-2 ${sgError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2.5 text-base focus:border-blue-500 focus:outline-none transition-colors`}
                 />
+                <div className="w-28 text-xs text-muted-foreground text-center">
+                  {sgError ? "" : "0.01 to 23"}
+                </div>
               </div>
-              {sgError ? (
-                <div className="mt-1 flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {sgError && (
+                <div className="mt-1.5 ml-[8.5rem] flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <span className="font-medium">{sgError}</span>
                 </div>
-              ) : (
-                <p className="text-xs text-muted-foreground mt-1">Range: 0.01 to 23</p>
               )}
             </div>
 
-            {/* Pump Efficiency Input */}
-            <div className="mb-4">
-              <label className="block font-bold text-foreground mb-1.5 text-sm">Pump Efficiency (η):</label>
-              <div className="relative">
+            {/* Pump Efficiency Input - One Line */}
+            <div>
+              <div className="flex items-center gap-3">
+                <label className="font-semibold text-foreground text-sm w-28 flex-shrink-0">Efficiency :</label>
                 <input 
                   type="number" 
                   value={efficiency} 
@@ -309,27 +421,27 @@ export default function PumpPowerCalculator() {
                   min="0.01"
                   max="100"
                   step="0.01"
-                  className={`w-full border-2 ${efficiencyError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2 text-right pr-14 text-base focus:border-blue-500 focus:outline-none transition-colors`}
+                  className={`flex-1 border-2 ${efficiencyError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2.5 text-base focus:border-blue-500 focus:outline-none transition-colors`}
                 />
-                <span className="absolute right-3 top-2.5 text-xs text-muted-foreground font-medium">%</span>
+                <div className="w-28 text-xs text-muted-foreground text-center">
+                  {efficiencyError ? "%" : "0.01 to 100%"}
+                </div>
               </div>
-              {efficiencyError ? (
-                <div className="mt-1 flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {efficiencyError && (
+                <div className="mt-1.5 ml-[8.5rem] flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <span className="font-medium">{efficiencyError}</span>
                 </div>
-              ) : (
-                <p className="text-xs text-muted-foreground mt-1">Range: 0.01% to 100%</p>
               )}
             </div>
 
-            {/* Result Unit Selector */}
-            <div className="mb-4">
-              <label className="block font-bold text-foreground mb-1.5 text-sm">Result Unit:</label>
+            {/* Result Unit Selector - One Line */}
+            <div className="flex items-center gap-3">
+              <label className="font-semibold text-foreground text-sm w-28 flex-shrink-0">Result Unit :</label>
               <Select value={resultUnit} onValueChange={setResultUnit}>
-                <SelectTrigger className="w-full border-2 border-border bg-background text-base">
+                <SelectTrigger className="flex-1 border-2 border-border bg-background text-base h-11">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="z-50">
@@ -340,10 +452,11 @@ export default function PumpPowerCalculator() {
                   ))}
                 </SelectContent>
               </Select>
+              <div className="w-28"></div>
             </div>
 
             {/* Formula Display */}
-            <div className="mb-4 bg-muted rounded-lg p-4 border-2 border-border">
+            <div className="mt-6 mb-4 bg-muted rounded-lg p-4 border-2 border-border">
               <h4 className="font-bold text-foreground mb-3 uppercase text-xs text-center">Formula:</h4>
               <div className="flex flex-col items-center gap-2">
                 <div className="font-serif text-xl flex items-center gap-2">
@@ -361,7 +474,7 @@ export default function PumpPowerCalculator() {
               onClick={handleCalculate}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg text-base tracking-wide shadow-md active:translate-y-0.5 transition-all uppercase"
             >
-              Calculate Shaft Power
+              Calculate
             </button>
           </div>
         </div>
