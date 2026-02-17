@@ -809,12 +809,15 @@ export default function PumpAffinityCalculator() {
 
 
         {/* RIGHT PANEL - RESULTS */}
-        <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden flex flex-col h-full">
-          <div className="bg-muted px-6 py-4 border-b border-border">
+        <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden flex flex-col h-full relative">
+          {/* Grid Background */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808020_1px,transparent_1px),linear-gradient(to_bottom,#80808020_1px,transparent_1px)] bg-[size:20px_20px]" />
+          
+          <div className="bg-muted px-6 py-4 border-b border-border relative z-10">
              <h2 className="font-bold text-xl uppercase text-foreground">Calculation & Result</h2>
           </div>
 
-          <div className="p-6 flex-1 flex flex-col">
+          <div className="p-6 flex-1 flex flex-col relative z-10">
             <div className="mb-6">
               <h4 className="font-bold text-foreground mb-2 uppercase text-sm">Instructions:</h4>
               <p className="text-muted-foreground text-sm leading-relaxed">

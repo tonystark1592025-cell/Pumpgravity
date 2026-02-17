@@ -554,12 +554,15 @@ export default function PumpPowerCalculator() {
         </div>
 
         {/* Right Panel - Results */}
-        <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden flex flex-col h-full">
-          <div className="bg-muted px-4 py-3 border-b border-border">
+        <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden flex flex-col h-full relative">
+          {/* Grid Background */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808020_1px,transparent_1px),linear-gradient(to_bottom,#80808020_1px,transparent_1px)] bg-[size:20px_20px]" />
+          
+          <div className="bg-muted px-4 py-3 border-b border-border relative z-10">
              <h2 className="font-bold text-base uppercase text-foreground">Calculation & Result (Shaft Power)</h2>
           </div>
 
-          <div className="p-4 flex-1 flex flex-col gap-4">
+          <div className="p-4 flex-1 flex flex-col gap-4 relative z-10">
             
             {/* Given Values - Grid Layout */}
             <div className="grid grid-cols-2 gap-3">
