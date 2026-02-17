@@ -25,6 +25,7 @@ export interface CategoryConfig {
   color: string
   bgColor: string
   description: string
+  hidden?: boolean
 }
 
 export const categories: CategoryConfig[] = [
@@ -33,16 +34,16 @@ export const categories: CategoryConfig[] = [
   { id: "area", name: "Area", icon: Square, color: "text-yellow-500", bgColor: "bg-yellow-500/10", description: "Convert area units like m², acre, hectare" },
   { id: "volume", name: "Volume", icon: Droplet, color: "text-cyan-500", bgColor: "bg-cyan-500/10", description: "Convert volume units like L, gal, m³" },
   { id: "temperature", name: "Temperature", icon: Thermometer, color: "text-red-500", bgColor: "bg-red-500/10", description: "Convert temperature units like °C, °F, K" },
-  { id: "time", name: "Time", icon: Clock, color: "text-indigo-500", bgColor: "bg-indigo-500/10", description: "Convert time units like s, min, hr, day" },
+  { id: "time", name: "Time", icon: Clock, color: "text-indigo-500", bgColor: "bg-indigo-500/10", description: "Convert time units like s, min, hr, day", hidden: true },
   { id: "speed", name: "Speed", icon: Gauge, color: "text-orange-500", bgColor: "bg-orange-500/10", description: "Convert speed units like km/h, mph, m/s" },
   { id: "pressure", name: "Pressure", icon: Gauge, color: "text-pink-500", bgColor: "bg-pink-500/10", description: "Convert pressure units like Pa, bar, psi" },
-  { id: "energy", name: "Energy", icon: Zap, color: "text-amber-500", bgColor: "bg-amber-500/10", description: "Convert energy units like J, kWh, cal" },
+  { id: "energy", name: "Energy", icon: Zap, color: "text-amber-500", bgColor: "bg-amber-500/10", description: "Convert energy units like J, kWh, cal", hidden: true },
   { id: "power", name: "Power", icon: Power, color: "text-lime-500", bgColor: "bg-lime-500/10", description: "Convert power units like W, kW, hp" },
-  { id: "digital", name: "Digital", icon: HardDrive, color: "text-teal-500", bgColor: "bg-teal-500/10", description: "Convert digital storage units like KB, MB, GB" },
+  { id: "digital", name: "Digital", icon: HardDrive, color: "text-teal-500", bgColor: "bg-teal-500/10", description: "Convert digital storage units like KB, MB, GB", hidden: true },
   { id: "electrical", name: "Electrical", icon: Bolt, color: "text-violet-500", bgColor: "bg-violet-500/10", description: "Convert electrical units like A, V, VAR" },
-  { id: "mechanics", name: "Mechanics", icon: Cog, color: "text-slate-500", bgColor: "bg-slate-500/10", description: "Convert mechanical units like N, torque, density" },
+  { id: "mechanics", name: "Mechanics", icon: Cog, color: "text-slate-500", bgColor: "bg-slate-500/10", description: "Convert mechanical units like N, torque, density", hidden: true },
   { id: "flow", name: "Flow & Rate", icon: Wind, color: "text-sky-500", bgColor: "bg-sky-500/10", description: "Convert flow rate units like m³/s, gpm, cfm" },
-  { id: "light", name: "Light & Optics", icon: Lightbulb, color: "text-yellow-400", bgColor: "bg-yellow-400/10", description: "Convert light units like lux, dpi, resolution" },
+  { id: "light", name: "Light & Optics", icon: Lightbulb, color: "text-yellow-400", bgColor: "bg-yellow-400/10", description: "Convert light units like lux, dpi, resolution", hidden: true },
 ]
 
 export const converters: ConverterConfig[] = [

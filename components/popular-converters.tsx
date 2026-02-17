@@ -8,7 +8,7 @@ const popularConverters = [
   { name: "Volume", units: 8, tools: 7, icon: Box, href: "/converters#volume" },
   { name: "Area", units: 7, tools: 5, icon: Square, href: "/converters#area" },
   { name: "Speed", units: 5, tools: 5, icon: Gauge, href: "/converters#speed" },
-  { name: "Energy", units: 6, tools: 6, icon: Zap, href: "/converters#energy" },
+  { name: "Pressure", units: 5, tools: 5, icon: Gauge, href: "/converters#pressure" },
   { name: "Power", units: 7, tools: 6, icon: Power, href: "/converters#power" },
 ]
 

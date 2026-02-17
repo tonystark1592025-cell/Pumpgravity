@@ -12,7 +12,10 @@ export default function ConvertersPage() {
   const [searchQuery, setSearchQuery] = useState("")
 
   const filteredCategories = useMemo(() => {
-    if (!searchQuery.trim()) return categories
+    if (!searchQuery.trim()) {
+      // Filter out hidden categories when no search query
+      return categories.filter(cat => !cat.hidden)
+    }
 
     const query = searchQuery.toLowerCase()
     
@@ -34,9 +37,9 @@ export default function ConvertersPage() {
     // Get unique categories from matching converters
     const matchingCategoryIds = new Set(matchingConverters.map(c => c.category))
     
-    // Filter categories
+    // Filter categories (exclude hidden ones)
     return categories.filter(cat => {
-      if (cat.id === "all") return false
+      if (cat.id === "all" || cat.hidden) return false
       return (
         cat.name.toLowerCase().includes(query) ||
         cat.description.toLowerCase().includes(query) ||
