@@ -459,17 +459,19 @@ export default function PumpPowerCalculator() {
             <div>
               <div className="flex items-center gap-3">
                 <label className="font-semibold text-foreground text-sm w-28 flex-shrink-0">SG :</label>
-                <input 
-                  type="number" 
-                  value={specificGravity} 
-                  onChange={e => handleSGChange(e.target.value)} 
-                  placeholder="1.0"
-                  step="0.01"
-                  min="0.01"
-                  max="23"
-                  className={`flex-[2] min-w-0 border-2 ${sgError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
-                />
-                <div className="flex-1 min-w-[80px] text-xs text-muted-foreground text-center">
+                <div className="flex-[2] min-w-0 flex gap-2">
+                  <input 
+                    type="number" 
+                    value={specificGravity} 
+                    onChange={e => handleSGChange(e.target.value)} 
+                    placeholder="1.0"
+                    step="0.01"
+                    min="0.01"
+                    max="23"
+                    className={`flex-1 min-w-0 border-2 ${sgError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
+                  />
+                </div>
+                <div className="flex-1 min-w-[100px] text-xs text-muted-foreground text-center">
                   {sgError ? "" : "0.01 to 23"}
                 </div>
               </div>
@@ -487,17 +489,19 @@ export default function PumpPowerCalculator() {
             <div>
               <div className="flex items-center gap-3">
                 <label className="font-semibold text-foreground text-sm w-28 flex-shrink-0">Efficiency :</label>
-                <input 
-                  type="number" 
-                  value={efficiency} 
-                  onChange={e => handleEfficiencyChange(e.target.value)} 
-                  placeholder="75"
-                  min="0.01"
-                  max="100"
-                  step="0.01"
-                  className={`flex-[2] min-w-0 border-2 ${efficiencyError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
-                />
-                <div className="flex-1 min-w-[80px] text-xs text-muted-foreground text-center">
+                <div className="flex-[2] min-w-0 flex gap-2">
+                  <input 
+                    type="number" 
+                    value={efficiency} 
+                    onChange={e => handleEfficiencyChange(e.target.value)} 
+                    placeholder="75"
+                    min="0.01"
+                    max="100"
+                    step="0.01"
+                    className={`flex-1 min-w-0 border-2 ${efficiencyError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
+                  />
+                </div>
+                <div className="flex-1 min-w-[100px] text-xs text-muted-foreground text-center">
                   {efficiencyError ? "%" : "0.01 to 100%"}
                 </div>
               </div>
@@ -514,18 +518,20 @@ export default function PumpPowerCalculator() {
             {/* Result Unit Selector - One Line */}
             <div className="flex items-center gap-3">
               <label className="font-semibold text-foreground text-sm w-28 flex-shrink-0">Result Unit :</label>
-              <Select value={resultUnit} onValueChange={setResultUnit}>
-                <SelectTrigger className="flex-[2] min-w-0 border-2 border-border bg-background text-base h-10 [&>span]:text-center [&>span]:w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="z-50">
-                  {powerUnits.map((u) => (
-                    <SelectItem key={u.value} value={u.value}>
-                      {u.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex-[2] min-w-0 flex gap-2">
+                <Select value={resultUnit} onValueChange={setResultUnit}>
+                  <SelectTrigger className="flex-1 min-w-0 border-2 border-border bg-background text-base h-10 [&>span]:text-center [&>span]:w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="z-50">
+                    {powerUnits.map((u) => (
+                      <SelectItem key={u.value} value={u.value}>
+                        {u.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="flex-1 min-w-[100px]"></div>
             </div>
 
@@ -655,6 +661,8 @@ export default function PumpPowerCalculator() {
     </div>
   )
 }
+
+
 
 
 
