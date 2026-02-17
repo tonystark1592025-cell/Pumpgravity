@@ -431,13 +431,13 @@ export default function PumpAffinityCalculator() {
         
         <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden flex flex-col">
           
-          <div className="flex border-b border-border">
+          <div className="flex">
             <button
               onClick={() => setMode("CONSTANT_SPEED")}
               className={`flex-1 py-3 text-sm font-bold uppercase tracking-wide border-r border-border transition-colors ${
                 mode === "CONSTANT_SPEED" 
                   ? "bg-card text-blue-600 border-t-4 border-t-blue-600" 
-                  : "bg-muted text-muted-foreground hover:bg-card"
+                  : "bg-muted text-muted-foreground hover:bg-card border-b border-border"
               }`}
             >
               Constant Speed <span className="text-[10px] lowercase opacity-70">(Change Diameter)</span>
@@ -447,7 +447,7 @@ export default function PumpAffinityCalculator() {
               className={`flex-1 py-3 text-sm font-bold uppercase tracking-wide transition-colors ${
                 mode === "CONSTANT_DIAMETER" 
                   ? "bg-card text-blue-600 border-t-4 border-t-blue-600" 
-                  : "bg-muted text-muted-foreground hover:bg-card"
+                  : "bg-muted text-muted-foreground hover:bg-card border-b border-border"
               }`}
             >
               Constant Diameter <span className="text-[10px] lowercase opacity-70">(Change Speed)</span>

@@ -377,10 +377,10 @@ export default function PumpPowerCalculator() {
         </div>
       </div>
 
-      <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
         
         {/* Left Panel - Inputs */}
-        <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden flex flex-col">
+        <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden flex flex-col w-full">
           <div className="bg-blue-50 dark:bg-blue-950/30 px-4 py-3 border-b border-border">
              <h2 className="font-bold text-base uppercase text-foreground">Inputs & Parameters (Pump Power)</h2>
           </div>
@@ -396,10 +396,10 @@ export default function PumpPowerCalculator() {
                   value={flowRate}
                   onChange={e => handleFlowChange(e.target.value)}
                   placeholder="100"
-                  className={`flex-1 border-2 ${flowError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2.5 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
+                  className={`flex-[2] min-w-0 border-2 ${flowError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
                 />
                 <Select value={flowUnit} onValueChange={setFlowUnit}>
-                  <SelectTrigger className="w-28 border-2 border-border bg-background text-sm h-11">
+                  <SelectTrigger className="flex-1 min-w-[100px] border-2 border-border bg-background text-sm h-10">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="z-50">
@@ -412,7 +412,7 @@ export default function PumpPowerCalculator() {
                 </Select>
               </div>
               {flowError && (
-                <div className="mt-1 ml-32 flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                <div className="mt-1 flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
@@ -430,10 +430,10 @@ export default function PumpPowerCalculator() {
                   value={head}
                   onChange={e => handleHeadChange(e.target.value)}
                   placeholder="50"
-                  className={`flex-1 border-2 ${headError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2.5 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
+                  className={`flex-[2] min-w-0 border-2 ${headError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
                 />
                 <Select value={headUnit} onValueChange={setHeadUnit}>
-                  <SelectTrigger className="w-28 border-2 border-border bg-background text-sm h-11">
+                  <SelectTrigger className="flex-1 min-w-[100px] border-2 border-border bg-background text-sm h-10">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="z-50">
@@ -446,7 +446,7 @@ export default function PumpPowerCalculator() {
                 </Select>
               </div>
               {headError && (
-                <div className="mt-1 ml-32 flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                <div className="mt-1 flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
@@ -467,14 +467,14 @@ export default function PumpPowerCalculator() {
                   step="0.01"
                   min="0.01"
                   max="23"
-                  className={`flex-1 border-2 ${sgError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2.5 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
+                  className={`flex-[2] min-w-0 border-2 ${sgError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
                 />
-                <div className="w-28 text-xs text-muted-foreground text-center">
+                <div className="flex-1 min-w-[80px] text-xs text-muted-foreground text-center">
                   {sgError ? "" : "0.01 to 23"}
                 </div>
               </div>
               {sgError && (
-                <div className="mt-1.5 ml-[8.5rem] flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                <div className="mt-1.5 flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
@@ -495,14 +495,14 @@ export default function PumpPowerCalculator() {
                   min="0.01"
                   max="100"
                   step="0.01"
-                  className={`flex-1 border-2 ${efficiencyError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2.5 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
+                  className={`flex-[2] min-w-0 border-2 ${efficiencyError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
                 />
-                <div className="w-28 text-xs text-muted-foreground text-center">
+                <div className="flex-1 min-w-[80px] text-xs text-muted-foreground text-center">
                   {efficiencyError ? "%" : "0.01 to 100%"}
                 </div>
               </div>
               {efficiencyError && (
-                <div className="mt-1.5 ml-[8.5rem] flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                <div className="mt-1.5 flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
@@ -515,7 +515,7 @@ export default function PumpPowerCalculator() {
             <div className="flex items-center gap-3">
               <label className="font-semibold text-foreground text-sm w-28 flex-shrink-0">Result Unit :</label>
               <Select value={resultUnit} onValueChange={setResultUnit}>
-                <SelectTrigger className="flex-1 border-2 border-border bg-background text-base h-11">
+                <SelectTrigger className="flex-[2] min-w-0 border-2 border-border bg-background text-base h-10 [&>span]:text-center [&>span]:w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="z-50">
@@ -526,7 +526,7 @@ export default function PumpPowerCalculator() {
                   ))}
                 </SelectContent>
               </Select>
-              <div className="w-28"></div>
+              <div className="flex-1 min-w-[100px]"></div>
             </div>
 
             {/* Formula Display */}
@@ -554,7 +554,7 @@ export default function PumpPowerCalculator() {
         </div>
 
         {/* Right Panel - Results */}
-        <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden flex flex-col h-full relative">
+        <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden flex flex-col h-full relative w-full">
           {/* Grid Background */}
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808020_1px,transparent_1px),linear-gradient(to_bottom,#80808020_1px,transparent_1px)] bg-[size:20px_20px]" />
           
@@ -655,3 +655,7 @@ export default function PumpPowerCalculator() {
     </div>
   )
 }
+
+
+
+
