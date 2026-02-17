@@ -5,6 +5,8 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useToast } from "@/hooks/use-toast"
+import { Copy, Check } from "lucide-react"
 import { 
   convertToSI, 
   convertFromSI, 
@@ -18,8 +20,10 @@ import { formatSignificant } from "@/lib/precision-math"
 type LawMode = "CONSTANT_DIAMETER" | "CONSTANT_SPEED"
 
 export default function PumpAffinityCalculator() {
+  const { toast } = useToast()
   const [mode, setMode] = useState<LawMode>("CONSTANT_DIAMETER")
   const [activeSection, setActiveSection] = useState<string>("flow")
+  const [copied, setCopied] = useState(false)
 
   // Flow section states with units (for CONSTANT_DIAMETER mode - uses N)
   const [q1, setQ1] = useState<string>("")
@@ -142,7 +146,7 @@ export default function PumpAffinityCalculator() {
         
         if (result.variable === 'q2') {
           const calc_output = convertFromSI(calc_SI, q2Unit, 'flow')
-          setQ2(formatResult(calc_output.toString()))
+          // Don't set the input field - only show in result area
           resultValue = formatResult(calc_output.toString())
           resultValueSI = formatResult(result.value)
           resultLabel = `Q₂ = ${formatResult(calc_output.toString())} ${flowUnits.find(u => u.value === q2Unit)?.label}`
@@ -154,7 +158,7 @@ export default function PumpAffinityCalculator() {
           steps.push(`  Q₂ = ${formatResult(calc_output.toString())} ${flowUnits.find(u => u.value === q2Unit)?.label}`)
         } else if (result.variable === 'q1') {
           const calc_output = convertFromSI(calc_SI, q1Unit, 'flow')
-          setQ1(formatResult(calc_output.toString()))
+          // Don't set the input field - only show in result area
           resultValue = formatResult(calc_output.toString())
           resultValueSI = formatResult(result.value)
           resultLabel = `Q₁ = ${formatResult(calc_output.toString())} ${flowUnits.find(u => u.value === q1Unit)?.label}`
@@ -165,12 +169,7 @@ export default function PumpAffinityCalculator() {
           steps.push(`Step 3: Convert to ${flowUnits.find(u => u.value === q1Unit)?.label}`)
           steps.push(`  Q₁ = ${formatResult(calc_output.toString())} ${flowUnits.find(u => u.value === q1Unit)?.label}`)
         } else if (result.variable === 'v2') {
-          const calc = parseFloat(result.value)
-          if (isConstantDiameter) {
-            setN2Flow(formatResult(result.value))
-          } else {
-            setD2Flow(formatResult(result.value))
-          }
+          // Don't set the input field - only show in result area
           resultValue = formatResult(result.value)
           resultValueSI = formatResult(result.value)
           resultLabel = `${symbol}₂ = ${formatResult(result.value)} ${unit}`
@@ -178,12 +177,7 @@ export default function PumpAffinityCalculator() {
           steps.push(`  ${symbol}₂ = ${v1_SI} × (${formatSignificant(q2_SI!.toString(), 6)} / ${formatSignificant(q1_SI!.toString(), 6)})`)
           steps.push(`  ${symbol}₂ = ${formatResult(result.value)} ${unit}`)
         } else if (result.variable === 'v1') {
-          const calc = parseFloat(result.value)
-          if (isConstantDiameter) {
-            setN1Flow(formatResult(result.value))
-          } else {
-            setD1Flow(formatResult(result.value))
-          }
+          // Don't set the input field - only show in result area
           resultValue = formatResult(result.value)
           resultValueSI = formatResult(result.value)
           resultLabel = `${symbol}₁ = ${formatResult(result.value)} ${unit}`
@@ -245,7 +239,7 @@ export default function PumpAffinityCalculator() {
         // Calculate H2
         const calc_SI = (h1_SI * Math.pow(n2_SI / n1_SI, 2))
         const calc_output = convertFromSI(calc_SI, h2Unit, 'head')
-        setH2(calc_output.toFixed(2))
+        // Don't set the input field - only show in result area
         resultValue = calc_output.toFixed(2)
         resultValueSI = calc_SI.toFixed(2)
         resultLabel = `H₂ = ${calc_output.toFixed(2)} ${headUnits.find(u => u.value === h2Unit)?.label}`
@@ -259,7 +253,7 @@ export default function PumpAffinityCalculator() {
         // Calculate H1
         const calc_SI = (h2_SI * Math.pow(n1_SI / n2_SI, 2))
         const calc_output = convertFromSI(calc_SI, h1Unit, 'head')
-        setH1(calc_output.toFixed(2))
+        // Don't set the input field - only show in result area
         resultValue = calc_output.toFixed(2)
         resultValueSI = calc_SI.toFixed(2)
         resultLabel = `H₁ = ${calc_output.toFixed(2)} ${headUnits.find(u => u.value === h1Unit)?.label}`
@@ -272,7 +266,7 @@ export default function PumpAffinityCalculator() {
       } else if (n1_SI !== null && h1_SI !== null && h2_SI !== null && n2_SI === null) {
         // Calculate N2
         const calc = (n1_SI * Math.sqrt(h2_SI / h1_SI))
-        setN2Head(calc.toFixed(2))
+        // Don't set the input field - only show in result area
         resultValue = calc.toFixed(2)
         resultValueSI = calc.toFixed(2)
         resultLabel = `N₂ = ${calc.toFixed(2)} RPM`
@@ -282,7 +276,7 @@ export default function PumpAffinityCalculator() {
       } else if (n2_SI !== null && h1_SI !== null && h2_SI !== null && n1_SI === null) {
         // Calculate N1
         const calc = (n2_SI * Math.sqrt(h1_SI / h2_SI))
-        setN1Head(calc.toFixed(2))
+        // Don't set the input field - only show in result area
         resultValue = calc.toFixed(2)
         resultValueSI = calc.toFixed(2)
         resultLabel = `N₁ = ${calc.toFixed(2)} RPM`
@@ -343,7 +337,7 @@ export default function PumpAffinityCalculator() {
         // Calculate P2
         const calc_SI = (p1_SI * Math.pow(n2_SI / n1_SI, 3))
         const calc_output = convertFromSI(calc_SI, p2Unit, 'power')
-        setP2(calc_output.toFixed(2))
+        // Don't set the input field - only show in result area
         resultValue = calc_output.toFixed(2)
         resultValueSI = calc_SI.toFixed(2)
         resultLabel = `P₂ = ${calc_output.toFixed(2)} ${powerUnits.find(u => u.value === p2Unit)?.label}`
@@ -357,7 +351,7 @@ export default function PumpAffinityCalculator() {
         // Calculate P1
         const calc_SI = (p2_SI * Math.pow(n1_SI / n2_SI, 3))
         const calc_output = convertFromSI(calc_SI, p1Unit, 'power')
-        setP1(calc_output.toFixed(2))
+        // Don't set the input field - only show in result area
         resultValue = calc_output.toFixed(2)
         resultValueSI = calc_SI.toFixed(2)
         resultLabel = `P₁ = ${calc_output.toFixed(2)} ${powerUnits.find(u => u.value === p1Unit)?.label}`
@@ -370,7 +364,7 @@ export default function PumpAffinityCalculator() {
       } else if (n1_SI !== null && p1_SI !== null && p2_SI !== null && n2_SI === null) {
         // Calculate N2
         const calc = (n1_SI * Math.cbrt(p2_SI / p1_SI))
-        setN2Power(calc.toFixed(2))
+        // Don't set the input field - only show in result area
         resultValue = calc.toFixed(2)
         resultValueSI = calc.toFixed(2)
         resultLabel = `N₂ = ${calc.toFixed(2)} RPM`
@@ -380,7 +374,7 @@ export default function PumpAffinityCalculator() {
       } else if (n2_SI !== null && p1_SI !== null && p2_SI !== null && n1_SI === null) {
         // Calculate N1
         const calc = (n2_SI * Math.cbrt(p1_SI / p2_SI))
-        setN1Power(calc.toFixed(2))
+        // Don't set the input field - only show in result area
         resultValue = calc.toFixed(2)
         resultValueSI = calc.toFixed(2)
         resultLabel = `N₁ = ${calc.toFixed(2)} RPM`
@@ -396,6 +390,17 @@ export default function PumpAffinityCalculator() {
       label: resultLabel,
       calculated: true,
       steps
+    })
+  }
+
+  const copyResult = () => {
+    const resultText = result.label
+    navigator.clipboard.writeText(resultText)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+    toast({
+      title: "Copied to clipboard!",
+      description: resultText,
     })
   }
 
@@ -486,7 +491,7 @@ export default function PumpAffinityCalculator() {
                               value={q1} 
                               onChange={e => setQ1(e.target.value)} 
                               placeholder="?" 
-                              className="w-24 border border-border bg-background rounded px-2 py-1 text-right text-sm"
+                              className="w-24 border border-border bg-background rounded px-2 py-1 text-center text-sm"
                             />
                             <Select value={q1Unit} onValueChange={setQ1Unit}>
                               <SelectTrigger className="w-24 h-8 text-xs border border-border">
@@ -510,7 +515,7 @@ export default function PumpAffinityCalculator() {
                               value={mode === "CONSTANT_DIAMETER" ? n1_flow : d1_flow} 
                               onChange={e => mode === "CONSTANT_DIAMETER" ? setN1Flow(e.target.value) : setD1Flow(e.target.value)} 
                               placeholder="?" 
-                              className="w-24 border border-border bg-background rounded px-2 py-1 text-right text-sm"
+                              className="w-24 border border-border bg-background rounded px-2 py-1 text-center text-sm"
                             />
                             <div className="w-24 h-8 flex items-center justify-center border border-border bg-muted rounded text-xs text-muted-foreground font-medium">
                               {mode === "CONSTANT_DIAMETER" ? "RPM" : "mm"}
@@ -527,7 +532,7 @@ export default function PumpAffinityCalculator() {
                               value={q2} 
                               onChange={e => setQ2(e.target.value)} 
                               placeholder="?" 
-                              className="w-24 border border-border bg-background rounded px-2 py-1 text-right text-sm"
+                              className="w-24 border border-border bg-background rounded px-2 py-1 text-center text-sm"
                             />
                             <Select value={q2Unit} onValueChange={setQ2Unit}>
                               <SelectTrigger className="w-24 h-8 text-xs border border-border">
@@ -551,7 +556,7 @@ export default function PumpAffinityCalculator() {
                               value={mode === "CONSTANT_DIAMETER" ? n2_flow : d2_flow} 
                               onChange={e => mode === "CONSTANT_DIAMETER" ? setN2Flow(e.target.value) : setD2Flow(e.target.value)} 
                               placeholder="?" 
-                              className="w-24 border border-border bg-background rounded px-2 py-1 text-right text-sm"
+                              className="w-24 border border-border bg-background rounded px-2 py-1 text-center text-sm"
                             />
                             <div className="w-24 h-8 flex items-center justify-center border border-border bg-muted rounded text-xs text-muted-foreground font-medium">
                               {mode === "CONSTANT_DIAMETER" ? "RPM" : "mm"}
@@ -600,7 +605,7 @@ export default function PumpAffinityCalculator() {
                               value={h1} 
                               onChange={e => setH1(e.target.value)} 
                               placeholder="?" 
-                              className="w-24 border border-border bg-background rounded px-2 py-1 text-right text-sm"
+                              className="w-24 border border-border bg-background rounded px-2 py-1 text-center text-sm"
                             />
                             <Select value={h1Unit} onValueChange={setH1Unit}>
                               <SelectTrigger className="w-24 h-8 text-xs border border-border">
@@ -624,7 +629,7 @@ export default function PumpAffinityCalculator() {
                               value={mode === "CONSTANT_DIAMETER" ? n1_head : d1_head} 
                               onChange={e => mode === "CONSTANT_DIAMETER" ? setN1Head(e.target.value) : setD1Head(e.target.value)} 
                               placeholder="?" 
-                              className="w-24 border border-border bg-background rounded px-2 py-1 text-right text-sm"
+                              className="w-24 border border-border bg-background rounded px-2 py-1 text-center text-sm"
                             />
                             <div className="w-24 h-8 flex items-center justify-center border border-border bg-muted rounded text-xs text-muted-foreground font-medium">
                               {mode === "CONSTANT_DIAMETER" ? "RPM" : "mm"}
@@ -641,7 +646,7 @@ export default function PumpAffinityCalculator() {
                               value={h2} 
                               onChange={e => setH2(e.target.value)} 
                               placeholder="?" 
-                              className="w-24 border border-border bg-background rounded px-2 py-1 text-right text-sm"
+                              className="w-24 border border-border bg-background rounded px-2 py-1 text-center text-sm"
                             />
                             <Select value={h2Unit} onValueChange={setH2Unit}>
                               <SelectTrigger className="w-24 h-8 text-xs border border-border">
@@ -665,7 +670,7 @@ export default function PumpAffinityCalculator() {
                               value={mode === "CONSTANT_DIAMETER" ? n2_head : d2_head} 
                               onChange={e => mode === "CONSTANT_DIAMETER" ? setN2Head(e.target.value) : setD2Head(e.target.value)} 
                               placeholder="?" 
-                              className="w-24 border border-border bg-background rounded px-2 py-1 text-right text-sm"
+                              className="w-24 border border-border bg-background rounded px-2 py-1 text-center text-sm"
                             />
                             <div className="w-24 h-8 flex items-center justify-center border border-border bg-muted rounded text-xs text-muted-foreground font-medium">
                               {mode === "CONSTANT_DIAMETER" ? "RPM" : "mm"}
@@ -714,7 +719,7 @@ export default function PumpAffinityCalculator() {
                               value={p1} 
                               onChange={e => setP1(e.target.value)} 
                               placeholder="?" 
-                              className="w-24 border border-border bg-background rounded px-2 py-1 text-right text-sm"
+                              className="w-24 border border-border bg-background rounded px-2 py-1 text-center text-sm"
                             />
                             <Select value={p1Unit} onValueChange={setP1Unit}>
                               <SelectTrigger className="w-24 h-8 text-xs border border-border">
@@ -738,7 +743,7 @@ export default function PumpAffinityCalculator() {
                               value={mode === "CONSTANT_DIAMETER" ? n1_power : d1_power} 
                               onChange={e => mode === "CONSTANT_DIAMETER" ? setN1Power(e.target.value) : setD1Power(e.target.value)} 
                               placeholder="?" 
-                              className="w-24 border border-border bg-background rounded px-2 py-1 text-right text-sm"
+                              className="w-24 border border-border bg-background rounded px-2 py-1 text-center text-sm"
                             />
                             <div className="w-24 h-8 flex items-center justify-center border border-border bg-muted rounded text-xs text-muted-foreground font-medium">
                               {mode === "CONSTANT_DIAMETER" ? "RPM" : "mm"}
@@ -755,7 +760,7 @@ export default function PumpAffinityCalculator() {
                               value={p2} 
                               onChange={e => setP2(e.target.value)} 
                               placeholder="?" 
-                              className="w-24 border border-border bg-background rounded px-2 py-1 text-right text-sm"
+                              className="w-24 border border-border bg-background rounded px-2 py-1 text-center text-sm"
                             />
                             <Select value={p2Unit} onValueChange={setP2Unit}>
                               <SelectTrigger className="w-24 h-8 text-xs border border-border">
@@ -779,7 +784,7 @@ export default function PumpAffinityCalculator() {
                               value={mode === "CONSTANT_DIAMETER" ? n2_power : d2_power} 
                               onChange={e => mode === "CONSTANT_DIAMETER" ? setN2Power(e.target.value) : setD2Power(e.target.value)} 
                               placeholder="?" 
-                              className="w-24 border border-border bg-background rounded px-2 py-1 text-right text-sm"
+                              className="w-24 border border-border bg-background rounded px-2 py-1 text-center text-sm"
                             />
                             <div className="w-24 h-8 flex items-center justify-center border border-border bg-muted rounded text-xs text-muted-foreground font-medium">
                               {mode === "CONSTANT_DIAMETER" ? "RPM" : "mm"}
@@ -898,7 +903,17 @@ export default function PumpAffinityCalculator() {
             )}
 
             <div className="mt-auto">
-              <div className={`rounded-lg p-8 text-center text-white shadow-lg transition-all duration-500 ${result.calculated ? "bg-gradient-to-br from-green-500 to-green-600" : "bg-muted"}`}>
+              <div className={`rounded-lg p-8 text-center text-white shadow-lg transition-all duration-500 relative ${result.calculated ? "bg-gradient-to-br from-green-500 to-green-600" : "bg-muted"}`}>
+                 {result.calculated && (
+                   <button
+                     onClick={copyResult}
+                     className="absolute top-3 right-3 p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
+                     title="Copy result"
+                   >
+                     {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                   </button>
+                 )}
+                 
                  <h2 className="text-2xl font-bold mb-4 uppercase opacity-90">
                    {result.calculated ? "Calculated Value" : "Result"}
                  </h2>
@@ -914,7 +929,7 @@ export default function PumpAffinityCalculator() {
                      )}
                    </div>
                  ) : (
-                   <div className="text-lg font-medium opacity-70 italic">
+                   <div className="text-lg font-medium opacity-70 italic text-muted-foreground">
                      {result.label || "Enter values and click Calculate..."}
                    </div>
                  )}
@@ -929,6 +944,7 @@ export default function PumpAffinityCalculator() {
     </div>
   )
 }
+
 
 
 

@@ -4,6 +4,8 @@ import { useState } from "react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useToast } from "@/hooks/use-toast"
+import { Copy, Check } from "lucide-react"
 import { 
   convertToSI, 
   convertFromSI, 
@@ -14,6 +16,7 @@ import {
 import { multiply, divide, formatSignificant } from "@/lib/precision-math"
 
 export default function PumpPowerCalculator() {
+  const { toast } = useToast()
   const [flowRate, setFlowRate] = useState<string>("")
   const [flowUnit, setFlowUnit] = useState<string>("m3h")
   
@@ -24,6 +27,7 @@ export default function PumpPowerCalculator() {
   const [efficiency, setEfficiency] = useState<string>("75")
   
   const [resultUnit, setResultUnit] = useState<string>("kw")
+  const [copied, setCopied] = useState(false)
 
   // Validation states
   const [flowError, setFlowError] = useState<string>("")
@@ -54,6 +58,11 @@ export default function PumpPowerCalculator() {
       setFlowError("Please enter a valid number")
     } else if (num === 0) {
       setFlowError("Flow rate cannot be zero")
+      toast({
+        title: "Invalid Input",
+        description: "Flow rate cannot be zero. Please enter a valid value.",
+        variant: "destructive",
+      })
     } else if (num < 0) {
       setFlowError("Flow rate must be positive")
     } else {
@@ -72,6 +81,11 @@ export default function PumpPowerCalculator() {
       setHeadError("Please enter a valid number")
     } else if (num === 0) {
       setHeadError("Head cannot be zero")
+      toast({
+        title: "Invalid Input",
+        description: "Head cannot be zero. Please enter a valid value.",
+        variant: "destructive",
+      })
     } else if (num < 0) {
       setHeadError("Head must be positive")
     } else {
@@ -90,6 +104,11 @@ export default function PumpPowerCalculator() {
       setSgError("Please enter a valid number")
     } else if (num === 0) {
       setSgError("SG cannot be zero")
+      toast({
+        title: "Invalid Input",
+        description: "Specific Gravity cannot be zero. Please enter a valid value.",
+        variant: "destructive",
+      })
     } else if (num < 0.01) {
       setSgError("SG must be at least 0.01")
     } else if (num > 23) {
@@ -110,6 +129,11 @@ export default function PumpPowerCalculator() {
       setEfficiencyError("Please enter a valid number")
     } else if (num === 0) {
       setEfficiencyError("Efficiency cannot be zero")
+      toast({
+        title: "Invalid Input",
+        description: "Efficiency cannot be zero. Please enter a valid value.",
+        variant: "destructive",
+      })
     } else if (num < 0.01) {
       setEfficiencyError("Efficiency must be at least 0.01%")
     } else if (num > 100) {
@@ -121,14 +145,28 @@ export default function PumpPowerCalculator() {
 
   // Handle SG change
   const handleSGChange = (value: string) => {
-    setSpecificGravity(value)
-    validateSG(value)
+    // Enforce maximum limit of 23
+    const num = parseFloat(value)
+    if (!isNaN(num) && num > 23) {
+      setSpecificGravity("23")
+      validateSG("23")
+    } else {
+      setSpecificGravity(value)
+      validateSG(value)
+    }
   }
 
   // Handle Efficiency change
   const handleEfficiencyChange = (value: string) => {
-    setEfficiency(value)
-    validateEfficiency(value)
+    // Enforce maximum limit of 100
+    const num = parseFloat(value)
+    if (!isNaN(num) && num > 100) {
+      setEfficiency("100")
+      validateEfficiency("100")
+    } else {
+      setEfficiency(value)
+      validateEfficiency(value)
+    }
   }
 
   // Handle Flow Rate change
@@ -143,14 +181,30 @@ export default function PumpPowerCalculator() {
     validateHead(value)
   }
 
+  const copyResult = () => {
+    const resultText = `Ps = ${result.value} ${powerUnits.find(u => u.value === resultUnit)?.label} (${result.valueSI} kW)`
+    navigator.clipboard.writeText(resultText)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+    toast({
+      title: "Copied to clipboard!",
+      description: resultText,
+    })
+  }
+
   const handleCalculate = () => {
     const Q_input = flowRate ? parseFloat(flowRate) : null
     const H_input = head ? parseFloat(head) : null
     const SG = specificGravity ? parseFloat(specificGravity) : null
     const eta = efficiency ? parseFloat(efficiency) : null
 
-    // Check for validation errors
+    // Check for validation errors - STOP calculation if any errors exist
     if (flowError || headError || sgError || efficiencyError) {
+      toast({
+        title: "Validation Error",
+        description: "Please fix all validation errors before calculating.",
+        variant: "destructive",
+      })
       setResult({
         value: "",
         valueSI: "",
@@ -172,6 +226,11 @@ export default function PumpPowerCalculator() {
 
     // Additional zero checks
     if (Q_input === 0) {
+      toast({
+        title: "Invalid Input",
+        description: "Flow rate cannot be zero.",
+        variant: "destructive",
+      })
       setResult({
         value: "",
         valueSI: "",
@@ -182,6 +241,11 @@ export default function PumpPowerCalculator() {
     }
 
     if (H_input === 0) {
+      toast({
+        title: "Invalid Input",
+        description: "Head cannot be zero.",
+        variant: "destructive",
+      })
       setResult({
         value: "",
         valueSI: "",
@@ -192,6 +256,11 @@ export default function PumpPowerCalculator() {
     }
 
     if (eta === 0) {
+      toast({
+        title: "Invalid Input",
+        description: "Efficiency cannot be zero.",
+        variant: "destructive",
+      })
       setResult({
         value: "",
         valueSI: "",
@@ -202,6 +271,11 @@ export default function PumpPowerCalculator() {
     }
 
     if (SG === 0) {
+      toast({
+        title: "Invalid Input",
+        description: "Specific Gravity cannot be zero.",
+        variant: "destructive",
+      })
       setResult({
         value: "",
         valueSI: "",
@@ -322,7 +396,7 @@ export default function PumpPowerCalculator() {
                   value={flowRate}
                   onChange={e => handleFlowChange(e.target.value)}
                   placeholder="100"
-                  className={`flex-1 border-2 ${flowError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2.5 text-base focus:border-blue-500 focus:outline-none transition-colors`}
+                  className={`flex-1 border-2 ${flowError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2.5 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
                 />
                 <Select value={flowUnit} onValueChange={setFlowUnit}>
                   <SelectTrigger className="w-28 border-2 border-border bg-background text-sm h-11">
@@ -356,7 +430,7 @@ export default function PumpPowerCalculator() {
                   value={head}
                   onChange={e => handleHeadChange(e.target.value)}
                   placeholder="50"
-                  className={`flex-1 border-2 ${headError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2.5 text-base focus:border-blue-500 focus:outline-none transition-colors`}
+                  className={`flex-1 border-2 ${headError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2.5 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
                 />
                 <Select value={headUnit} onValueChange={setHeadUnit}>
                   <SelectTrigger className="w-28 border-2 border-border bg-background text-sm h-11">
@@ -393,7 +467,7 @@ export default function PumpPowerCalculator() {
                   step="0.01"
                   min="0.01"
                   max="23"
-                  className={`flex-1 border-2 ${sgError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2.5 text-base focus:border-blue-500 focus:outline-none transition-colors`}
+                  className={`flex-1 border-2 ${sgError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2.5 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
                 />
                 <div className="w-28 text-xs text-muted-foreground text-center">
                   {sgError ? "" : "0.01 to 23"}
@@ -421,7 +495,7 @@ export default function PumpPowerCalculator() {
                   min="0.01"
                   max="100"
                   step="0.01"
-                  className={`flex-1 border-2 ${efficiencyError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2.5 text-base focus:border-blue-500 focus:outline-none transition-colors`}
+                  className={`flex-1 border-2 ${efficiencyError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2.5 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
                 />
                 <div className="w-28 text-xs text-muted-foreground text-center">
                   {efficiencyError ? "%" : "0.01 to 100%"}
@@ -485,27 +559,36 @@ export default function PumpPowerCalculator() {
              <h2 className="font-bold text-base uppercase text-foreground">Calculation & Result (Shaft Power)</h2>
           </div>
 
-          <div className="p-4 flex-1 flex flex-col">
+          <div className="p-4 flex-1 flex flex-col gap-4">
             
-            {/* Given Values */}
-            <div className="mb-4 bg-muted rounded-lg p-3 border border-border">
-              <h4 className="font-bold text-foreground mb-2 uppercase text-xs">Given:</h4>
-              <ul className="space-y-0.5 text-xs text-muted-foreground">
-                <li>• Flow Rate (Q) = {flowRate || "?"} {flowUnits.find(u => u.value === flowUnit)?.label}</li>
-                <li>• Differential Head (H) = {head || "?"} {headUnits.find(u => u.value === headUnit)?.label}</li>
-                <li>• Specific Gravity (SG) = {specificGravity || "?"}</li>
-                <li>• Pump Efficiency (η) = {efficiency || "?"}%</li>
-              </ul>
+            {/* Given Values - Grid Layout */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-muted rounded-lg p-3 border border-border">
+                <h4 className="font-bold text-foreground mb-1 uppercase text-xs">Flow Rate (Q)</h4>
+                <p className="text-sm text-muted-foreground">{flowRate || "?"} {flowUnits.find(u => u.value === flowUnit)?.label}</p>
+              </div>
+              <div className="bg-muted rounded-lg p-3 border border-border">
+                <h4 className="font-bold text-foreground mb-1 uppercase text-xs">Head (H)</h4>
+                <p className="text-sm text-muted-foreground">{head || "?"} {headUnits.find(u => u.value === headUnit)?.label}</p>
+              </div>
+              <div className="bg-muted rounded-lg p-3 border border-border">
+                <h4 className="font-bold text-foreground mb-1 uppercase text-xs">SG</h4>
+                <p className="text-sm text-muted-foreground">{specificGravity || "?"}</p>
+              </div>
+              <div className="bg-muted rounded-lg p-3 border border-border">
+                <h4 className="font-bold text-foreground mb-1 uppercase text-xs">Efficiency (η)</h4>
+                <p className="text-sm text-muted-foreground">{efficiency || "?"}%</p>
+              </div>
             </div>
 
-            <div className="mb-4 bg-muted rounded-lg p-3 border border-border">
+            <div className="bg-muted rounded-lg p-3 border border-border">
               <h4 className="font-bold text-foreground mb-2 uppercase text-xs">To Find:</h4>
               <p className="text-xs text-muted-foreground">• Shaft Power (P<sub>s</sub>) = ?</p>
             </div>
 
             {/* Calculation Steps */}
             {result.steps.length > 0 && (
-              <div className="mb-4 bg-muted rounded-lg p-3 border border-border">
+              <div className="bg-muted rounded-lg p-3 border border-border max-h-48 overflow-y-auto">
                 <h4 className="font-bold text-foreground mb-2 uppercase text-xs">Calculation:</h4>
                 <div className="space-y-1">
                   {result.steps.map((step, index) => (
@@ -519,7 +602,17 @@ export default function PumpPowerCalculator() {
 
             {/* Result Display */}
             <div className="mt-auto">
-              <div className={`rounded-lg p-6 text-center text-white shadow-lg transition-all duration-500 ${result.calculated ? "bg-gradient-to-br from-green-500 to-green-600" : "bg-muted"}`}>
+              <div className={`rounded-lg p-6 text-center text-white shadow-lg transition-all duration-500 relative ${result.calculated ? "bg-gradient-to-br from-green-500 to-green-600" : "bg-muted"}`}>
+                 {result.calculated && (
+                   <button
+                     onClick={copyResult}
+                     className="absolute top-3 right-3 p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
+                     title="Copy result"
+                   >
+                     {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                   </button>
+                 )}
+                 
                  <div className="flex items-center justify-center mb-3">
                    {result.calculated && (
                      <div className="w-10 h-10 rounded-full border-4 border-white flex items-center justify-center">
@@ -544,7 +637,7 @@ export default function PumpPowerCalculator() {
                      </div>
                    </div>
                  ) : (
-                   <div className="text-base font-medium opacity-70 italic">
+                   <div className="text-base font-medium opacity-70 italic text-muted-foreground">
                      {result.steps[0] || "Enter values and click Calculate..."}
                    </div>
                  )}
