@@ -62,6 +62,26 @@ export default function PumpAffinityCalculator() {
   const [d1_power, setD1Power] = useState<string>("")
   const [d2_power, setD2Power] = useState<string>("")
 
+  // Validation states
+  const [q1Error, setQ1Error] = useState<string>("")
+  const [q2Error, setQ2Error] = useState<string>("")
+  const [h1Error, setH1Error] = useState<string>("")
+  const [h2Error, setH2Error] = useState<string>("")
+  const [p1Error, setP1Error] = useState<string>("")
+  const [p2Error, setP2Error] = useState<string>("")
+  const [n1FlowError, setN1FlowError] = useState<string>("")
+  const [n2FlowError, setN2FlowError] = useState<string>("")
+  const [n1HeadError, setN1HeadError] = useState<string>("")
+  const [n2HeadError, setN2HeadError] = useState<string>("")
+  const [n1PowerError, setN1PowerError] = useState<string>("")
+  const [n2PowerError, setN2PowerError] = useState<string>("")
+  const [d1FlowError, setD1FlowError] = useState<string>("")
+  const [d2FlowError, setD2FlowError] = useState<string>("")
+  const [d1HeadError, setD1HeadError] = useState<string>("")
+  const [d2HeadError, setD2HeadError] = useState<string>("")
+  const [d1PowerError, setD1PowerError] = useState<string>("")
+  const [d2PowerError, setD2PowerError] = useState<string>("")
+
   const [result, setResult] = useState<{
     value: string
     valueSI: string
@@ -83,6 +103,24 @@ export default function PumpAffinityCalculator() {
     calculated: false,
     steps: []
   })
+
+  // Simple validation on blur (when focus is removed)
+  const validateOnBlur = (value: string, setError: (error: string) => void, fieldName: string) => {
+    if (value === "") {
+      setError("")
+      return
+    }
+    const num = parseFloat(value)
+    if (isNaN(num)) {
+      setError("Please enter a valid number")
+    } else if (num === 0) {
+      setError(`${fieldName} cannot be zero`)
+    } else if (num < 0) {
+      setError(`${fieldName} must be positive`)
+    } else {
+      setError("")
+    }
+  }
 
   const handleCalculate = () => {
     let steps: string[] = []
@@ -703,8 +741,9 @@ export default function PumpAffinityCalculator() {
                               type="number" 
                               value={h1} 
                               onChange={e => setH1(e.target.value)} 
+                              onBlur={e => validateOnBlur(e.target.value, setH1Error, "H₁")}
                               placeholder="?" 
-                              className="w-24 border border-border bg-background rounded px-2 py-1 text-center text-sm"
+                              className={`w-24 border-2 ${h1Error ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded px-2 py-1 text-center text-sm`}
                             />
                             <Select value={h1Unit} onValueChange={setH1Unit}>
                               <SelectTrigger className="w-24 h-8 text-xs border border-border">
@@ -717,6 +756,14 @@ export default function PumpAffinityCalculator() {
                               </SelectContent>
                             </Select>
                           </div>
+                          {h1Error && (
+                            <div className="mt-1 flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span className="font-medium">{h1Error}</span>
+                            </div>
+                          )}
                        </div>
 
                        {/* N1 - Fixed RPM */}
@@ -727,13 +774,22 @@ export default function PumpAffinityCalculator() {
                               type="number" 
                               value={mode === "CONSTANT_DIAMETER" ? n1_head : d1_head} 
                               onChange={e => mode === "CONSTANT_DIAMETER" ? setN1Head(e.target.value) : setD1Head(e.target.value)} 
+                              onBlur={e => mode === "CONSTANT_DIAMETER" ? validateOnBlur(e.target.value, setN1HeadError, "N₁") : validateOnBlur(e.target.value, setD1HeadError, "D₁")}
                               placeholder="?" 
-                              className="w-24 border border-border bg-background rounded px-2 py-1 text-center text-sm"
+                              className={`w-24 border-2 ${(mode === "CONSTANT_DIAMETER" ? n1HeadError : d1HeadError) ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded px-2 py-1 text-center text-sm`}
                             />
                             <div className="w-24 h-8 flex items-center justify-center border border-border bg-muted rounded text-xs text-muted-foreground font-medium">
                               {mode === "CONSTANT_DIAMETER" ? "RPM" : "mm"}
                             </div>
                           </div>
+                          {(mode === "CONSTANT_DIAMETER" ? n1HeadError : d1HeadError) && (
+                            <div className="mt-1 flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span className="font-medium">{mode === "CONSTANT_DIAMETER" ? n1HeadError : d1HeadError}</span>
+                            </div>
+                          )}
                        </div>
 
                        {/* H2 with unit selector */}
@@ -744,8 +800,9 @@ export default function PumpAffinityCalculator() {
                               type="number" 
                               value={h2} 
                               onChange={e => setH2(e.target.value)} 
+                              onBlur={e => validateOnBlur(e.target.value, setH2Error, "H₂")}
                               placeholder="?" 
-                              className="w-24 border border-border bg-background rounded px-2 py-1 text-center text-sm"
+                              className={`w-24 border-2 ${h2Error ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded px-2 py-1 text-center text-sm`}
                             />
                             <Select value={h2Unit} onValueChange={setH2Unit}>
                               <SelectTrigger className="w-24 h-8 text-xs border border-border">
@@ -758,6 +815,14 @@ export default function PumpAffinityCalculator() {
                               </SelectContent>
                             </Select>
                           </div>
+                          {h2Error && (
+                            <div className="mt-1 flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span className="font-medium">{h2Error}</span>
+                            </div>
+                          )}
                        </div>
 
                        {/* N2 - Fixed RPM */}
@@ -768,13 +833,22 @@ export default function PumpAffinityCalculator() {
                               type="number" 
                               value={mode === "CONSTANT_DIAMETER" ? n2_head : d2_head} 
                               onChange={e => mode === "CONSTANT_DIAMETER" ? setN2Head(e.target.value) : setD2Head(e.target.value)} 
+                              onBlur={e => mode === "CONSTANT_DIAMETER" ? validateOnBlur(e.target.value, setN2HeadError, "N₂") : validateOnBlur(e.target.value, setD2HeadError, "D₂")}
                               placeholder="?" 
-                              className="w-24 border border-border bg-background rounded px-2 py-1 text-center text-sm"
+                              className={`w-24 border-2 ${(mode === "CONSTANT_DIAMETER" ? n2HeadError : d2HeadError) ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded px-2 py-1 text-center text-sm`}
                             />
                             <div className="w-24 h-8 flex items-center justify-center border border-border bg-muted rounded text-xs text-muted-foreground font-medium">
                               {mode === "CONSTANT_DIAMETER" ? "RPM" : "mm"}
                             </div>
                           </div>
+                          {(mode === "CONSTANT_DIAMETER" ? n2HeadError : d2HeadError) && (
+                            <div className="mt-1 flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span className="font-medium">{mode === "CONSTANT_DIAMETER" ? n2HeadError : d2HeadError}</span>
+                            </div>
+                          )}
                        </div>
                     </div>
                   </div>
@@ -817,8 +891,9 @@ export default function PumpAffinityCalculator() {
                               type="number" 
                               value={p1} 
                               onChange={e => setP1(e.target.value)} 
+                              onBlur={e => validateOnBlur(e.target.value, setP1Error, "P₁")}
                               placeholder="?" 
-                              className="w-24 border border-border bg-background rounded px-2 py-1 text-center text-sm"
+                              className={`w-24 border-2 ${p1Error ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded px-2 py-1 text-center text-sm`}
                             />
                             <Select value={p1Unit} onValueChange={setP1Unit}>
                               <SelectTrigger className="w-24 h-8 text-xs border border-border">
@@ -831,6 +906,14 @@ export default function PumpAffinityCalculator() {
                               </SelectContent>
                             </Select>
                           </div>
+                          {p1Error && (
+                            <div className="mt-1 flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span className="font-medium">{p1Error}</span>
+                            </div>
+                          )}
                        </div>
 
                        {/* N1 - Fixed RPM */}
@@ -841,13 +924,22 @@ export default function PumpAffinityCalculator() {
                               type="number" 
                               value={mode === "CONSTANT_DIAMETER" ? n1_power : d1_power} 
                               onChange={e => mode === "CONSTANT_DIAMETER" ? setN1Power(e.target.value) : setD1Power(e.target.value)} 
+                              onBlur={e => mode === "CONSTANT_DIAMETER" ? validateOnBlur(e.target.value, setN1PowerError, "N₁") : validateOnBlur(e.target.value, setD1PowerError, "D₁")}
                               placeholder="?" 
-                              className="w-24 border border-border bg-background rounded px-2 py-1 text-center text-sm"
+                              className={`w-24 border-2 ${(mode === "CONSTANT_DIAMETER" ? n1PowerError : d1PowerError) ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded px-2 py-1 text-center text-sm`}
                             />
                             <div className="w-24 h-8 flex items-center justify-center border border-border bg-muted rounded text-xs text-muted-foreground font-medium">
                               {mode === "CONSTANT_DIAMETER" ? "RPM" : "mm"}
                             </div>
                           </div>
+                          {(mode === "CONSTANT_DIAMETER" ? n1PowerError : d1PowerError) && (
+                            <div className="mt-1 flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span className="font-medium">{mode === "CONSTANT_DIAMETER" ? n1PowerError : d1PowerError}</span>
+                            </div>
+                          )}
                        </div>
 
                        {/* P2 with unit selector */}
@@ -858,8 +950,9 @@ export default function PumpAffinityCalculator() {
                               type="number" 
                               value={p2} 
                               onChange={e => setP2(e.target.value)} 
+                              onBlur={e => validateOnBlur(e.target.value, setP2Error, "P₂")}
                               placeholder="?" 
-                              className="w-24 border border-border bg-background rounded px-2 py-1 text-center text-sm"
+                              className={`w-24 border-2 ${p2Error ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded px-2 py-1 text-center text-sm`}
                             />
                             <Select value={p2Unit} onValueChange={setP2Unit}>
                               <SelectTrigger className="w-24 h-8 text-xs border border-border">
@@ -872,6 +965,14 @@ export default function PumpAffinityCalculator() {
                               </SelectContent>
                             </Select>
                           </div>
+                          {p2Error && (
+                            <div className="mt-1 flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span className="font-medium">{p2Error}</span>
+                            </div>
+                          )}
                        </div>
 
                        {/* N2 - Fixed RPM */}
@@ -882,13 +983,22 @@ export default function PumpAffinityCalculator() {
                               type="number" 
                               value={mode === "CONSTANT_DIAMETER" ? n2_power : d2_power} 
                               onChange={e => mode === "CONSTANT_DIAMETER" ? setN2Power(e.target.value) : setD2Power(e.target.value)} 
+                              onBlur={e => mode === "CONSTANT_DIAMETER" ? validateOnBlur(e.target.value, setN2PowerError, "N₂") : validateOnBlur(e.target.value, setD2PowerError, "D₂")}
                               placeholder="?" 
-                              className="w-24 border border-border bg-background rounded px-2 py-1 text-center text-sm"
+                              className={`w-24 border-2 ${(mode === "CONSTANT_DIAMETER" ? n2PowerError : d2PowerError) ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded px-2 py-1 text-center text-sm`}
                             />
                             <div className="w-24 h-8 flex items-center justify-center border border-border bg-muted rounded text-xs text-muted-foreground font-medium">
                               {mode === "CONSTANT_DIAMETER" ? "RPM" : "mm"}
                             </div>
                           </div>
+                          {(mode === "CONSTANT_DIAMETER" ? n2PowerError : d2PowerError) && (
+                            <div className="mt-1 flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span className="font-medium">{mode === "CONSTANT_DIAMETER" ? n2PowerError : d2PowerError}</span>
+                            </div>
+                          )}
                        </div>
                     </div>
                   </div>
