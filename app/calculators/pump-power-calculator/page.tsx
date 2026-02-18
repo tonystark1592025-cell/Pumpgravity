@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -17,6 +17,7 @@ import { multiply, divide, formatSignificant } from "@/lib/precision-math"
 
 export default function PumpPowerCalculator() {
   const { toast } = useToast()
+  const resultRef = useRef<HTMLDivElement>(null)
   const [flowRate, setFlowRate] = useState<string>("")
   const [flowUnit, setFlowUnit] = useState<string>("m3h")
   
@@ -158,8 +159,22 @@ export default function PumpPowerCalculator() {
 
   // Handle Efficiency change
   const handleEfficiencyChange = (value: string) => {
-    // Enforce maximum limit of 100
+    // Allow empty string
+    if (value === "") {
+      setEfficiency(value)
+      validateEfficiency(value)
+      return
+    }
+    
+    // Limit to 2 digits unless it's exactly 100
     const num = parseFloat(value)
+    
+    // If trying to type more than 2 digits and it's not 100, block it
+    if (value.length > 2 && value !== "100") {
+      return // Don't update, keep previous value
+    }
+    
+    // If value is greater than 100, cap at 100
     if (!isNaN(num) && num > 100) {
       setEfficiency("100")
       validateEfficiency("100")
@@ -353,6 +368,11 @@ export default function PumpPowerCalculator() {
       calculated: true,
       steps
     })
+
+    // Scroll to result after a short delay to ensure DOM is updated
+    setTimeout(() => {
+      resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }, 100)
   }
 
   return (
@@ -657,7 +677,7 @@ export default function PumpPowerCalculator() {
             )}
 
             {/* Result Display */}
-            <div className="mt-auto">
+            <div className="mt-auto" ref={resultRef}>
               <div className={`rounded-lg p-6 text-center text-white shadow-lg transition-all duration-500 relative ${result.calculated ? "bg-gradient-to-br from-green-500 to-green-600" : "bg-muted"}`}>
                  {result.calculated && (
                    <button
