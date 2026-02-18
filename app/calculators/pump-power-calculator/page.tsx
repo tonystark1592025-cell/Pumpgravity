@@ -520,7 +520,7 @@ export default function PumpPowerCalculator() {
               <label className="font-semibold text-foreground text-sm w-28 flex-shrink-0">Result Unit :</label>
               <div className="flex-[2] min-w-0 flex gap-2">
                 <Select value={resultUnit} onValueChange={setResultUnit}>
-                  <SelectTrigger className="flex-1 min-w-0 border-2 border-border bg-background text-base h-10 [&>span]:text-center [&>span]:w-full">
+                  <SelectTrigger className="flex-1 min-w-0 border-2 border-border bg-background text-base h-10 justify-center [&>span]:flex [&>span]:justify-center [&>span]:w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="z-50">
@@ -688,10 +688,11 @@ export default function PumpPowerCalculator() {
                      <div className="text-4xl font-black mb-2">
                        P<sub className="text-2xl">s</sub> = {result.value} {powerUnits.find(u => u.value === resultUnit)?.label}
                      </div>
-                     <div className="text-sm opacity-80 mt-2">
+                     {/* <div className="text-sm opacity-80 mt-2">
                        ({result.valueSI} kW in SI units)
-                     </div>
+                     </div> */}
                    </div>
+                   
                  ) : (
                    <div className="text-base font-medium opacity-70 italic text-muted-foreground">
                      {result.steps[0] || "Enter values and click Calculate..."}
