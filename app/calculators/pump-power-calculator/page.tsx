@@ -570,41 +570,88 @@ export default function PumpPowerCalculator() {
 
           <div className="p-4 flex-1 flex flex-col gap-4 relative z-10">
             
-            {/* Given Values - Grid Layout */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-muted rounded-lg p-3 border border-border">
-                <h4 className="font-bold text-foreground mb-1 uppercase text-xs">Flow Rate (Q)</h4>
-                <p className="text-sm text-muted-foreground">{flowRate || "?"} {flowUnits.find(u => u.value === flowUnit)?.label}</p>
+            {/* Given Data Section */}
+            <div className="bg-background rounded-lg border border-border overflow-hidden shadow-sm">
+              <div className="bg-muted px-3 py-2 border-b border-border">
+                <h4 className="font-bold text-foreground uppercase text-xs">Given Data</h4>
               </div>
-              <div className="bg-muted rounded-lg p-3 border border-border">
-                <h4 className="font-bold text-foreground mb-1 uppercase text-xs">Head (H)</h4>
-                <p className="text-sm text-muted-foreground">{head || "?"} {headUnits.find(u => u.value === headUnit)?.label}</p>
-              </div>
-              <div className="bg-muted rounded-lg p-3 border border-border">
-                <h4 className="font-bold text-foreground mb-1 uppercase text-xs">SG</h4>
-                <p className="text-sm text-muted-foreground">{specificGravity || "?"}</p>
-              </div>
-              <div className="bg-muted rounded-lg p-3 border border-border">
-                <h4 className="font-bold text-foreground mb-1 uppercase text-xs">Efficiency (η)</h4>
-                <p className="text-sm text-muted-foreground">{efficiency || "?"}%</p>
+              <div className="p-3">
+                <div className="flex flex-wrap gap-2">
+                  <div className="inline-flex items-center bg-background border border-blue-300 dark:border-blue-700 rounded px-3 py-1.5 font-mono text-sm shadow-sm">
+                    <strong className="text-blue-600 dark:text-blue-400 mr-1.5">Q</strong> 
+                    <span className="text-foreground">= {flowRate || "?"} {flowUnits.find(u => u.value === flowUnit)?.label}</span>
+                  </div>
+                  <div className="inline-flex items-center bg-background border border-blue-300 dark:border-blue-700 rounded px-3 py-1.5 font-mono text-sm shadow-sm">
+                    <strong className="text-blue-600 dark:text-blue-400 mr-1.5">H</strong> 
+                    <span className="text-foreground">= {head || "?"} {headUnits.find(u => u.value === headUnit)?.label}</span>
+                  </div>
+                  <div className="inline-flex items-center bg-background border border-blue-300 dark:border-blue-700 rounded px-3 py-1.5 font-mono text-sm shadow-sm">
+                    <strong className="text-blue-600 dark:text-blue-400 mr-1.5">SG</strong> 
+                    <span className="text-foreground">= {specificGravity || "?"}</span>
+                  </div>
+                  <div className="inline-flex items-center bg-background border border-blue-300 dark:border-blue-700 rounded px-3 py-1.5 font-mono text-sm shadow-sm">
+                    <strong className="text-blue-600 dark:text-blue-400 mr-1.5">η</strong> 
+                    <span className="text-foreground">= {efficiency ? (parseFloat(efficiency) / 100).toFixed(2) : "?"}</span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="bg-muted rounded-lg p-3 border border-border">
-              <h4 className="font-bold text-foreground mb-2 uppercase text-xs">To Find:</h4>
-              <p className="text-xs text-muted-foreground">• Shaft Power (P<sub>s</sub>) = ?</p>
+            {/* To Find Section */}
+            <div className="bg-background rounded-lg border border-border overflow-hidden shadow-sm">
+              <div className="bg-muted px-3 py-2 border-b border-border">
+                <h4 className="font-bold text-foreground uppercase text-xs">To Find</h4>
+              </div>
+              <div className="p-3">
+                <div className="inline-flex items-center bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-600 dark:border-blue-500 rounded px-3 py-1.5 font-mono text-sm shadow-sm">
+                  <strong className="text-blue-600 dark:text-blue-400 mr-1.5">P<sub className="text-xs">s</sub></strong> 
+                  <span className="text-foreground">= ?</span>
+                </div>
+              </div>
             </div>
 
-            {/* Calculation Steps */}
-            {result.steps.length > 0 && (
-              <div className="bg-muted rounded-lg p-3 border border-border max-h-48 overflow-y-auto">
-                <h4 className="font-bold text-foreground mb-2 uppercase text-xs">Calculation:</h4>
-                <div className="space-y-1">
-                  {result.steps.map((step, index) => (
-                    <p key={index} className="text-xs text-muted-foreground font-mono">
-                      {step}
-                    </p>
-                  ))}
+            {/* Calculation Steps - Visual Formula Display */}
+            {result.calculated && (
+              <div className="bg-background rounded-lg border border-border overflow-hidden shadow-sm">
+                <div className="bg-muted px-3 py-2 border-b border-border flex justify-between items-center">
+                  <h4 className="font-bold text-foreground uppercase text-xs">Step-by-Step Calculation</h4>
+                  <span className="text-[10px] text-muted-foreground font-mono">kW = (m³/h · m · SG) / (const · η)</span>
+                </div>
+                <div className="p-4">
+                  <div className="flex flex-wrap items-center gap-3 font-serif text-lg justify-start">
+                    <span className="font-bold">P<sub className="text-xs">s</sub></span>
+                    <span>=</span>
+                    
+                    {/* Step 1: Substitution */}
+                    <div className="inline-flex flex-col items-center text-center">
+                      <span className="border-b-2 border-foreground px-2 pb-0.5">
+                        <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.steps[6]?.match(/\(([^×]+)/)?.[1]?.trim() || flowRate}</span>
+                        {" × "}
+                        <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.steps[6]?.match(/× ([^×]+) ×/)?.[1]?.trim() || head}</span>
+                        {" × "}
+                        <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{specificGravity}</span>
+                      </span>
+                      <span className="pt-0.5">
+                        {"367.2 × "}
+                        <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{efficiency ? (parseFloat(efficiency) / 100).toFixed(2) : "?"}</span>
+                      </span>
+                    </div>
+                    
+                    <span>=</span>
+                    
+                    {/* Step 2: Simplified */}
+                    <div className="inline-flex flex-col items-center text-center">
+                      <span className="border-b-2 border-foreground px-2 pb-0.5">
+                        {result.steps[7]?.match(/= ([^/]+)/)?.[1]?.trim() || "..."}
+                      </span>
+                      <span className="pt-0.5">
+                        {result.steps[7]?.match(/\/ (.+)/)?.[1]?.trim() || "..."}
+                      </span>
+                    </div>
+                    
+                    <span>≈</span>
+                    <span className="font-bold">{result.valueSI}</span>
+                  </div>
                 </div>
               </div>
             )}
