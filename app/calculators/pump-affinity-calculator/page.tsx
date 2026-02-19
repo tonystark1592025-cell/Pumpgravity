@@ -85,6 +85,8 @@ export default function PumpAffinityCalculator() {
   const [result, setResult] = useState<{
     value: string
     valueSI: string
+    fullValue: string
+    fullValueSI: string
     label: string
     calculated: boolean
     steps: string[]
@@ -99,6 +101,8 @@ export default function PumpAffinityCalculator() {
   }>({
     value: "", 
     valueSI: "",
+    fullValue: "",
+    fullValueSI: "",
     label: "", 
     calculated: false,
     steps: []
@@ -126,6 +130,8 @@ export default function PumpAffinityCalculator() {
     let steps: string[] = []
     let resultValue = ""
     let resultValueSI = ""
+    let fullResultValue = ""
+    let fullResultValueSI = ""
     let resultLabel = ""
     let displayData: any = {}
 
@@ -154,6 +160,8 @@ export default function PumpAffinityCalculator() {
         setResult({ 
           value: "", 
           valueSI: "",
+          fullValue: "",
+          fullValueSI: "",
           label: "Please enter any 3 values to calculate the 4th", 
           calculated: false,
           steps: []
@@ -165,6 +173,8 @@ export default function PumpAffinityCalculator() {
         setResult({ 
           value: "", 
           valueSI: "",
+          fullValue: "",
+          fullValueSI: "",
           label: "Please leave ONE value empty to calculate", 
           calculated: false,
           steps: []
@@ -182,6 +192,8 @@ export default function PumpAffinityCalculator() {
         setResult({ 
           value: "", 
           valueSI: "",
+          fullValue: "",
+          fullValueSI: "",
           label: "Values cannot be zero", 
           calculated: false,
           steps: []
@@ -209,9 +221,11 @@ export default function PumpAffinityCalculator() {
         
         if (result.variable === 'q2') {
           const calc_output = convertFromSI(calc_SI, q2Unit, 'flow')
-          resultValue = formatResult(calc_output.toString())
-          resultValueSI = formatResult(result.value)
-          resultLabel = `Q₂ = ${formatResult(calc_output.toString())} ${flowUnits.find(u => u.value === q2Unit)?.label}`
+          fullResultValue = calc_output.toString()
+          fullResultValueSI = result.value
+          resultValue = parseFloat(calc_output.toString()).toFixed(3)
+          resultValueSI = parseFloat(result.value).toFixed(3)
+          resultLabel = `Q₂ = ${resultValue} ${flowUnits.find(u => u.value === q2Unit)?.label}`
           displayData = {
             var1: formatSignificant(q1_SI!.toString(), 6),
             var2: v2_SI?.toString(),
@@ -221,9 +235,11 @@ export default function PumpAffinityCalculator() {
           }
         } else if (result.variable === 'q1') {
           const calc_output = convertFromSI(calc_SI, q1Unit, 'flow')
-          resultValue = formatResult(calc_output.toString())
-          resultValueSI = formatResult(result.value)
-          resultLabel = `Q₁ = ${formatResult(calc_output.toString())} ${flowUnits.find(u => u.value === q1Unit)?.label}`
+          fullResultValue = calc_output.toString()
+          fullResultValueSI = result.value
+          resultValue = parseFloat(calc_output.toString()).toFixed(3)
+          resultValueSI = parseFloat(result.value).toFixed(3)
+          resultLabel = `Q₁ = ${resultValue} ${flowUnits.find(u => u.value === q1Unit)?.label}`
           displayData = {
             var1: formatSignificant(q2_SI!.toString(), 6),
             var2: v1_SI?.toString(),
@@ -234,7 +250,9 @@ export default function PumpAffinityCalculator() {
         } else if (result.variable === 'v2') {
           // Round RPM to whole number
           const calc_rounded = isConstantDiameter ? Math.round(parseFloat(result.value)) : parseFloat(result.value)
-          resultValue = isConstantDiameter ? calc_rounded.toString() : formatResult(result.value)
+          fullResultValue = isConstantDiameter ? calc_rounded.toString() : result.value
+          fullResultValueSI = fullResultValue
+          resultValue = isConstantDiameter ? calc_rounded.toString() : parseFloat(result.value).toFixed(3)
           resultValueSI = resultValue
           resultLabel = `${symbol}₂ = ${resultValue} ${unit}`
           displayData = {
@@ -247,7 +265,9 @@ export default function PumpAffinityCalculator() {
         } else if (result.variable === 'v1') {
           // Round RPM to whole number
           const calc_rounded = isConstantDiameter ? Math.round(parseFloat(result.value)) : parseFloat(result.value)
-          resultValue = isConstantDiameter ? calc_rounded.toString() : formatResult(result.value)
+          fullResultValue = isConstantDiameter ? calc_rounded.toString() : result.value
+          fullResultValueSI = fullResultValue
+          resultValue = isConstantDiameter ? calc_rounded.toString() : parseFloat(result.value).toFixed(3)
           resultValueSI = resultValue
           resultLabel = `${symbol}₁ = ${resultValue} ${unit}`
           displayData = {
@@ -281,6 +301,8 @@ export default function PumpAffinityCalculator() {
         setResult({ 
           value: "", 
           valueSI: "",
+          fullValue: "",
+          fullValueSI: "",
           label: "Please enter any 3 values to calculate the 4th", 
           calculated: false,
           steps: []
@@ -292,6 +314,8 @@ export default function PumpAffinityCalculator() {
         setResult({ 
           value: "", 
           valueSI: "",
+          fullValue: "",
+          fullValueSI: "",
           label: "Please leave ONE value empty to calculate", 
           calculated: false,
           steps: []
@@ -309,6 +333,8 @@ export default function PumpAffinityCalculator() {
         setResult({ 
           value: "", 
           valueSI: "",
+          fullValue: "",
+          fullValueSI: "",
           label: "Values cannot be zero", 
           calculated: false,
           steps: []
@@ -336,9 +362,11 @@ export default function PumpAffinityCalculator() {
         
         if (result.variable === 'h2') {
           const calc_output = convertFromSI(calc_SI, h2Unit, 'head')
-          resultValue = calc_output.toFixed(2)
-          resultValueSI = calc_SI.toFixed(2)
-          resultLabel = `H₂ = ${calc_output.toFixed(2)} ${headUnits.find(u => u.value === h2Unit)?.label}`
+          fullResultValue = calc_output.toString()
+          fullResultValueSI = result.value
+          resultValue = calc_output.toFixed(3)
+          resultValueSI = calc_SI.toFixed(3)
+          resultLabel = `H₂ = ${resultValue} ${headUnits.find(u => u.value === h2Unit)?.label}`
           displayData = {
             var1: h1_SI!.toFixed(2),
             var2: v2_SI?.toString(),
@@ -348,9 +376,11 @@ export default function PumpAffinityCalculator() {
           }
         } else if (result.variable === 'h1') {
           const calc_output = convertFromSI(calc_SI, h1Unit, 'head')
-          resultValue = calc_output.toFixed(2)
-          resultValueSI = calc_SI.toFixed(2)
-          resultLabel = `H₁ = ${calc_output.toFixed(2)} ${headUnits.find(u => u.value === h1Unit)?.label}`
+          fullResultValue = calc_output.toString()
+          fullResultValueSI = result.value
+          resultValue = calc_output.toFixed(3)
+          resultValueSI = calc_SI.toFixed(3)
+          resultLabel = `H₁ = ${resultValue} ${headUnits.find(u => u.value === h1Unit)?.label}`
           displayData = {
             var1: h2_SI!.toFixed(2),
             var2: v1_SI?.toString(),
@@ -361,7 +391,9 @@ export default function PumpAffinityCalculator() {
         } else if (result.variable === 'v2') {
           // Round RPM to whole number
           const calc_rounded = isConstantDiameter ? Math.round(parseFloat(result.value)) : parseFloat(result.value)
-          resultValue = isConstantDiameter ? calc_rounded.toString() : calc_SI.toFixed(2)
+          fullResultValue = isConstantDiameter ? calc_rounded.toString() : result.value
+          fullResultValueSI = fullResultValue
+          resultValue = isConstantDiameter ? calc_rounded.toString() : calc_SI.toFixed(3)
           resultValueSI = resultValue
           resultLabel = `${symbol}₂ = ${resultValue} ${unit}`
           displayData = {
@@ -374,7 +406,9 @@ export default function PumpAffinityCalculator() {
         } else if (result.variable === 'v1') {
           // Round RPM to whole number
           const calc_rounded = isConstantDiameter ? Math.round(parseFloat(result.value)) : parseFloat(result.value)
-          resultValue = isConstantDiameter ? calc_rounded.toString() : calc_SI.toFixed(2)
+          fullResultValue = isConstantDiameter ? calc_rounded.toString() : result.value
+          fullResultValueSI = fullResultValue
+          resultValue = isConstantDiameter ? calc_rounded.toString() : calc_SI.toFixed(3)
           resultValueSI = resultValue
           resultLabel = `${symbol}₁ = ${resultValue} ${unit}`
           displayData = {
@@ -408,6 +442,8 @@ export default function PumpAffinityCalculator() {
         setResult({ 
           value: "", 
           valueSI: "",
+          fullValue: "",
+          fullValueSI: "",
           label: "Please enter any 3 values to calculate the 4th", 
           calculated: false,
           steps: []
@@ -419,6 +455,8 @@ export default function PumpAffinityCalculator() {
         setResult({ 
           value: "", 
           valueSI: "",
+          fullValue: "",
+          fullValueSI: "",
           label: "Please leave ONE value empty to calculate", 
           calculated: false,
           steps: []
@@ -436,6 +474,8 @@ export default function PumpAffinityCalculator() {
         setResult({ 
           value: "", 
           valueSI: "",
+          fullValue: "",
+          fullValueSI: "",
           label: "Values cannot be zero", 
           calculated: false,
           steps: []
@@ -463,9 +503,11 @@ export default function PumpAffinityCalculator() {
         
         if (result.variable === 'p2') {
           const calc_output = convertFromSI(calc_SI, p2Unit, 'power')
-          resultValue = calc_output.toFixed(2)
-          resultValueSI = calc_SI.toFixed(2)
-          resultLabel = `P₂ = ${calc_output.toFixed(2)} ${powerUnits.find(u => u.value === p2Unit)?.label}`
+          fullResultValue = calc_output.toString()
+          fullResultValueSI = result.value
+          resultValue = calc_output.toFixed(3)
+          resultValueSI = calc_SI.toFixed(3)
+          resultLabel = `P₂ = ${resultValue} ${powerUnits.find(u => u.value === p2Unit)?.label}`
           displayData = {
             var1: p1_SI!.toFixed(2),
             var2: v2_SI?.toString(),
@@ -475,9 +517,11 @@ export default function PumpAffinityCalculator() {
           }
         } else if (result.variable === 'p1') {
           const calc_output = convertFromSI(calc_SI, p1Unit, 'power')
-          resultValue = calc_output.toFixed(2)
-          resultValueSI = calc_SI.toFixed(2)
-          resultLabel = `P₁ = ${calc_output.toFixed(2)} ${powerUnits.find(u => u.value === p1Unit)?.label}`
+          fullResultValue = calc_output.toString()
+          fullResultValueSI = result.value
+          resultValue = calc_output.toFixed(3)
+          resultValueSI = calc_SI.toFixed(3)
+          resultLabel = `P₁ = ${resultValue} ${powerUnits.find(u => u.value === p1Unit)?.label}`
           displayData = {
             var1: p2_SI!.toFixed(2),
             var2: v1_SI?.toString(),
@@ -488,7 +532,9 @@ export default function PumpAffinityCalculator() {
         } else if (result.variable === 'v2') {
           // Round RPM to whole number
           const calc_rounded = isConstantDiameter ? Math.round(parseFloat(result.value)) : parseFloat(result.value)
-          resultValue = isConstantDiameter ? calc_rounded.toString() : calc_SI.toFixed(2)
+          fullResultValue = isConstantDiameter ? calc_rounded.toString() : result.value
+          fullResultValueSI = fullResultValue
+          resultValue = isConstantDiameter ? calc_rounded.toString() : calc_SI.toFixed(3)
           resultValueSI = resultValue
           resultLabel = `${symbol}₂ = ${resultValue} ${unit}`
           displayData = {
@@ -501,7 +547,9 @@ export default function PumpAffinityCalculator() {
         } else if (result.variable === 'v1') {
           // Round RPM to whole number
           const calc_rounded = isConstantDiameter ? Math.round(parseFloat(result.value)) : parseFloat(result.value)
-          resultValue = isConstantDiameter ? calc_rounded.toString() : calc_SI.toFixed(2)
+          fullResultValue = isConstantDiameter ? calc_rounded.toString() : result.value
+          fullResultValueSI = fullResultValue
+          resultValue = isConstantDiameter ? calc_rounded.toString() : calc_SI.toFixed(3)
           resultValueSI = resultValue
           resultLabel = `${symbol}₁ = ${resultValue} ${unit}`
           displayData = {
@@ -518,6 +566,8 @@ export default function PumpAffinityCalculator() {
     setResult({
       value: resultValue,
       valueSI: resultValueSI,
+      fullValue: fullResultValue,
+      fullValueSI: fullResultValueSI,
       label: resultLabel,
       calculated: true,
       steps,
@@ -531,7 +581,14 @@ export default function PumpAffinityCalculator() {
   }
 
   const copyResult = () => {
-    const resultText = result.label
+    // Extract the variable name and unit from the label
+    const labelParts = result.label.split(' = ')
+    const variableName = labelParts[0]
+    const unitPart = labelParts[1]?.split(' ').slice(1).join(' ') || ''
+    
+    // Use reasonable precision for copy (8 decimal places)
+    const displayValue = parseFloat(result.fullValue).toFixed(8)
+    const resultText = `${variableName} = ${displayValue} ${unitPart}`
     navigator.clipboard.writeText(resultText)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)

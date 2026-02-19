@@ -39,11 +39,15 @@ export default function PumpPowerCalculator() {
   const [result, setResult] = useState<{
     value: string
     valueSI: string
+    fullValue: string
+    fullValueSI: string
     calculated: boolean
     steps: string[]
   }>({
     value: "",
     valueSI: "",
+    fullValue: "",
+    fullValueSI: "",
     calculated: false,
     steps: []
   })
@@ -197,7 +201,10 @@ export default function PumpPowerCalculator() {
   }
 
   const copyResult = () => {
-    const resultText = `Ps = ${result.value} ${powerUnits.find(u => u.value === resultUnit)?.label} (${result.valueSI} kW)`
+    // Use reasonable precision for copy (8 decimal places)
+    const displayValue = parseFloat(result.fullValue).toFixed(8)
+    const displayValueSI = parseFloat(result.fullValueSI).toFixed(8)
+    const resultText = `Ps = ${displayValue} ${powerUnits.find(u => u.value === resultUnit)?.label} (${displayValueSI} kW)`
     navigator.clipboard.writeText(resultText)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
@@ -223,6 +230,8 @@ export default function PumpPowerCalculator() {
       setResult({
         value: "",
         valueSI: "",
+        fullValue: "",
+        fullValueSI: "",
         calculated: false,
         steps: ["Please fix validation errors before calculating"]
       })
@@ -233,6 +242,8 @@ export default function PumpPowerCalculator() {
       setResult({
         value: "",
         valueSI: "",
+        fullValue: "",
+        fullValueSI: "",
         calculated: false,
         steps: ["Please enter all required values"]
       })
@@ -249,6 +260,8 @@ export default function PumpPowerCalculator() {
       setResult({
         value: "",
         valueSI: "",
+        fullValue: "",
+        fullValueSI: "",
         calculated: false,
         steps: ["Flow rate cannot be zero"]
       })
@@ -264,6 +277,8 @@ export default function PumpPowerCalculator() {
       setResult({
         value: "",
         valueSI: "",
+        fullValue: "",
+        fullValueSI: "",
         calculated: false,
         steps: ["Head cannot be zero"]
       })
@@ -279,6 +294,8 @@ export default function PumpPowerCalculator() {
       setResult({
         value: "",
         valueSI: "",
+        fullValue: "",
+        fullValueSI: "",
         calculated: false,
         steps: ["Efficiency cannot be zero"]
       })
@@ -294,6 +311,8 @@ export default function PumpPowerCalculator() {
       setResult({
         value: "",
         valueSI: "",
+        fullValue: "",
+        fullValueSI: "",
         calculated: false,
         steps: ["Specific Gravity cannot be zero"]
       })
@@ -304,6 +323,8 @@ export default function PumpPowerCalculator() {
       setResult({
         value: "",
         valueSI: "",
+        fullValue: "",
+        fullValueSI: "",
         calculated: false,
         steps: ["Pump efficiency must be between 0.01% and 100%"]
       })
@@ -314,6 +335,8 @@ export default function PumpPowerCalculator() {
       setResult({
         value: "",
         valueSI: "",
+        fullValue: "",
+        fullValueSI: "",
         calculated: false,
         steps: ["Specific Gravity must be between 0.01 and 23"]
       })
@@ -363,8 +386,10 @@ export default function PumpPowerCalculator() {
     ]
 
     setResult({
-      value: formatSignificant(power_output.toString(), 6),
-      valueSI: formatSignificant(power_SI_str, 6),
+      value: parseFloat(power_output.toString()).toFixed(3),
+      valueSI: parseFloat(power_SI_str).toFixed(3),
+      fullValue: power_output.toString(),
+      fullValueSI: power_SI_str,
       calculated: true,
       steps
     })
