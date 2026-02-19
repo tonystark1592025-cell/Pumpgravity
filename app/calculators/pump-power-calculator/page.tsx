@@ -170,13 +170,7 @@ export default function PumpPowerCalculator() {
       return
     }
     
-    // Limit to 2 digits unless it's exactly 100
     const num = parseFloat(value)
-    
-    // If trying to type more than 2 digits and it's not 100, block it
-    if (value.length > 2 && value !== "100") {
-      return // Don't update, keep previous value
-    }
     
     // If value is greater than 100, cap at 100
     if (!isNaN(num) && num > 100) {
@@ -435,7 +429,7 @@ export default function PumpPowerCalculator() {
             {/* Flow Rate Input with Unit Selector - One Line */}
             <div>
               <div className="flex items-center gap-3">
-                <label className="font-semibold text-foreground text-sm w-28 flex-shrink-0">Flow Rate :</label>
+                <label className="font-semibold text-foreground text-sm w-28 flex-shrink-0">Flow Rate (Q) :</label>
                 <input
                   type="number"
                   value={flowRate}
@@ -469,7 +463,7 @@ export default function PumpPowerCalculator() {
             {/* Differential Head Input with Unit Selector - One Line */}
             <div>
               <div className="flex items-center gap-3">
-                <label className="font-semibold text-foreground text-sm w-28 flex-shrink-0">Head :</label>
+                <label className="font-semibold text-foreground text-sm w-28 flex-shrink-0">Head (H) :</label>
                 <input
                   type="number"
                   value={head}
@@ -533,7 +527,7 @@ export default function PumpPowerCalculator() {
             {/* Pump Efficiency Input - One Line */}
             <div>
               <div className="flex items-center gap-3">
-                <label className="font-semibold text-foreground text-sm w-28 flex-shrink-0">Efficiency :</label>
+                <label className="font-semibold text-foreground text-sm w-28 flex-shrink-0">Efficiency (η) :</label>
                 <div className="flex-[2] min-w-0 flex gap-2">
                   <input 
                     type="number" 
@@ -660,7 +654,7 @@ export default function PumpPowerCalculator() {
               <div className="bg-background rounded-lg border border-border overflow-hidden shadow-sm">
                 <div className="bg-muted px-3 py-2 border-b border-border flex justify-between items-center">
                   <h4 className="font-bold text-foreground uppercase text-xs">Step-by-Step Calculation</h4>
-                  <span className="text-[10px] text-muted-foreground font-mono">kW = (m³/h · m · SG) / (const · η)</span>
+                  {/* <span className="text-[10px] text-muted-foreground font-mono">kW = (m³/h · m · SG) / (const · η)</span> */}
                 </div>
                 <div className="p-4">
                   <div className="flex flex-wrap items-center gap-3 font-serif text-lg justify-start">

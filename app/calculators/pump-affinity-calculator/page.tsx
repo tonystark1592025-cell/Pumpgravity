@@ -254,7 +254,7 @@ export default function PumpAffinityCalculator() {
           fullResultValueSI = fullResultValue
           resultValue = isConstantDiameter ? calc_rounded.toString() : parseFloat(result.value).toFixed(3)
           resultValueSI = resultValue
-          resultLabel = `${symbol}₂ = ${resultValue} ${unit}`
+          resultLabel = isConstantDiameter ? `${symbol}₂ ≈ ${resultValue} ${unit}` : `${symbol}₂ = ${resultValue} ${unit}`
           displayData = {
             var1: v1_SI?.toString(),
             var2: formatSignificant(q2_SI!.toString(), 6),
@@ -269,7 +269,7 @@ export default function PumpAffinityCalculator() {
           fullResultValueSI = fullResultValue
           resultValue = isConstantDiameter ? calc_rounded.toString() : parseFloat(result.value).toFixed(3)
           resultValueSI = resultValue
-          resultLabel = `${symbol}₁ = ${resultValue} ${unit}`
+          resultLabel = isConstantDiameter ? `${symbol}₁ ≈ ${resultValue} ${unit}` : `${symbol}₁ = ${resultValue} ${unit}`
           displayData = {
             var1: v2_SI?.toString(),
             var2: formatSignificant(q1_SI!.toString(), 6),
@@ -395,7 +395,7 @@ export default function PumpAffinityCalculator() {
           fullResultValueSI = fullResultValue
           resultValue = isConstantDiameter ? calc_rounded.toString() : calc_SI.toFixed(3)
           resultValueSI = resultValue
-          resultLabel = `${symbol}₂ = ${resultValue} ${unit}`
+          resultLabel = isConstantDiameter ? `${symbol}₂ ≈ ${resultValue} ${unit}` : `${symbol}₂ = ${resultValue} ${unit}`
           displayData = {
             var1: v1_SI?.toString(),
             var2: h2_SI!.toFixed(2),
@@ -410,7 +410,7 @@ export default function PumpAffinityCalculator() {
           fullResultValueSI = fullResultValue
           resultValue = isConstantDiameter ? calc_rounded.toString() : calc_SI.toFixed(3)
           resultValueSI = resultValue
-          resultLabel = `${symbol}₁ = ${resultValue} ${unit}`
+          resultLabel = isConstantDiameter ? `${symbol}₁ ≈ ${resultValue} ${unit}` : `${symbol}₁ = ${resultValue} ${unit}`
           displayData = {
             var1: v2_SI?.toString(),
             var2: h1_SI!.toFixed(2),
@@ -536,7 +536,7 @@ export default function PumpAffinityCalculator() {
           fullResultValueSI = fullResultValue
           resultValue = isConstantDiameter ? calc_rounded.toString() : calc_SI.toFixed(3)
           resultValueSI = resultValue
-          resultLabel = `${symbol}₂ = ${resultValue} ${unit}`
+          resultLabel = isConstantDiameter ? `${symbol}₂ ≈ ${resultValue} ${unit}` : `${symbol}₂ = ${resultValue} ${unit}`
           displayData = {
             var1: v1_SI?.toString(),
             var2: p2_SI!.toFixed(2),
@@ -551,7 +551,7 @@ export default function PumpAffinityCalculator() {
           fullResultValueSI = fullResultValue
           resultValue = isConstantDiameter ? calc_rounded.toString() : calc_SI.toFixed(3)
           resultValueSI = resultValue
-          resultLabel = `${symbol}₁ = ${resultValue} ${unit}`
+          resultLabel = isConstantDiameter ? `${symbol}₁ ≈ ${resultValue} ${unit}` : `${symbol}₁ = ${resultValue} ${unit}`
           displayData = {
             var1: v2_SI?.toString(),
             var2: p1_SI!.toFixed(2),
