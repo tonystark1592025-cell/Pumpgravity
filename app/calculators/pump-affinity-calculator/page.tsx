@@ -227,9 +227,10 @@ export default function PumpAffinityCalculator() {
           resultValueSI = parseFloat(result.value).toFixed(3)
           resultLabel = `Q₂ = ${resultValue} ${flowUnits.find(u => u.value === q2Unit)?.label}`
           displayData = {
-            var1: formatSignificant(q1_SI!.toString(), 6),
-            var2: v2_SI?.toString(),
-            var3: v1_SI?.toString(),
+            var1: formatSignificant(q1_SI!.toString(), 6),  // Q₁ (numerator left)
+            var2: formatSignificant(q1_SI!.toString(), 6),  // Q₁ (denominator left)
+            var3: v2_SI?.toString(),                        // N₂ (numerator right)
+            var4: v1_SI?.toString(),                        // N₁ (denominator right)
             result: resultValue,
             formula: 'flow'
           }
@@ -241,9 +242,10 @@ export default function PumpAffinityCalculator() {
           resultValueSI = parseFloat(result.value).toFixed(3)
           resultLabel = `Q₁ = ${resultValue} ${flowUnits.find(u => u.value === q1Unit)?.label}`
           displayData = {
-            var1: formatSignificant(q2_SI!.toString(), 6),
-            var2: v1_SI?.toString(),
-            var3: v2_SI?.toString(),
+            var1: formatSignificant(q2_SI!.toString(), 6),  // Q₂ (numerator left)
+            var2: formatSignificant(q2_SI!.toString(), 6),  // Q₂ (denominator left)
+            var3: v1_SI?.toString(),                        // N₁ (numerator right)
+            var4: v2_SI?.toString(),                        // N₂ (denominator right)
             result: resultValue,
             formula: 'flow'
           }
@@ -256,9 +258,10 @@ export default function PumpAffinityCalculator() {
           resultValueSI = resultValue
           resultLabel = isConstantDiameter ? `${symbol}₂ ≈ ${resultValue} ${unit}` : `${symbol}₂ = ${resultValue} ${unit}`
           displayData = {
-            var1: v1_SI?.toString(),
-            var2: formatSignificant(q2_SI!.toString(), 6),
-            var3: formatSignificant(q1_SI!.toString(), 6),
+            var1: formatSignificant(q1_SI!.toString(), 6),  // Q₁ (numerator left)
+            var2: formatSignificant(q2_SI!.toString(), 6),  // Q₂ (denominator left)
+            var3: v1_SI?.toString(),                        // N₁ (numerator right)
+            var4: formatSignificant(q2_SI!.toString(), 6),  // Q₂ (denominator right)
             result: resultValue,
             formula: 'rpm'
           }
@@ -271,9 +274,10 @@ export default function PumpAffinityCalculator() {
           resultValueSI = resultValue
           resultLabel = isConstantDiameter ? `${symbol}₁ ≈ ${resultValue} ${unit}` : `${symbol}₁ = ${resultValue} ${unit}`
           displayData = {
-            var1: v2_SI?.toString(),
-            var2: formatSignificant(q1_SI!.toString(), 6),
-            var3: formatSignificant(q2_SI!.toString(), 6),
+            var1: formatSignificant(q2_SI!.toString(), 6),  // Q₂ (numerator left)
+            var2: formatSignificant(q1_SI!.toString(), 6),  // Q₁ (denominator left)
+            var3: v2_SI?.toString(),                        // N₂ (numerator right)
+            var4: formatSignificant(q1_SI!.toString(), 6),  // Q₁ (denominator right)
             result: resultValue,
             formula: 'rpm'
           }
@@ -368,9 +372,10 @@ export default function PumpAffinityCalculator() {
           resultValueSI = calc_SI.toFixed(3)
           resultLabel = `H₂ = ${resultValue} ${headUnits.find(u => u.value === h2Unit)?.label}`
           displayData = {
-            var1: h1_SI!.toFixed(2),
-            var2: v2_SI?.toString(),
-            var3: v1_SI?.toString(),
+            var1: h1_SI!.toFixed(2),      // H₁ (numerator left)
+            var2: h1_SI!.toFixed(2),      // H₁ (denominator left)
+            var3: v2_SI?.toString(),      // N₂ (numerator right)
+            var4: v1_SI?.toString(),      // N₁ (denominator right)
             result: resultValue,
             formula: 'head'
           }
@@ -382,9 +387,10 @@ export default function PumpAffinityCalculator() {
           resultValueSI = calc_SI.toFixed(3)
           resultLabel = `H₁ = ${resultValue} ${headUnits.find(u => u.value === h1Unit)?.label}`
           displayData = {
-            var1: h2_SI!.toFixed(2),
-            var2: v1_SI?.toString(),
-            var3: v2_SI?.toString(),
+            var1: h2_SI!.toFixed(2),      // H₂ (numerator left)
+            var2: h2_SI!.toFixed(2),      // H₂ (denominator left)
+            var3: v1_SI?.toString(),      // N₁ (numerator right)
+            var4: v2_SI?.toString(),      // N₂ (denominator right)
             result: resultValue,
             formula: 'head'
           }
@@ -397,9 +403,10 @@ export default function PumpAffinityCalculator() {
           resultValueSI = resultValue
           resultLabel = isConstantDiameter ? `${symbol}₂ ≈ ${resultValue} ${unit}` : `${symbol}₂ = ${resultValue} ${unit}`
           displayData = {
-            var1: v1_SI?.toString(),
-            var2: h2_SI!.toFixed(2),
-            var3: h1_SI!.toFixed(2),
+            var1: h1_SI!.toFixed(2),      // H₁ (numerator left)
+            var2: h2_SI!.toFixed(2),      // H₂ (denominator left)
+            var3: v1_SI?.toString(),      // N₁ (numerator right)
+            var4: h2_SI!.toFixed(2),      // H₂ (denominator right)
             result: resultValue,
             formula: 'rpm_sqrt'
           }
@@ -412,9 +419,10 @@ export default function PumpAffinityCalculator() {
           resultValueSI = resultValue
           resultLabel = isConstantDiameter ? `${symbol}₁ ≈ ${resultValue} ${unit}` : `${symbol}₁ = ${resultValue} ${unit}`
           displayData = {
-            var1: v2_SI?.toString(),
-            var2: h1_SI!.toFixed(2),
-            var3: h2_SI!.toFixed(2),
+            var1: h2_SI!.toFixed(2),      // H₂ (numerator left)
+            var2: h1_SI!.toFixed(2),      // H₁ (denominator left)
+            var3: v2_SI?.toString(),      // N₂ (numerator right)
+            var4: h1_SI!.toFixed(2),      // H₁ (denominator right)
             result: resultValue,
             formula: 'rpm_sqrt'
           }
@@ -509,9 +517,10 @@ export default function PumpAffinityCalculator() {
           resultValueSI = calc_SI.toFixed(3)
           resultLabel = `P₂ = ${resultValue} ${powerUnits.find(u => u.value === p2Unit)?.label}`
           displayData = {
-            var1: p1_SI!.toFixed(2),
-            var2: v2_SI?.toString(),
-            var3: v1_SI?.toString(),
+            var1: p1_SI!.toFixed(2),      // P₁ (numerator left)
+            var2: p1_SI!.toFixed(2),      // P₁ (denominator left)
+            var3: v2_SI?.toString(),      // N₂ (numerator right)
+            var4: v1_SI?.toString(),      // N₁ (denominator right)
             result: resultValue,
             formula: 'power'
           }
@@ -523,9 +532,10 @@ export default function PumpAffinityCalculator() {
           resultValueSI = calc_SI.toFixed(3)
           resultLabel = `P₁ = ${resultValue} ${powerUnits.find(u => u.value === p1Unit)?.label}`
           displayData = {
-            var1: p2_SI!.toFixed(2),
-            var2: v1_SI?.toString(),
-            var3: v2_SI?.toString(),
+            var1: p2_SI!.toFixed(2),      // P₂ (numerator left)
+            var2: p2_SI!.toFixed(2),      // P₂ (denominator left)
+            var3: v1_SI?.toString(),      // N₁ (numerator right)
+            var4: v2_SI?.toString(),      // N₂ (denominator right)
             result: resultValue,
             formula: 'power'
           }
@@ -538,9 +548,10 @@ export default function PumpAffinityCalculator() {
           resultValueSI = resultValue
           resultLabel = isConstantDiameter ? `${symbol}₂ ≈ ${resultValue} ${unit}` : `${symbol}₂ = ${resultValue} ${unit}`
           displayData = {
-            var1: v1_SI?.toString(),
-            var2: p2_SI!.toFixed(2),
-            var3: p1_SI!.toFixed(2),
+            var1: p1_SI!.toFixed(2),      // P₁ (numerator left)
+            var2: p2_SI!.toFixed(2),      // P₂ (denominator left)
+            var3: v1_SI?.toString(),      // N₁ (numerator right)
+            var4: p2_SI!.toFixed(2),      // P₂ (denominator right)
             result: resultValue,
             formula: 'rpm_cbrt'
           }
@@ -553,9 +564,10 @@ export default function PumpAffinityCalculator() {
           resultValueSI = resultValue
           resultLabel = isConstantDiameter ? `${symbol}₁ ≈ ${resultValue} ${unit}` : `${symbol}₁ = ${resultValue} ${unit}`
           displayData = {
-            var1: v2_SI?.toString(),
-            var2: p1_SI!.toFixed(2),
-            var3: p2_SI!.toFixed(2),
+            var1: p2_SI!.toFixed(2),      // P₂ (numerator left)
+            var2: p1_SI!.toFixed(2),      // P₁ (denominator left)
+            var3: v2_SI?.toString(),      // N₂ (numerator right)
+            var4: p1_SI!.toFixed(2),      // P₁ (denominator right)
             result: resultValue,
             formula: 'rpm_cbrt'
           }
@@ -1312,16 +1324,16 @@ export default function PumpAffinityCalculator() {
                               <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var1}</span>
                             </span>
                             <span className="mt-1">
-                              <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var3}</span>
+                              <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var2}</span>
                             </span>
                           </div>
                           <span>=</span>
                           <div className="flex flex-col items-center">
                             <span className="border-b-2 border-foreground px-2">
-                              <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var2}</span>
+                              <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var3}</span>
                             </span>
                             <span className="mt-1">
-                              <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var3}</span>
+                              <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var4}</span>
                             </span>
                           </div>
                         </div>
@@ -1340,7 +1352,7 @@ export default function PumpAffinityCalculator() {
                               <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var1}</span>
                             </span>
                             <span className="mt-1">
-                              <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var3}</span>
+                              <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var2}</span>
                             </span>
                           </div>
                           <span>=</span>
@@ -1348,10 +1360,10 @@ export default function PumpAffinityCalculator() {
                             <span className="text-4xl text-muted-foreground font-light">(</span>
                             <div className="flex flex-col items-center">
                               <span className="border-b-2 border-foreground px-2">
-                                <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var2}</span>
+                                <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var3}</span>
                               </span>
                               <span className="mt-1">
-                                <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var3}</span>
+                                <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var4}</span>
                               </span>
                             </div>
                             <span className="text-4xl text-muted-foreground font-light">)</span>
@@ -1373,7 +1385,7 @@ export default function PumpAffinityCalculator() {
                               <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var1}</span>
                             </span>
                             <span className="mt-1">
-                              <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var3}</span>
+                              <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var2}</span>
                             </span>
                           </div>
                           <span>=</span>
@@ -1381,10 +1393,10 @@ export default function PumpAffinityCalculator() {
                             <span className="text-4xl text-muted-foreground font-light">(</span>
                             <div className="flex flex-col items-center">
                               <span className="border-b-2 border-foreground px-2">
-                                <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var2}</span>
+                                <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var3}</span>
                               </span>
                               <span className="mt-1">
-                                <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var3}</span>
+                                <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var4}</span>
                               </span>
                             </div>
                             <span className="text-4xl text-muted-foreground font-light">)</span>
