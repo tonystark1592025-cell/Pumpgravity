@@ -691,8 +691,16 @@ export default function PumpPowerCalculator() {
                   {/* Step 3: Final Result */}
                   <div className="flex items-center gap-3 font-serif text-lg">
                     <span>=</span>
-                    <span className="font-bold">{result.valueSI}</span>
+                    <span className="font-bold">{result.valueSI} kW</span>
                   </div>
+                  
+                  {/* Step 4: Unit Conversion (if not kW) */}
+                  {resultUnit !== 'kw' && (
+                    <div className="flex items-center gap-3 font-serif text-lg">
+                      <span>=</span>
+                      <span className="font-bold">{result.value} {powerUnits.find(u => u.value === resultUnit)?.label}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
