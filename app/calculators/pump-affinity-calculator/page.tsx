@@ -1186,29 +1186,89 @@ export default function PumpAffinityCalculator() {
                 <h4 className="font-bold text-foreground uppercase text-xs">To Find</h4>
               </div>
               <div className="p-3">
-                <div className="inline-flex items-center bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-600 dark:border-blue-500 rounded px-3 py-1.5 font-mono text-sm shadow-sm">
+                <div className="flex flex-wrap items-center gap-2">
                   {activeSection === "flow" && (
                     <>
-                      {!q1 && <><strong className="text-blue-600 dark:text-blue-400 mr-1.5">Q₁</strong><span className="text-foreground">= ?</span></>}
-                      {!q2 && <><strong className="text-blue-600 dark:text-blue-400 mr-1.5">Q₂</strong><span className="text-foreground">= ?</span></>}
-                      {!(mode === "CONSTANT_DIAMETER" ? n1_flow : d1_flow) && <><strong className="text-blue-600 dark:text-blue-400 mr-1.5">{mode === "CONSTANT_DIAMETER" ? "N" : "D"}₁</strong><span className="text-foreground">= ?</span></>}
-                      {!(mode === "CONSTANT_DIAMETER" ? n2_flow : d2_flow) && <><strong className="text-blue-600 dark:text-blue-400 mr-1.5">{mode === "CONSTANT_DIAMETER" ? "N" : "D"}₂</strong><span className="text-foreground">= ?</span></>}
+                      {!q1 && (
+                        <div className="inline-flex items-center bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-600 dark:border-blue-500 rounded px-3 py-1.5 font-mono text-sm shadow-sm">
+                          <strong className="text-blue-600 dark:text-blue-400 mr-1.5">Q₁</strong>
+                          <span className="text-foreground">= ?</span>
+                        </div>
+                      )}
+                      {!q2 && (
+                        <div className="inline-flex items-center bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-600 dark:border-blue-500 rounded px-3 py-1.5 font-mono text-sm shadow-sm">
+                          <strong className="text-blue-600 dark:text-blue-400 mr-1.5">Q₂</strong>
+                          <span className="text-foreground">= ?</span>
+                        </div>
+                      )}
+                      {!(mode === "CONSTANT_DIAMETER" ? n1_flow : d1_flow) && (
+                        <div className="inline-flex items-center bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-600 dark:border-blue-500 rounded px-3 py-1.5 font-mono text-sm shadow-sm">
+                          <strong className="text-blue-600 dark:text-blue-400 mr-1.5">{mode === "CONSTANT_DIAMETER" ? "N" : "D"}₁</strong>
+                          <span className="text-foreground">= ?</span>
+                        </div>
+                      )}
+                      {!(mode === "CONSTANT_DIAMETER" ? n2_flow : d2_flow) && (
+                        <div className="inline-flex items-center bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-600 dark:border-blue-500 rounded px-3 py-1.5 font-mono text-sm shadow-sm">
+                          <strong className="text-blue-600 dark:text-blue-400 mr-1.5">{mode === "CONSTANT_DIAMETER" ? "N" : "D"}₂</strong>
+                          <span className="text-foreground">= ?</span>
+                        </div>
+                      )}
                     </>
                   )}
                   {activeSection === "head" && (
                     <>
-                      {!h1 && <><strong className="text-blue-600 dark:text-blue-400 mr-1.5">H₁</strong><span className="text-foreground">= ?</span></>}
-                      {!h2 && <><strong className="text-blue-600 dark:text-blue-400 mr-1.5">H₂</strong><span className="text-foreground">= ?</span></>}
-                      {!(mode === "CONSTANT_DIAMETER" ? n1_head : d1_head) && <><strong className="text-blue-600 dark:text-blue-400 mr-1.5">{mode === "CONSTANT_DIAMETER" ? "N" : "D"}₁</strong><span className="text-foreground">= ?</span></>}
-                      {!(mode === "CONSTANT_DIAMETER" ? n2_head : d2_head) && <><strong className="text-blue-600 dark:text-blue-400 mr-1.5">{mode === "CONSTANT_DIAMETER" ? "N" : "D"}₂</strong><span className="text-foreground">= ?</span></>}
+                      {!h1 && (
+                        <div className="inline-flex items-center bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-600 dark:border-blue-500 rounded px-3 py-1.5 font-mono text-sm shadow-sm">
+                          <strong className="text-blue-600 dark:text-blue-400 mr-1.5">H₁</strong>
+                          <span className="text-foreground">= ?</span>
+                        </div>
+                      )}
+                      {!h2 && (
+                        <div className="inline-flex items-center bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-600 dark:border-blue-500 rounded px-3 py-1.5 font-mono text-sm shadow-sm">
+                          <strong className="text-blue-600 dark:text-blue-400 mr-1.5">H₂</strong>
+                          <span className="text-foreground">= ?</span>
+                        </div>
+                      )}
+                      {!(mode === "CONSTANT_DIAMETER" ? n1_head : d1_head) && (
+                        <div className="inline-flex items-center bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-600 dark:border-blue-500 rounded px-3 py-1.5 font-mono text-sm shadow-sm">
+                          <strong className="text-blue-600 dark:text-blue-400 mr-1.5">{mode === "CONSTANT_DIAMETER" ? "N" : "D"}₁</strong>
+                          <span className="text-foreground">= ?</span>
+                        </div>
+                      )}
+                      {!(mode === "CONSTANT_DIAMETER" ? n2_head : d2_head) && (
+                        <div className="inline-flex items-center bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-600 dark:border-blue-500 rounded px-3 py-1.5 font-mono text-sm shadow-sm">
+                          <strong className="text-blue-600 dark:text-blue-400 mr-1.5">{mode === "CONSTANT_DIAMETER" ? "N" : "D"}₂</strong>
+                          <span className="text-foreground">= ?</span>
+                        </div>
+                      )}
                     </>
                   )}
                   {activeSection === "power" && (
                     <>
-                      {!p1 && <><strong className="text-blue-600 dark:text-blue-400 mr-1.5">P₁</strong><span className="text-foreground">= ?</span></>}
-                      {!p2 && <><strong className="text-blue-600 dark:text-blue-400 mr-1.5">P₂</strong><span className="text-foreground">= ?</span></>}
-                      {!(mode === "CONSTANT_DIAMETER" ? n1_power : d1_power) && <><strong className="text-blue-600 dark:text-blue-400 mr-1.5">{mode === "CONSTANT_DIAMETER" ? "N" : "D"}₁</strong><span className="text-foreground">= ?</span></>}
-                      {!(mode === "CONSTANT_DIAMETER" ? n2_power : d2_power) && <><strong className="text-blue-600 dark:text-blue-400 mr-1.5">{mode === "CONSTANT_DIAMETER" ? "N" : "D"}₂</strong><span className="text-foreground">= ?</span></>}
+                      {!p1 && (
+                        <div className="inline-flex items-center bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-600 dark:border-blue-500 rounded px-3 py-1.5 font-mono text-sm shadow-sm">
+                          <strong className="text-blue-600 dark:text-blue-400 mr-1.5">P₁</strong>
+                          <span className="text-foreground">= ?</span>
+                        </div>
+                      )}
+                      {!p2 && (
+                        <div className="inline-flex items-center bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-600 dark:border-blue-500 rounded px-3 py-1.5 font-mono text-sm shadow-sm">
+                          <strong className="text-blue-600 dark:text-blue-400 mr-1.5">P₂</strong>
+                          <span className="text-foreground">= ?</span>
+                        </div>
+                      )}
+                      {!(mode === "CONSTANT_DIAMETER" ? n1_power : d1_power) && (
+                        <div className="inline-flex items-center bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-600 dark:border-blue-500 rounded px-3 py-1.5 font-mono text-sm shadow-sm">
+                          <strong className="text-blue-600 dark:text-blue-400 mr-1.5">{mode === "CONSTANT_DIAMETER" ? "N" : "D"}₁</strong>
+                          <span className="text-foreground">= ?</span>
+                        </div>
+                      )}
+                      {!(mode === "CONSTANT_DIAMETER" ? n2_power : d2_power) && (
+                        <div className="inline-flex items-center bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-600 dark:border-blue-500 rounded px-3 py-1.5 font-mono text-sm shadow-sm">
+                          <strong className="text-blue-600 dark:text-blue-400 mr-1.5">{mode === "CONSTANT_DIAMETER" ? "N" : "D"}₂</strong>
+                          <span className="text-foreground">= ?</span>
+                        </div>
+                      )}
                     </>
                   )}
                 </div>
