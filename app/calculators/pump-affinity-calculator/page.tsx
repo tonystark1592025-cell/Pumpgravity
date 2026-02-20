@@ -228,9 +228,9 @@ export default function PumpAffinityCalculator() {
           resultLabel = `Q₂ = ${resultValue} ${flowUnits.find(u => u.value === q2Unit)?.label}`
           displayData = {
             var1: formatSignificant(q1_SI!.toString(), 6),  // Q₁ (numerator left)
-            var2: formatSignificant(q1_SI!.toString(), 6),  // Q₁ (denominator left)
-            var3: v2_SI?.toString(),                        // N₂ (numerator right)
-            var4: v1_SI?.toString(),                        // N₁ (denominator right)
+            var2: resultValue,                              // Q₂ result (denominator left)
+            var3: v1_SI?.toString(),                        // N₁ (numerator right)
+            var4: v2_SI?.toString(),                        // N₂ (denominator right)
             result: resultValue,
             formula: 'flow'
           }
@@ -242,7 +242,7 @@ export default function PumpAffinityCalculator() {
           resultValueSI = parseFloat(result.value).toFixed(3)
           resultLabel = `Q₁ = ${resultValue} ${flowUnits.find(u => u.value === q1Unit)?.label}`
           displayData = {
-            var1: formatSignificant(q2_SI!.toString(), 6),  // Q₂ (numerator left)
+            var1: resultValue,                              // Q₁ result (numerator left)
             var2: formatSignificant(q2_SI!.toString(), 6),  // Q₂ (denominator left)
             var3: v1_SI?.toString(),                        // N₁ (numerator right)
             var4: v2_SI?.toString(),                        // N₂ (denominator right)
@@ -261,7 +261,7 @@ export default function PumpAffinityCalculator() {
             var1: formatSignificant(q1_SI!.toString(), 6),  // Q₁ (numerator left)
             var2: formatSignificant(q2_SI!.toString(), 6),  // Q₂ (denominator left)
             var3: v1_SI?.toString(),                        // N₁ (numerator right)
-            var4: formatSignificant(q2_SI!.toString(), 6),  // Q₂ (denominator right)
+            var4: resultValue,                              // N₂ result (denominator right)
             result: resultValue,
             formula: 'rpm'
           }
@@ -276,8 +276,8 @@ export default function PumpAffinityCalculator() {
           displayData = {
             var1: formatSignificant(q2_SI!.toString(), 6),  // Q₂ (numerator left)
             var2: formatSignificant(q1_SI!.toString(), 6),  // Q₁ (denominator left)
-            var3: v2_SI?.toString(),                        // N₂ (numerator right)
-            var4: formatSignificant(q1_SI!.toString(), 6),  // Q₁ (denominator right)
+            var3: resultValue,                              // N₁ result (numerator right)
+            var4: v2_SI?.toString(),                        // N₂ (denominator right)
             result: resultValue,
             formula: 'rpm'
           }
@@ -373,9 +373,9 @@ export default function PumpAffinityCalculator() {
           resultLabel = `H₂ = ${resultValue} ${headUnits.find(u => u.value === h2Unit)?.label}`
           displayData = {
             var1: h1_SI!.toFixed(2),      // H₁ (numerator left)
-            var2: h1_SI!.toFixed(2),      // H₁ (denominator left)
-            var3: v2_SI?.toString(),      // N₂ (numerator right)
-            var4: v1_SI?.toString(),      // N₁ (denominator right)
+            var2: resultValue,            // H₂ result (denominator left)
+            var3: v1_SI?.toString(),      // N₁ (numerator right)
+            var4: v2_SI?.toString(),      // N₂ (denominator right)
             result: resultValue,
             formula: 'head'
           }
@@ -387,7 +387,7 @@ export default function PumpAffinityCalculator() {
           resultValueSI = calc_SI.toFixed(3)
           resultLabel = `H₁ = ${resultValue} ${headUnits.find(u => u.value === h1Unit)?.label}`
           displayData = {
-            var1: h2_SI!.toFixed(2),      // H₂ (numerator left)
+            var1: resultValue,            // H₁ result (numerator left)
             var2: h2_SI!.toFixed(2),      // H₂ (denominator left)
             var3: v1_SI?.toString(),      // N₁ (numerator right)
             var4: v2_SI?.toString(),      // N₂ (denominator right)
@@ -406,7 +406,7 @@ export default function PumpAffinityCalculator() {
             var1: h1_SI!.toFixed(2),      // H₁ (numerator left)
             var2: h2_SI!.toFixed(2),      // H₂ (denominator left)
             var3: v1_SI?.toString(),      // N₁ (numerator right)
-            var4: h2_SI!.toFixed(2),      // H₂ (denominator right)
+            var4: resultValue,            // N₂ result (denominator right)
             result: resultValue,
             formula: 'rpm_sqrt'
           }
@@ -421,8 +421,8 @@ export default function PumpAffinityCalculator() {
           displayData = {
             var1: h2_SI!.toFixed(2),      // H₂ (numerator left)
             var2: h1_SI!.toFixed(2),      // H₁ (denominator left)
-            var3: v2_SI?.toString(),      // N₂ (numerator right)
-            var4: h1_SI!.toFixed(2),      // H₁ (denominator right)
+            var3: resultValue,            // N₁ result (numerator right)
+            var4: v2_SI?.toString(),      // N₂ (denominator right)
             result: resultValue,
             formula: 'rpm_sqrt'
           }
@@ -518,9 +518,9 @@ export default function PumpAffinityCalculator() {
           resultLabel = `P₂ = ${resultValue} ${powerUnits.find(u => u.value === p2Unit)?.label}`
           displayData = {
             var1: p1_SI!.toFixed(2),      // P₁ (numerator left)
-            var2: p1_SI!.toFixed(2),      // P₁ (denominator left)
-            var3: v2_SI?.toString(),      // N₂ (numerator right)
-            var4: v1_SI?.toString(),      // N₁ (denominator right)
+            var2: resultValue,            // P₂ result (denominator left)
+            var3: v1_SI?.toString(),      // N₁ (numerator right)
+            var4: v2_SI?.toString(),      // N₂ (denominator right)
             result: resultValue,
             formula: 'power'
           }
@@ -532,7 +532,7 @@ export default function PumpAffinityCalculator() {
           resultValueSI = calc_SI.toFixed(3)
           resultLabel = `P₁ = ${resultValue} ${powerUnits.find(u => u.value === p1Unit)?.label}`
           displayData = {
-            var1: p2_SI!.toFixed(2),      // P₂ (numerator left)
+            var1: resultValue,            // P₁ result (numerator left)
             var2: p2_SI!.toFixed(2),      // P₂ (denominator left)
             var3: v1_SI?.toString(),      // N₁ (numerator right)
             var4: v2_SI?.toString(),      // N₂ (denominator right)
@@ -551,7 +551,7 @@ export default function PumpAffinityCalculator() {
             var1: p1_SI!.toFixed(2),      // P₁ (numerator left)
             var2: p2_SI!.toFixed(2),      // P₂ (denominator left)
             var3: v1_SI?.toString(),      // N₁ (numerator right)
-            var4: p2_SI!.toFixed(2),      // P₂ (denominator right)
+            var4: resultValue,            // N₂ result (denominator right)
             result: resultValue,
             formula: 'rpm_cbrt'
           }
@@ -566,8 +566,8 @@ export default function PumpAffinityCalculator() {
           displayData = {
             var1: p2_SI!.toFixed(2),      // P₂ (numerator left)
             var2: p1_SI!.toFixed(2),      // P₁ (denominator left)
-            var3: v2_SI?.toString(),      // N₂ (numerator right)
-            var4: p1_SI!.toFixed(2),      // P₁ (denominator right)
+            var3: resultValue,            // N₁ result (numerator right)
+            var4: v2_SI?.toString(),      // N₂ (denominator right)
             result: resultValue,
             formula: 'rpm_cbrt'
           }
@@ -662,6 +662,14 @@ export default function PumpAffinityCalculator() {
 
           <div className="p-6 flex flex-col flex-1">
             
+            {/* Instructions Box */}
+            <div className="mb-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800 p-4">
+              <h4 className="font-bold text-foreground mb-2 uppercase text-sm">Instructions:</h4>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Enter any 3 values. Leave the value you want to find empty. Click Calculate.
+              </p>
+            </div>
+
             <Accordion type="single" value={activeSection} onValueChange={(value) => setActiveSection(value || "flow")} className="space-y-2 [&>*]:!border-b-0">
               
               {/* FLOW SECTION */}
@@ -1287,117 +1295,173 @@ export default function PumpAffinityCalculator() {
               </div>
             </div>
 
-            <div className="mb-6">
-              <h4 className="font-bold text-foreground mb-2 uppercase text-sm">Instructions:</h4>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                Enter any 3 values. Leave the value you want to find empty. Click Calculate.
-              </p>
-            </div>
-
             {/* Calculation Steps - Visual Formula Display */}
             {result.calculated && result.displayData && (
               <div className="mb-4 bg-background rounded-lg border border-border overflow-hidden shadow-sm">
                 <div className="bg-muted px-3 py-2 border-b border-border">
                   <h4 className="font-bold text-foreground uppercase text-xs">Calculation Steps</h4>
                 </div>
-                <div className="p-4">
-                  {/* Apply Affinity Law */}
+                <div className="p-4 space-y-4">
+                  
+                  {/* Step 1: Show the Formula */}
                   <div>
-                    <p className="text-xs font-bold text-foreground mb-3">Apply Affinity Law</p>
-                    
-                    {/* Flow Rate Formula */}
-                    {(result.displayData.formula === 'flow' || result.displayData.formula === 'rpm') && (
-                      <div className="flex flex-col items-center gap-3">
+                    <p className="text-xs font-bold text-foreground mb-3">Step 1: Affinity Law Formula</p>
+                    <div className="bg-muted p-4 flex justify-center border border-border rounded">
+                      {/* Flow Rate Formula */}
+                      {(result.displayData.formula === 'flow' || result.displayData.formula === 'rpm') && (
                         <div className="font-serif text-2xl flex items-center gap-3">
                           <div className="flex flex-col items-center">
-                            <span className="border-b-2 border-foreground px-2">
-                              <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var1}</span>
-                            </span>
-                            <span className="mt-1">
-                              <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var3}</span>
-                            </span>
+                            <span className="border-b border-foreground px-1">Q₁</span>
+                            <span>Q₂</span>
                           </div>
                           <span>=</span>
                           <div className="flex flex-col items-center">
-                            <span className="border-b-2 border-foreground px-2">
-                              <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var2}</span>
-                            </span>
-                            <span className="mt-1">
-                              <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var3}</span>
-                            </span>
+                            <span className="border-b border-foreground px-1">{mode === "CONSTANT_DIAMETER" ? "N₁" : "D₁"}</span>
+                            <span>{mode === "CONSTANT_DIAMETER" ? "N₂" : "D₂"}</span>
                           </div>
                         </div>
-                        <div className="text-lg font-bold">
-                          = <span className="text-green-600 dark:text-green-400">{result.displayData.result}</span>
-                        </div>
-                      </div>
-                    )}
+                      )}
 
-                    {/* Head Formula */}
-                    {(result.displayData.formula === 'head' || result.displayData.formula === 'rpm_sqrt') && (
-                      <div className="flex flex-col items-center gap-3">
+                      {/* Head Formula */}
+                      {(result.displayData.formula === 'head' || result.displayData.formula === 'rpm_sqrt') && (
                         <div className="font-serif text-2xl flex items-center gap-3">
                           <div className="flex flex-col items-center">
-                            <span className="border-b-2 border-foreground px-2">
-                              <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var1}</span>
-                            </span>
-                            <span className="mt-1">
-                              <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var3}</span>
-                            </span>
+                            <span className="border-b border-foreground px-1">H₁</span>
+                            <span>H₂</span>
                           </div>
                           <span>=</span>
                           <div className="flex items-center">
                             <span className="text-4xl text-muted-foreground font-light">(</span>
                             <div className="flex flex-col items-center">
-                              <span className="border-b-2 border-foreground px-2">
-                                <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var2}</span>
-                              </span>
-                              <span className="mt-1">
-                                <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var3}</span>
-                              </span>
+                              <span className="border-b border-foreground px-1">{mode === "CONSTANT_DIAMETER" ? "N₁" : "D₁"}</span>
+                              <span>{mode === "CONSTANT_DIAMETER" ? "N₂" : "D₂"}</span>
                             </div>
                             <span className="text-4xl text-muted-foreground font-light">)</span>
-                            <sup className="text-sm font-bold -ml-1" style={{verticalAlign: 'super'}}>2</sup>
+                            <sup className="text-sm font-bold mb-6">2</sup>
                           </div>
                         </div>
-                        <div className="text-lg font-bold">
-                          = <span className="text-green-600 dark:text-green-400">{result.displayData.result}</span>
-                        </div>
-                      </div>
-                    )}
+                      )}
 
-                    {/* Power Formula */}
-                    {(result.displayData.formula === 'power' || result.displayData.formula === 'rpm_cbrt') && (
-                      <div className="flex flex-col items-center gap-3">
+                      {/* Power Formula */}
+                      {(result.displayData.formula === 'power' || result.displayData.formula === 'rpm_cbrt') && (
                         <div className="font-serif text-2xl flex items-center gap-3">
                           <div className="flex flex-col items-center">
-                            <span className="border-b-2 border-foreground px-2">
-                              <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var1}</span>
-                            </span>
-                            <span className="mt-1">
-                              <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var3}</span>
-                            </span>
+                            <span className="border-b border-foreground px-1">P₁</span>
+                            <span>P₂</span>
                           </div>
                           <span>=</span>
                           <div className="flex items-center">
                             <span className="text-4xl text-muted-foreground font-light">(</span>
                             <div className="flex flex-col items-center">
-                              <span className="border-b-2 border-foreground px-2">
-                                <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var2}</span>
-                              </span>
-                              <span className="mt-1">
-                                <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var3}</span>
-                              </span>
+                              <span className="border-b border-foreground px-1">{mode === "CONSTANT_DIAMETER" ? "N₁" : "D₁"}</span>
+                              <span>{mode === "CONSTANT_DIAMETER" ? "N₂" : "D₂"}</span>
                             </div>
                             <span className="text-4xl text-muted-foreground font-light">)</span>
-                            <sup className="text-sm font-bold -ml-1" style={{verticalAlign: 'super'}}>3</sup>
+                            <sup className="text-sm font-bold mb-6">3</sup>
                           </div>
                         </div>
-                        <div className="text-lg font-bold">
-                          = <span className="text-green-600 dark:text-green-400">{result.displayData.result}</span>
-                        </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Step 2: Substitute Values - Vertical Layout */}
+                  <div>
+                    <p className="text-xs font-bold text-foreground mb-3">Step 2: Substitute Values</p>
+                    <div className="space-y-3">
+                      {/* Flow Rate Formula with values */}
+                      {(result.displayData.formula === 'flow' || result.displayData.formula === 'rpm') && (
+                        <>
+                          <div className="flex items-center gap-3 font-serif text-lg justify-center">
+                            <div className="flex flex-col items-center">
+                              <span className="border-b-2 border-foreground px-2">
+                                <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var1}</span>
+                              </span>
+                              <span className="mt-1">
+                                <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var2}</span>
+                              </span>
+                            </div>
+                            <span>=</span>
+                            <div className="flex flex-col items-center">
+                              <span className="border-b-2 border-foreground px-2">
+                                <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var3}</span>
+                              </span>
+                              <span className="mt-1">
+                                <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var4}</span>
+                              </span>
+                            </div>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Head Formula with values */}
+                      {(result.displayData.formula === 'head' || result.displayData.formula === 'rpm_sqrt') && (
+                        <>
+                          <div className="flex items-center gap-3 font-serif text-lg justify-center">
+                            <div className="flex flex-col items-center">
+                              <span className="border-b-2 border-foreground px-2">
+                                <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var1}</span>
+                              </span>
+                              <span className="mt-1">
+                                <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var2}</span>
+                              </span>
+                            </div>
+                            <span>=</span>
+                            <div className="flex items-center">
+                              <span className="text-4xl text-muted-foreground font-light">(</span>
+                              <div className="flex flex-col items-center">
+                                <span className="border-b-2 border-foreground px-2">
+                                  <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var3}</span>
+                                </span>
+                                <span className="mt-1">
+                                  <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var4}</span>
+                                </span>
+                              </div>
+                              <span className="text-4xl text-muted-foreground font-light">)</span>
+                              <sup className="text-sm font-bold -ml-1" style={{verticalAlign: 'super'}}>2</sup>
+                            </div>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Power Formula with values */}
+                      {(result.displayData.formula === 'power' || result.displayData.formula === 'rpm_cbrt') && (
+                        <>
+                          <div className="flex items-center gap-3 font-serif text-lg justify-center">
+                            <div className="flex flex-col items-center">
+                              <span className="border-b-2 border-foreground px-2">
+                                <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var1}</span>
+                              </span>
+                              <span className="mt-1">
+                                <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var2}</span>
+                              </span>
+                            </div>
+                            <span>=</span>
+                            <div className="flex items-center">
+                              <span className="text-4xl text-muted-foreground font-light">(</span>
+                              <div className="flex flex-col items-center">
+                                <span className="border-b-2 border-foreground px-2">
+                                  <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var3}</span>
+                                </span>
+                                <span className="mt-1">
+                                  <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.displayData.var4}</span>
+                                </span>
+                              </div>
+                              <span className="text-4xl text-muted-foreground font-light">)</span>
+                              <sup className="text-sm font-bold -ml-1" style={{verticalAlign: 'super'}}>3</sup>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Step 3: Final Result */}
+                  <div>
+                    <p className="text-xs font-bold text-foreground mb-3">Step 3: Calculate Result</p>
+                    <div className="flex items-center justify-center gap-3 font-serif text-lg">
+                      <span>=</span>
+                      <span className="font-bold text-green-600 dark:text-green-400 text-xl">{result.displayData.result}</span>
+                    </div>
                   </div>
                 </div>
               </div>
