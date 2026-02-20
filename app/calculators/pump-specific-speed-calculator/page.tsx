@@ -1,0 +1,567 @@
+"use client"
+
+import { useState, useRef } from "react"
+import { Header } from "@/components/header"
+import { Footer } from "@/components/footer"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useToast } from "@/hooks/use-toast"
+import { Copy, Check } from "lucide-react"
+
+// Unit definitions for Pump Specific Speed Calculator
+const speedUnits = [
+  { value: "rpm", label: "RPM" },
+  { value: "rads", label: "rad/s" },
+]
+
+const flowUnits = [
+  { value: "m3h", label: "m³/h" },
+  { value: "m3s", label: "m³/s" },
+  { value: "lpm", label: "L/min" },
+  { value: "gpm", label: "GPM" },
+]
+
+const headUnits = [
+  { value: "m", label: "m" },
+  { value: "ft", label: "ft" },
+]
+
+// Unit conversion functions
+const convertSpeedToRPM = (value: number, unit: string): number => {
+  switch (unit) {
+    case "rpm": return value
+    case "rads": return value * 9.5493 // rad/s to RPM
+    default: return value
+  }
+}
+
+const convertFlowToM3H = (value: number, unit: string): number => {
+  switch (unit) {
+    case "m3h": return value
+    case "m3s": return value * 3600
+    case "lpm": return value * 0.06
+    case "gpm": return value * 0.227124
+    default: return value
+  }
+}
+
+const convertHeadToM = (value: number, unit: string): number => {
+  switch (unit) {
+    case "m": return value
+    case "ft": return value * 0.3048
+    default: return value
+  }
+}
+
+export default function PumpSpecificSpeedCalculator() {
+  const { toast } = useToast()
+  const resultRef = useRef<HTMLDivElement>(null)
+  
+  const [rotationalSpeed, setRotationalSpeed] = useState<string>("")
+  const [speedUnit, setSpeedUnit] = useState<string>("rpm")
+  
+  const [flowRate, setFlowRate] = useState<string>("")
+  const [flowUnit, setFlowUnit] = useState<string>("m3h")
+  
+  const [totalHead, setTotalHead] = useState<string>("")
+  const [headUnit, setHeadUnit] = useState<string>("m")
+  
+  const [copied, setCopied] = useState(false)
+
+  // Validation states
+  const [speedError, setSpeedError] = useState<string>("")
+  const [flowError, setFlowError] = useState<string>("")
+  const [headError, setHeadError] = useState<string>("")
+
+  const [result, setResult] = useState<{
+    value: string
+    fullValue: string
+    calculated: boolean
+    steps: {
+      n_rpm: string
+      q_m3h: string
+      h_m: string
+      sqrtQ: string
+      hPower: string
+      numerator: string
+      nsExact: string
+    } | null
+  }>({
+    value: "",
+    fullValue: "",
+    calculated: false,
+    steps: null
+  })
+
+  // Validate Rotational Speed
+  const validateSpeed = (value: string) => {
+    if (value === "") {
+      setSpeedError("")
+      return
+    }
+    const num = parseFloat(value)
+    if (isNaN(num)) {
+      setSpeedError("Please enter a valid number")
+    } else if (num <= 0) {
+      setSpeedError("Speed must be positive")
+    } else {
+      setSpeedError("")
+    }
+  }
+
+  // Validate Flow Rate
+  const validateFlow = (value: string) => {
+    if (value === "") {
+      setFlowError("")
+      return
+    }
+    const num = parseFloat(value)
+    if (isNaN(num)) {
+      setFlowError("Please enter a valid number")
+    } else if (num <= 0) {
+      setFlowError("Flow rate must be positive")
+    } else {
+      setFlowError("")
+    }
+  }
+
+  // Validate Total Head
+  const validateHead = (value: string) => {
+    if (value === "") {
+      setHeadError("")
+      return
+    }
+    const num = parseFloat(value)
+    if (isNaN(num)) {
+      setHeadError("Please enter a valid number")
+    } else if (num <= 0) {
+      setHeadError("Head must be positive")
+    } else {
+      setHeadError("")
+    }
+  }
+
+  // Handle input changes
+  const handleSpeedChange = (value: string) => {
+    setRotationalSpeed(value)
+    validateSpeed(value)
+  }
+
+  const handleFlowChange = (value: string) => {
+    setFlowRate(value)
+    validateFlow(value)
+  }
+
+  const handleHeadChange = (value: string) => {
+    setTotalHead(value)
+    validateHead(value)
+  }
+
+  const copyResult = () => {
+    const resultText = `Ns = ${result.value}`
+    navigator.clipboard.writeText(resultText)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+    toast({
+      title: "Copied to clipboard!",
+      description: resultText,
+    })
+  }
+
+  const handleCalculate = () => {
+    const N_input = rotationalSpeed ? parseFloat(rotationalSpeed) : null
+    const Q_input = flowRate ? parseFloat(flowRate) : null
+    const H_input = totalHead ? parseFloat(totalHead) : null
+
+    // Check for validation errors
+    if (speedError || flowError || headError) {
+      toast({
+        title: "Validation Error",
+        description: "Please fix all validation errors before calculating.",
+        variant: "destructive",
+      })
+      setResult({
+        value: "",
+        fullValue: "",
+        calculated: false,
+        steps: null
+      })
+      return
+    }
+
+    if (!N_input || !Q_input || !H_input) {
+      setResult({
+        value: "",
+        fullValue: "",
+        calculated: false,
+        steps: null
+      })
+      return
+    }
+
+    if (N_input <= 0 || Q_input <= 0 || H_input <= 0) {
+      toast({
+        title: "Invalid Input",
+        description: "All values must be positive.",
+        variant: "destructive",
+      })
+      setResult({
+        value: "",
+        fullValue: "",
+        calculated: false,
+        steps: null
+      })
+      return
+    }
+
+    // Step 1: Convert all inputs to standard units
+    const N_rpm = convertSpeedToRPM(N_input, speedUnit)
+    const Q_m3h = convertFlowToM3H(Q_input, flowUnit)
+    const H_m = convertHeadToM(H_input, headUnit)
+
+    // Step 2: Calculate Ns using formula: Ns = (N × √Q) / H^(3/4)
+    const sqrtQ = Math.sqrt(Q_m3h)
+    const numerator = N_rpm * sqrtQ
+    const hPower = Math.pow(H_m, 0.75) // 3/4 = 0.75
+    const nsExact = numerator / hPower
+    const nsRounded = Math.round(nsExact)
+
+    setResult({
+      value: nsRounded.toString(),
+      fullValue: nsExact.toFixed(2),
+      calculated: true,
+      steps: {
+        n_rpm: N_rpm.toFixed(2),
+        q_m3h: Q_m3h.toFixed(2),
+        h_m: H_m.toFixed(4),
+        sqrtQ: sqrtQ.toFixed(4),
+        hPower: hPower.toFixed(3),
+        numerator: numerator.toFixed(2),
+        nsExact: nsExact.toFixed(2)
+      }
+    })
+
+    // Scroll to result
+    setTimeout(() => {
+      resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }, 100)
+  }
+
+  return (
+    <div className="min-h-screen bg-background flex flex-col">
+      <Header />
+      <main className="flex-1 bg-background p-4 md:p-8 font-sans text-foreground flex flex-col items-center">
+      
+      <div className="text-center mb-6">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-1">
+          World-Class Engineering Tool for Professionals
+        </p>
+        <h1 className="text-2xl md:text-3xl font-black text-foreground uppercase tracking-tight">
+          Pump Specific Speed Calculator
+        </h1>
+        <div className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
+            Smart Unit Conversion - Enter values in any unit!
+          </span>
+        </div>
+      </div>
+
+      <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+        
+        {/* Left Panel - Inputs */}
+        <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden flex flex-col w-full">
+          <div className="bg-blue-50 dark:bg-blue-950/30 px-4 py-3 border-b border-border">
+             <h2 className="font-bold text-base uppercase text-foreground">Inputs & Parameters (Specific Speed)</h2>
+          </div>
+
+          <div className="p-4 space-y-4 flex flex-col flex-1">
+            
+            {/* Rotational Speed Input */}
+            <div>
+              <div className="flex items-center gap-3">
+                <label className="font-semibold text-foreground text-sm w-32 flex-shrink-0">Rotational Speed (N):</label>
+                <input
+                  type="number"
+                  value={rotationalSpeed}
+                  onChange={e => handleSpeedChange(e.target.value)}
+                  placeholder="1000"
+                  className={`flex-[2] min-w-0 border-2 ${speedError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
+                />
+                <Select value={speedUnit} onValueChange={setSpeedUnit}>
+                  <SelectTrigger className="flex-1 min-w-[100px] border-2 border-border bg-background text-sm h-10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="z-50">
+                    {speedUnits.map((u) => (
+                      <SelectItem key={u.value} value={u.value}>
+                        {u.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {speedError && (
+                <div className="mt-1 flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="font-medium">{speedError}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Flow Rate Input */}
+            <div>
+              <div className="flex items-center gap-3">
+                <label className="font-semibold text-foreground text-sm w-32 flex-shrink-0">Flow Rate (Q):</label>
+                <input
+                  type="number"
+                  value={flowRate}
+                  onChange={e => handleFlowChange(e.target.value)}
+                  placeholder="150"
+                  className={`flex-[2] min-w-0 border-2 ${flowError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
+                />
+                <Select value={flowUnit} onValueChange={setFlowUnit}>
+                  <SelectTrigger className="flex-1 min-w-[100px] border-2 border-border bg-background text-sm h-10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="z-50">
+                    {flowUnits.map((u) => (
+                      <SelectItem key={u.value} value={u.value}>
+                        {u.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {flowError && (
+                <div className="mt-1 flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="font-medium">{flowError}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Total Head Input */}
+            <div>
+              <div className="flex items-center gap-3">
+                <label className="font-semibold text-foreground text-sm w-32 flex-shrink-0">Total Head (H):</label>
+                <input
+                  type="number"
+                  value={totalHead}
+                  onChange={e => handleHeadChange(e.target.value)}
+                  placeholder="100"
+                  className={`flex-[2] min-w-0 border-2 ${headError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
+                />
+                <Select value={headUnit} onValueChange={setHeadUnit}>
+                  <SelectTrigger className="flex-1 min-w-[100px] border-2 border-border bg-background text-sm h-10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="z-50">
+                    {headUnits.map((u) => (
+                      <SelectItem key={u.value} value={u.value}>
+                        {u.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {headError && (
+                <div className="mt-1 flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="font-medium">{headError}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Formula Display */}
+            <div className="mt-auto mb-4 bg-muted rounded-lg p-4 border-2 border-border">
+              <h4 className="font-bold text-foreground mb-3 uppercase text-xs text-center">Formula:</h4>
+              <div className="flex flex-col items-center gap-2">
+                <div className="font-serif text-xl flex items-center gap-2">
+                  <span className="font-bold">N<sub className="text-xs">s</sub></span>
+                  <span>=</span>
+                  <div className="flex flex-col items-center">
+                    <span className="border-b-2 border-foreground px-2 pb-0.5 text-base">N × √Q</span>
+                    <span className="pt-0.5 text-base">H<sup className="text-xs">3/4</sup></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button 
+              onClick={handleCalculate}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg text-base tracking-wide shadow-md active:translate-y-0.5 transition-all uppercase"
+            >
+              Calculate Specific Speed
+            </button>
+          </div>
+        </div>
+
+        {/* Right Panel - Results */}
+        <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden flex flex-col h-full relative w-full">
+          {/* Grid Background */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808020_1px,transparent_1px),linear-gradient(to_bottom,#80808020_1px,transparent_1px)] bg-[size:20px_20px]" />
+          
+          <div className="bg-muted px-4 py-3 border-b border-border relative z-10">
+             <h2 className="font-bold text-base uppercase text-foreground">Calculation & Result (Specific Speed)</h2>
+          </div>
+
+          <div className="p-4 flex-1 flex flex-col gap-4 relative z-10">
+            
+            {/* Given Data Section */}
+            <div className="bg-background rounded-lg border border-border overflow-hidden shadow-sm">
+              <div className="bg-muted px-3 py-2 border-b border-border">
+                <h4 className="font-bold text-foreground uppercase text-xs">Given</h4>
+              </div>
+              <div className="p-3">
+                <div className="flex flex-wrap gap-2">
+                  <div className="inline-flex items-center bg-background border border-blue-300 dark:border-blue-700 rounded px-3 py-1.5 font-mono text-sm shadow-sm">
+                    <strong className="text-blue-600 dark:text-blue-400 mr-1.5">N</strong> 
+                    <span className="text-foreground">= {rotationalSpeed || "?"} {speedUnits.find(u => u.value === speedUnit)?.label}</span>
+                  </div>
+                  <div className="inline-flex items-center bg-background border border-blue-300 dark:border-blue-700 rounded px-3 py-1.5 font-mono text-sm shadow-sm">
+                    <strong className="text-blue-600 dark:text-blue-400 mr-1.5">Q</strong> 
+                    <span className="text-foreground">= {flowRate || "?"} {flowUnits.find(u => u.value === flowUnit)?.label}</span>
+                  </div>
+                  <div className="inline-flex items-center bg-background border border-blue-300 dark:border-blue-700 rounded px-3 py-1.5 font-mono text-sm shadow-sm">
+                    <strong className="text-blue-600 dark:text-blue-400 mr-1.5">H</strong> 
+                    <span className="text-foreground">= {totalHead || "?"} {headUnits.find(u => u.value === headUnit)?.label}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* To Find Section */}
+            <div className="bg-background rounded-lg border border-border overflow-hidden shadow-sm">
+              <div className="bg-muted px-3 py-2 border-b border-border">
+                <h4 className="font-bold text-foreground uppercase text-xs">To Find</h4>
+              </div>
+              <div className="p-3">
+                <div className="inline-flex items-center bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-600 dark:border-blue-500 rounded px-3 py-1.5 font-mono text-sm shadow-sm">
+                  <strong className="text-blue-600 dark:text-blue-400 mr-1.5">N<sub className="text-xs">s</sub></strong> 
+                  <span className="text-foreground">= ?</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Calculation Steps */}
+            {result.calculated && result.steps && (
+              <div className="bg-background rounded-lg border border-border overflow-hidden shadow-sm">
+                <div className="bg-muted px-3 py-2 border-b border-border">
+                  <h4 className="font-bold text-foreground uppercase text-xs">Calculation</h4>
+                </div>
+                <div className="p-4 space-y-3">
+                  {/* Step 1: Formula */}
+                  <div className="flex items-center gap-3 font-serif text-lg">
+                    <span className="font-bold">N<sub className="text-xs">s</sub></span>
+                    <span>=</span>
+                    <div className="inline-flex flex-col items-center text-center">
+                      <span className="border-b-2 border-foreground px-2 pb-0.5 text-sm">N × √Q</span>
+                      <span className="pt-0.5 text-sm">H<sup className="text-xs">3/4</sup></span>
+                    </div>
+                  </div>
+                  
+                  {/* Step 2: Substitution */}
+                  <div className="flex items-center gap-3 font-serif text-lg">
+                    <span>=</span>
+                    <div className="inline-flex flex-col items-center text-center">
+                      <span className="border-b-2 border-foreground px-2 pb-0.5 text-sm">
+                        <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.steps.n_rpm}</span>
+                        {" × √"}
+                        <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.steps.q_m3h}</span>
+                      </span>
+                      <span className="pt-0.5 text-sm">
+                        <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.steps.h_m}</span>
+                        <sup className="text-xs">3/4</sup>
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Step 3: Simplified */}
+                  <div className="flex items-center gap-3 font-serif text-lg">
+                    <span>=</span>
+                    <div className="inline-flex flex-col items-center text-center">
+                      <span className="border-b-2 border-foreground px-2 pb-0.5 text-sm">
+                        {result.steps.n_rpm} × {result.steps.sqrtQ}
+                      </span>
+                      <span className="pt-0.5 text-sm">
+                        {result.steps.hPower}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Step 4: Further Simplified */}
+                  <div className="flex items-center gap-3 font-serif text-lg">
+                    <span>=</span>
+                    <div className="inline-flex flex-col items-center text-center">
+                      <span className="border-b-2 border-foreground px-2 pb-0.5 text-sm">
+                        {result.steps.numerator}
+                      </span>
+                      <span className="pt-0.5 text-sm">
+                        {result.steps.hPower}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Step 5: Final Result */}
+                  <div className="flex items-center gap-3 font-serif text-lg">
+                    <span>≈</span>
+                    <span className="font-bold">{result.fullValue}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Result Display */}
+            <div className="mt-auto" ref={resultRef}>
+              <div className={`rounded-lg px-6 py-4 text-white shadow-lg transition-all duration-500 relative ${result.calculated ? "bg-gradient-to-br from-green-500 to-green-600" : "bg-muted"}`}>
+                 {result.calculated && (
+                   <button
+                     onClick={copyResult}
+                     className="absolute top-3 right-3 p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
+                     title="Copy result"
+                   >
+                     {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                   </button>
+                 )}
+                 
+                 {result.calculated ? (
+                   <div className="flex items-center justify-center gap-4">
+                     <div className="w-12 h-12 rounded-full border-4 border-white flex items-center justify-center flex-shrink-0">
+                       <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                       </svg>
+                     </div>
+                     
+                     <div className="flex items-center gap-3">
+                       <h2 className="text-xl font-bold uppercase opacity-90">Result:</h2>
+                       <div className="text-3xl font-black">
+                         N<sub className="text-xl">s</sub> = {result.value}
+                       </div>
+                     </div>
+                   </div>
+                 ) : (
+                   <div className="text-center">
+                     <div className="text-base font-medium opacity-70 italic text-muted-foreground">
+                       Enter values and click Calculate...
+                     </div>
+                   </div>
+                 )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      </main>
+      <Footer />
+    </div>
+  )
+}
