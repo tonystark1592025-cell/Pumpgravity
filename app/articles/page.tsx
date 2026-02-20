@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar, Eye } from 'lucide-react';
 import dbConnect from '@/lib/mongodb';
 import Article from '@/lib/models/Article';
+import { ArticleSearch } from '@/components/article-search';
 
 const ARTICLES_PER_PAGE = 9;
 
@@ -21,16 +22,33 @@ const categoryColors: Record<string, string> = {
 export default async function ArticlesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; q?: string }>;
 }) {
   const params = await searchParams;
   const currentPage = Number(params.page) || 1;
+  const searchQuery = params.q || '';
 
   await dbConnect();
-  const totalArticles = await Article.countDocuments({ published: true });
+
+  // Build search query
+  let query: any = { published: true };
+  if (searchQuery) {
+    query = {
+      published: true,
+      $or: [
+        { title: { $regex: searchQuery, $options: 'i' } },
+        { excerpt: { $regex: searchQuery, $options: 'i' } },
+        { content: { $regex: searchQuery, $options: 'i' } },
+        { category: { $regex: searchQuery, $options: 'i' } },
+        { tags: { $regex: searchQuery, $options: 'i' } },
+      ],
+    };
+  }
+
+  const totalArticles = await Article.countDocuments(query);
   const totalPages = Math.ceil(totalArticles / ARTICLES_PER_PAGE);
 
-  const articlesData = await Article.find({ published: true })
+  const articlesData = await Article.find(query)
     .sort({ createdAt: -1 })
     .skip((currentPage - 1) * ARTICLES_PER_PAGE)
     .limit(ARTICLES_PER_PAGE)
@@ -54,6 +72,11 @@ export default async function ArticlesPage({
           </p>
         </div>
 
+        {/* Search Bar */}
+        <div className="mb-12">
+          <ArticleSearch />
+        </div>
+
         {articles.length === 0 ? (
           <Card className="mx-auto max-w-2xl">
             <CardContent className="py-16 text-center">
@@ -72,9 +95,13 @@ export default async function ArticlesPage({
                   />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-foreground">No articles yet</h3>
+              <h3 className="text-lg font-semibold text-foreground">
+                {searchQuery ? 'No articles found' : 'No articles yet'}
+              </h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                Check back soon for new content!
+                {searchQuery
+                  ? `No results found for "${searchQuery}". Try a different search term.`
+                  : 'Check back soon for new content!'}
               </p>
             </CardContent>
           </Card>
@@ -167,7 +194,7 @@ export default async function ArticlesPage({
             {totalPages > 1 && (
               <div className="mt-16 flex items-center justify-center gap-2">
                 <Link
-                  href={`/articles?page=${Math.max(1, currentPage - 1)}`}
+                  href={`/articles?${searchQuery ? `q=${searchQuery}&` : ''}page=${Math.max(1, currentPage - 1)}`}
                   className={currentPage === 1 ? 'pointer-events-none' : ''}
                 >
                   <Button
@@ -206,7 +233,7 @@ export default async function ArticlesPage({
                     }
 
                     return (
-                      <Link key={pageNum} href={`/articles?page=${pageNum}`}>
+                      <Link key={pageNum} href={`/articles?${searchQuery ? `q=${searchQuery}&` : ''}page=${pageNum}`}>
                         <Button
                           variant={currentPage === pageNum ? 'default' : 'outline'}
                           size="sm"
@@ -220,7 +247,7 @@ export default async function ArticlesPage({
                 </div>
 
                 <Link
-                  href={`/articles?page=${Math.min(totalPages, currentPage + 1)}`}
+                  href={`/articles?${searchQuery ? `q=${searchQuery}&` : ''}page=${Math.min(totalPages, currentPage + 1)}`}
                   className={currentPage === totalPages ? 'pointer-events-none' : ''}
                 >
                   <Button
