@@ -575,7 +575,7 @@ export default function PumpPowerCalculator() {
             </div>
 
             {/* Formula Display */}
-            <div className="mt-6 mb-4 bg-muted rounded-lg p-4 border-2 border-border">
+            <div className="mt-auto mb-4 bg-muted rounded-lg p-4 border-2 border-border">
               <h4 className="font-bold text-foreground mb-3 uppercase text-xs text-center">Formula:</h4>
               <div className="flex flex-col items-center gap-2">
                 <div className="font-serif text-xl flex items-center gap-2">
@@ -649,55 +649,57 @@ export default function PumpPowerCalculator() {
               </div>
             </div>
 
-            {/* Calculation Steps - Visual Formula Display */}
+            {/* Calculation Steps - Vertical Layout */}
             {result.calculated && (
               <div className="bg-background rounded-lg border border-border overflow-hidden shadow-sm">
-                <div className="bg-muted px-3 py-2 border-b border-border flex justify-between items-center">
+                <div className="bg-muted px-3 py-2 border-b border-border">
                   <h4 className="font-bold text-foreground uppercase text-xs">Step-by-Step Calculation</h4>
-                  {/* <span className="text-[10px] text-muted-foreground font-mono">kW = (m³/h · m · SG) / (const · η)</span> */}
                 </div>
-                <div className="p-4">
-                  <div className="flex flex-wrap items-center gap-3 font-serif text-lg justify-start">
+                <div className="p-4 space-y-3">
+                  {/* Step 1: Substitution */}
+                  <div className="flex items-center gap-3 font-serif text-lg">
                     <span className="font-bold">P<sub className="text-xs">s</sub></span>
                     <span>=</span>
-                    
-                    {/* Step 1: Substitution */}
                     <div className="inline-flex flex-col items-center text-center">
-                      <span className="border-b-2 border-foreground px-2 pb-0.5">
+                      <span className="border-b-2 border-foreground px-2 pb-0.5 text-sm">
                         <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.steps[6]?.match(/\(([^×]+)/)?.[1]?.trim() || flowRate}</span>
                         {" × "}
                         <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.steps[6]?.match(/× ([^×]+) ×/)?.[1]?.trim() || head}</span>
                         {" × "}
                         <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{specificGravity}</span>
                       </span>
-                      <span className="pt-0.5">
+                      <span className="pt-0.5 text-sm">
                         {"367.2 × "}
                         <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{efficiency ? (parseFloat(efficiency) / 100).toFixed(2) : "?"}</span>
                       </span>
                     </div>
-                    
+                  </div>
+                  
+                  {/* Step 2: Simplified */}
+                  <div className="flex items-center gap-3 font-serif text-lg">
                     <span>=</span>
-                    
-                    {/* Step 2: Simplified */}
                     <div className="inline-flex flex-col items-center text-center">
-                      <span className="border-b-2 border-foreground px-2 pb-0.5">
+                      <span className="border-b-2 border-foreground px-2 pb-0.5 text-sm">
                         {result.steps[7]?.match(/= ([^/]+)/)?.[1]?.trim() || "..."}
                       </span>
-                      <span className="pt-0.5">
+                      <span className="pt-0.5 text-sm">
                         {result.steps[7]?.match(/\/ (.+)/)?.[1]?.trim() || "..."}
                       </span>
                     </div>
-                    
-                    <span>≈</span>
+                  </div>
+                  
+                  {/* Step 3: Final Result */}
+                  <div className="flex items-center gap-3 font-serif text-lg">
+                    <span>=</span>
                     <span className="font-bold">{result.valueSI}</span>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Result Display */}
+            {/* Result Display - Horizontal Layout */}
             <div className="mt-auto" ref={resultRef}>
-              <div className={`rounded-lg p-6 text-center text-white shadow-lg transition-all duration-500 relative ${result.calculated ? "bg-gradient-to-br from-green-500 to-green-600" : "bg-muted"}`}>
+              <div className={`rounded-lg px-6 py-4 text-white shadow-lg transition-all duration-500 relative ${result.calculated ? "bg-gradient-to-br from-green-500 to-green-600" : "bg-muted"}`}>
                  {result.calculated && (
                    <button
                      onClick={copyResult}
@@ -708,33 +710,26 @@ export default function PumpPowerCalculator() {
                    </button>
                  )}
                  
-                 <div className="flex items-center justify-center mb-3">
-                   {result.calculated && (
-                     <div className="w-10 h-10 rounded-full border-4 border-white flex items-center justify-center">
-                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                 {result.calculated ? (
+                   <div className="flex items-center justify-center gap-4">
+                     <div className="w-12 h-12 rounded-full border-4 border-white flex items-center justify-center flex-shrink-0">
+                       <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                        </svg>
                      </div>
-                   )}
-                 </div>
-                 
-                 <h2 className="text-lg font-bold mb-3 uppercase opacity-90">
-                   Result:
-                 </h2>
-                 
-                 {result.calculated ? (
-                   <div>
-                     <div className="text-4xl font-black mb-2">
-                       P<sub className="text-2xl">s</sub> = {result.value} {powerUnits.find(u => u.value === resultUnit)?.label}
+                     
+                     <div className="flex items-center gap-3">
+                       <h2 className="text-xl font-bold uppercase opacity-90">Result:</h2>
+                       <div className="text-3xl font-black">
+                         P<sub className="text-xl">s</sub> = {result.value} {powerUnits.find(u => u.value === resultUnit)?.label}
+                       </div>
                      </div>
-                     {/* <div className="text-sm opacity-80 mt-2">
-                       ({result.valueSI} kW in SI units)
-                     </div> */}
                    </div>
-                   
                  ) : (
-                   <div className="text-base font-medium opacity-70 italic text-muted-foreground">
-                     {result.steps[0] || "Enter values and click Calculate..."}
+                   <div className="text-center">
+                     <div className="text-base font-medium opacity-70 italic text-muted-foreground">
+                       {result.steps[0] || "Enter values and click Calculate..."}
+                     </div>
                    </div>
                  )}
               </div>
