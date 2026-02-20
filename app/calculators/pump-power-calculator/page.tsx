@@ -424,7 +424,7 @@ export default function PumpPowerCalculator() {
              <h2 className="font-bold text-base uppercase text-foreground">Inputs & Parameters (Pump Power)</h2>
           </div>
 
-          <div className="p-4 space-y-4">
+          <div className="p-4 space-y-4 flex flex-col flex-1">
             
             {/* Flow Rate Input with Unit Selector - One Line */}
             <div>
