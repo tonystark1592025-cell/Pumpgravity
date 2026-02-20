@@ -5,7 +5,9 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { SearchBar } from "@/components/search-bar"
 import { Calculator, Activity, Zap, Power } from "lucide-react"
-import { useState, useMemo } from "react"
+import { useState } from "react"
+import { useCrossSearch } from "@/hooks/use-cross-search"
+import { CrossSearchResults } from "@/components/cross-search-results"
 
 export default function CalculatorsPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -30,23 +32,42 @@ export default function CalculatorsPage() {
       bgColor: "bg-green-500/10",
       features: ["Shaft Power", "Flow Rate", "Differential Head"],
       keywords: ["pump", "power", "shaft", "flow", "head", "gravity", "efficiency", "hydraulic"]
+    },
+    {
+      title: "Suction Specific Speed Calculator",
+      description: "Calculate suction specific speed (Nss) to evaluate pump cavitation performance and NPSH requirements.",
+      icon: Activity,
+      href: "/calculators/suction-specific-speed-calculator",
+      color: "text-purple-500",
+      bgColor: "bg-purple-500/10",
+      features: ["Suction Speed", "NPSH Required", "Cavitation Analysis"],
+      keywords: ["pump", "suction", "specific", "speed", "nss", "npsh", "cavitation", "performance"]
+    },
+    {
+      title: "Pump Specific Speed Calculator",
+      description: "Calculate pump specific speed (Ns) to determine pump type and optimal operating characteristics.",
+      icon: Zap,
+      href: "/calculators/pump-specific-speed-calculator",
+      color: "text-orange-500",
+      bgColor: "bg-orange-500/10",
+      features: ["Specific Speed", "Pump Type", "Performance"],
+      keywords: ["pump", "specific", "speed", "ns", "type", "classification", "performance", "characteristics"]
+    },
+    {
+      title: "Pump Efficiency Calculator",
+      description: "Calculate pump efficiency based on flow rate, head, specific gravity, and shaft power input.",
+      icon: Calculator,
+      href: "/calculators/pump-efficiency-calculator",
+      color: "text-cyan-500",
+      bgColor: "bg-cyan-500/10",
+      features: ["Efficiency", "Performance", "Energy Analysis"],
+      keywords: ["pump", "efficiency", "performance", "energy", "shaft", "power", "hydraulic", "analysis"]
     }
   ]
 
-  const filteredCalculators = useMemo(() => {
-    if (!searchQuery.trim()) return calculators
-
-    const query = searchQuery.toLowerCase()
-    
-    return calculators.filter(calc => {
-      return (
-        calc.title.toLowerCase().includes(query) ||
-        calc.description.toLowerCase().includes(query) ||
-        calc.features.some(feature => feature.toLowerCase().includes(query)) ||
-        calc.keywords.some(keyword => keyword.toLowerCase().includes(query))
-      )
-    })
-  }, [searchQuery, calculators])
+  const { primaryResults, crossResults, showCrossResults, crossType } = useCrossSearch(searchQuery, "calculator")
+  
+  const filteredCalculators = searchQuery.trim() ? primaryResults : calculators
 
   return (
     <div className="min-h-screen bg-background">
@@ -74,48 +95,71 @@ export default function CalculatorsPage() {
 
           {/* Calculator Grid */}
           {filteredCalculators.length > 0 ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {filteredCalculators.map((calc) => {
-                const Icon = calc.icon
-                return (
-                  <Link
-                    key={calc.href}
-                    href={calc.href}
-                    className="group relative overflow-hidden rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-lg hover:border-primary/50"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg ${calc.bgColor}`}>
-                        <Icon className={`h-6 w-6 ${calc.color}`} />
+            <>
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {filteredCalculators.map((calc) => {
+                  const Icon = calc.icon
+                  return (
+                    <Link
+                      key={calc.href}
+                      href={calc.href}
+                      className="group relative overflow-hidden rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-lg hover:border-primary/50"
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg ${calc.bgColor}`}>
+                          <Icon className={`h-6 w-6 ${calc.color}`} />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                            {calc.title}
+                          </h3>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            {calc.description}
+                          </p>
+                          {calc.features && (
+                            <div className="mt-4 flex flex-wrap gap-2">
+                              {calc.features.map((feature) => (
+                                <span
+                                  key={feature}
+                                  className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground"
+                                >
+                                  {feature}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                          {calc.title}
-                        </h3>
-                        <p className="mt-2 text-sm text-muted-foreground">
-                          {calc.description}
-                        </p>
-                        {calc.features && (
-                          <div className="mt-4 flex flex-wrap gap-2">
-                            {calc.features.map((feature) => (
-                              <span
-                                key={feature}
-                                className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground"
-                              >
-                                {feature}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="absolute bottom-0 right-0 h-24 w-24 translate-x-8 translate-y-8 rounded-full bg-primary/5 transition-transform group-hover:scale-150" />
-                  </Link>
-                )
-              })}
-            </div>
+                      <div className="absolute bottom-0 right-0 h-24 w-24 translate-x-8 translate-y-8 rounded-full bg-primary/5 transition-transform group-hover:scale-150" />
+                    </Link>
+                  )
+                })}
+              </div>
+              
+              {/* Show cross-search results if available */}
+              {crossResults.length > 0 && searchQuery.trim() && (
+                <CrossSearchResults 
+                  results={crossResults} 
+                  type={crossType as "calculator" | "converter"}
+                  searchQuery={searchQuery}
+                />
+              )}
+            </>
+          ) : showCrossResults ? (
+            <>
+              <div className="text-center py-8 mb-8 rounded-xl border border-dashed border-border bg-muted/30">
+                <p className="text-muted-foreground text-lg">No calculators found for "{searchQuery}"</p>
+                <p className="text-muted-foreground text-sm mt-2">Showing results from converters instead</p>
+              </div>
+              <CrossSearchResults 
+                results={crossResults} 
+                type={crossType as "calculator" | "converter"}
+                searchQuery={searchQuery}
+              />
+            </>
           ) : (
             <div className="text-center py-12">
-              <p className="text-muted-foreground text-lg">No calculators found matching "{searchQuery}"</p>
+              <p className="text-muted-foreground text-lg">No results found for "{searchQuery}"</p>
               <p className="text-muted-foreground text-sm mt-2">Try searching for "pump", "power", "flow", or "affinity"</p>
             </div>
           )}
