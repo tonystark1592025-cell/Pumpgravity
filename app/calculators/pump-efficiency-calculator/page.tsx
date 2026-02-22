@@ -428,57 +428,56 @@ export default function PumpEfficiencyCalculator() {
                 <div className="bg-muted px-3 py-2 border-b border-border">
                   <h4 className="font-bold text-foreground uppercase text-xs">Calculation</h4>
                 </div>
-                <div className="p-4 space-y-3">
-                  {/* Step 1: Formula */}
-                  <div className="flex items-center gap-3 font-serif text-lg">
-                    <span className="font-bold">η</span>
-                    <span>=</span>
-                    <div className="inline-flex flex-col items-center text-center">
-                      <span className="border-b-2 border-foreground px-2 pb-0.5 text-sm">Q × H × SG</span>
-                      <span className="pt-0.5 text-sm">367.2 × P<sub className="text-xs">s</sub></span>
+                
+                {/* Changed to a unified grid for horizontal alignment */}
+                <div className="p-6 overflow-x-auto">
+                  <div className="grid grid-cols-[auto_auto_1fr] items-center gap-y-5 gap-x-4 font-serif text-lg min-w-max">
+                    
+                    {/* Step 1: Formula */}
+                    <span className="font-bold text-right whitespace-nowrap">η</span>
+                    <span className="text-center">=</span>
+                    <div className="flex flex-col items-center justify-self-start">
+                      <span className="border-b-2 border-foreground px-4 pb-1 text-base whitespace-nowrap">Q × H × SG</span>
+                      <span className="pt-1 text-base whitespace-nowrap">367.2 × P<sub className="text-xs">s</sub></span>
                     </div>
-                  </div>
-                  
-                  {/* Step 2: Substitution */}
-                  <div className="flex items-center gap-3 font-serif text-lg">
-                    <span>=</span>
-                    <div className="inline-flex flex-col items-center text-center">
-                      <span className="border-b-2 border-foreground px-2 pb-0.5 text-sm">
-                        <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.steps.q}</span>
+                    
+                    {/* Step 2: Substitution */}
+                    <span></span>
+                    <span className="text-center">=</span>
+                    <div className="flex flex-col items-center justify-self-start">
+                      <span className="border-b-2 border-foreground px-4 pb-1 text-base whitespace-nowrap">
+                        <span className="bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1.5 py-0.5 rounded">{result.steps.q}</span>
                         {" × "}
-                        <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.steps.h}</span>
+                        <span className="bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1.5 py-0.5 rounded">{result.steps.h}</span>
                         {" × "}
                         {result.steps.sg}
                       </span>
-                      <span className="pt-0.5 text-sm">
+                      <span className="pt-1 text-base whitespace-nowrap">
                         367.2 × {result.steps.ps}
                       </span>
                     </div>
-                  </div>
-                  
-                  {/* Step 3: Simplified */}
-                  <div className="flex items-center gap-3 font-serif text-lg">
-                    <span>=</span>
-                    <div className="inline-flex flex-col items-center text-center">
-                      <span className="border-b-2 border-foreground px-2 pb-0.5 text-sm">
+                    
+                    {/* Step 3: Simplified */}
+                    <span></span>
+                    <span className="text-center">=</span>
+                    <div className="flex flex-col items-center justify-self-start">
+                      <span className="border-b-2 border-foreground px-4 pb-1 text-base whitespace-nowrap">
                         {result.steps.numerator}
                       </span>
-                      <span className="pt-0.5 text-sm">
+                      <span className="pt-1 text-base whitespace-nowrap">
                         {result.steps.denominator}
                       </span>
                     </div>
-                  </div>
-                  
-                  {/* Step 4: Final Result as decimal */}
-                  <div className="flex items-center gap-3 font-serif text-lg">
-                    <span>=</span>
-                    <span className="font-bold">{result.steps.efficiencyDecimal}</span>
-                  </div>
-                  
-                  {/* Step 5: Convert to percentage */}
-                  <div className="flex items-center gap-3 font-serif text-lg">
-                    <span>=</span>
-                    <span className="font-bold">{result.fullValue}%</span>
+                    
+                    {/* Step 4: Final Result as decimal */}
+                    <span></span>
+                    <span className="text-center font-bold">≈</span>
+                    <span className="font-bold text-xl justify-self-start">{result.steps.efficiencyDecimal}</span>
+                    
+                    {/* Step 5: Convert to percentage */}
+                    <span></span>
+                    <span className="text-center font-bold">≈</span>
+                    <span className="font-bold text-xl justify-self-start">{result.fullValue}%</span>
                   </div>
                 </div>
               </div>

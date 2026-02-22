@@ -457,63 +457,62 @@ export default function PumpSpecificSpeedCalculator() {
                 <div className="bg-muted px-3 py-2 border-b border-border">
                   <h4 className="font-bold text-foreground uppercase text-xs">Calculation</h4>
                 </div>
-                <div className="p-4 space-y-3">
-                  {/* Step 1: Formula */}
-                  <div className="flex items-center gap-3 font-serif text-lg">
-                    <span className="font-bold">N<sub className="text-xs">s</sub></span>
-                    <span>=</span>
-                    <div className="inline-flex flex-col items-center text-center">
-                      <span className="border-b-2 border-foreground px-2 pb-0.5 text-sm">N × √Q</span>
-                      <span className="pt-0.5 text-sm">H<sup className="text-xs">3/4</sup></span>
+                
+                {/* Changed to a unified grid for horizontal alignment */}
+                <div className="p-6 overflow-x-auto">
+                  <div className="grid grid-cols-[auto_auto_1fr] items-center gap-y-5 gap-x-4 font-serif text-lg min-w-max">
+                    
+                    {/* Step 1: Formula */}
+                    <span className="font-bold text-right whitespace-nowrap">N<sub className="text-xs">s</sub></span>
+                    <span className="text-center">=</span>
+                    <div className="flex flex-col items-center justify-self-start">
+                      <span className="border-b-2 border-foreground px-4 pb-1 text-base whitespace-nowrap">N × √Q</span>
+                      <span className="pt-1 text-base whitespace-nowrap">H<sup className="text-xs">3/4</sup></span>
                     </div>
-                  </div>
-                  
-                  {/* Step 2: Substitution */}
-                  <div className="flex items-center gap-3 font-serif text-lg">
-                    <span>=</span>
-                    <div className="inline-flex flex-col items-center text-center">
-                      <span className="border-b-2 border-foreground px-2 pb-0.5 text-sm">
-                        <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.steps.n_rpm}</span>
+                    
+                    {/* Step 2: Substitution */}
+                    <span></span>
+                    <span className="text-center">=</span>
+                    <div className="flex flex-col items-center justify-self-start">
+                      <span className="border-b-2 border-foreground px-4 pb-1 text-base whitespace-nowrap">
+                        <span className="bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1.5 py-0.5 rounded">{result.steps.n_rpm}</span>
                         {" × √"}
-                        <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.steps.q_m3h}</span>
+                        <span className="bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1.5 py-0.5 rounded">{result.steps.q_m3h}</span>
                       </span>
-                      <span className="pt-0.5 text-sm">
-                        <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.steps.h_m}</span>
+                      <span className="pt-1 text-base whitespace-nowrap">
+                        <span className="bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1.5 py-0.5 rounded">{result.steps.h_m}</span>
                         <sup className="text-xs">3/4</sup>
                       </span>
                     </div>
-                  </div>
-                  
-                  {/* Step 3: Simplified */}
-                  <div className="flex items-center gap-3 font-serif text-lg">
-                    <span>=</span>
-                    <div className="inline-flex flex-col items-center text-center">
-                      <span className="border-b-2 border-foreground px-2 pb-0.5 text-sm">
+                    
+                    {/* Step 3: Simplified */}
+                    <span></span>
+                    <span className="text-center">=</span>
+                    <div className="flex flex-col items-center justify-self-start">
+                      <span className="border-b-2 border-foreground px-4 pb-1 text-base whitespace-nowrap">
                         {result.steps.n_rpm} × {result.steps.sqrtQ}
                       </span>
-                      <span className="pt-0.5 text-sm">
+                      <span className="pt-1 text-base whitespace-nowrap">
                         {result.steps.hPower}
                       </span>
                     </div>
-                  </div>
-                  
-                  {/* Step 4: Further Simplified */}
-                  <div className="flex items-center gap-3 font-serif text-lg">
-                    <span>=</span>
-                    <div className="inline-flex flex-col items-center text-center">
-                      <span className="border-b-2 border-foreground px-2 pb-0.5 text-sm">
+                    
+                    {/* Step 4: Further Simplified */}
+                    <span></span>
+                    <span className="text-center">=</span>
+                    <div className="flex flex-col items-center justify-self-start">
+                      <span className="border-b-2 border-foreground px-4 pb-1 text-base whitespace-nowrap">
                         {result.steps.numerator}
                       </span>
-                      <span className="pt-0.5 text-sm">
+                      <span className="pt-1 text-base whitespace-nowrap">
                         {result.steps.hPower}
                       </span>
                     </div>
-                  </div>
-                  
-                  {/* Step 5: Final Result */}
-                  <div className="flex items-center gap-3 font-serif text-lg">
-                    <span>≈</span>
-                    <span className="font-bold">{result.fullValue}</span>
+                    
+                    {/* Step 5: Final Result */}
+                    <span></span>
+                    <span className="text-center font-bold">≈</span>
+                    <span className="font-bold text-xl justify-self-start">{result.fullValue}</span>
                   </div>
                 </div>
               </div>

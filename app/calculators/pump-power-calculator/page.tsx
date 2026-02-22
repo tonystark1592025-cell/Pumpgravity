@@ -342,8 +342,6 @@ export default function PumpPowerCalculator() {
     const H_SI = convertToSI(H_input, headUnit, 'head') // m
 
     // Step 2: Calculate in SI units using high-precision math
-    // Formula: Ps = (Q × H × SG) / (367.2 × η)
-    // Where η is efficiency as decimal (75% = 0.75)
     const etaDecimal = parseFloat(divide(eta.toString(), '100'))
     
     // Calculate numerator: Q × H × SG
@@ -426,7 +424,7 @@ export default function PumpPowerCalculator() {
 
           <div className="p-4 space-y-4 flex flex-col flex-1">
             
-            {/* Flow Rate Input with Unit Selector - One Line */}
+            {/* Flow Rate Input */}
             <div>
               <div className="flex items-center gap-3">
                 <label className="font-semibold text-foreground text-sm w-28 flex-shrink-0">Flow Rate (Q) :</label>
@@ -435,7 +433,7 @@ export default function PumpPowerCalculator() {
                   value={flowRate}
                   onChange={e => handleFlowChange(e.target.value)}
                   placeholder="100"
-                  className={`flex-[2] min-w-0 border-2 ${flowError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
+                  className={`flex-[2] min-w-0 border-2 ${flowError ?'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
                 />
                 <Select value={flowUnit} onValueChange={setFlowUnit}>
                   <SelectTrigger className="flex-1 min-w-[100px] border-2 border-border bg-background text-sm h-10">
@@ -460,7 +458,7 @@ export default function PumpPowerCalculator() {
               )}
             </div>
 
-            {/* Differential Head Input with Unit Selector - One Line */}
+            {/* Differential Head Input */}
             <div>
               <div className="flex items-center gap-3">
                 <label className="font-semibold text-foreground text-sm w-28 flex-shrink-0">Head (H) :</label>
@@ -494,7 +492,7 @@ export default function PumpPowerCalculator() {
               )}
             </div>
 
-            {/* Specific Gravity Input - One Line */}
+            {/* Specific Gravity Input */}
             <div>
               <div className="flex items-center gap-3">
                 <label className="font-semibold text-foreground text-sm w-28 flex-shrink-0">SG :</label>
@@ -524,7 +522,7 @@ export default function PumpPowerCalculator() {
               )}
             </div>
 
-            {/* Pump Efficiency Input - One Line */}
+            {/* Pump Efficiency Input */}
             <div>
               <div className="flex items-center gap-3">
                 <label className="font-semibold text-foreground text-sm w-28 flex-shrink-0">Efficiency (η) :</label>
@@ -554,7 +552,7 @@ export default function PumpPowerCalculator() {
               )}
             </div>
 
-            {/* Result Unit Selector - One Line */}
+            {/* Result Unit Selector */}
             <div className="flex items-center gap-3">
               <label className="font-semibold text-foreground text-sm w-28 flex-shrink-0">Result Unit :</label>
               <div className="flex-[2] min-w-0 flex gap-2">
@@ -649,63 +647,65 @@ export default function PumpPowerCalculator() {
               </div>
             </div>
 
-            {/* Calculation Steps - Vertical Layout */}
+            {/* Calculation Steps - Unified Grid Layout for Perfect Alignment */}
             {result.calculated && (
               <div className="bg-background rounded-lg border border-border overflow-hidden shadow-sm">
                 <div className="bg-muted px-3 py-2 border-b border-border">
                   <h4 className="font-bold text-foreground uppercase text-xs">Step-by-Step Calculation</h4>
                 </div>
-                <div className="p-4 space-y-3">
-                  {/* Step 1: Substitution */}
-                  <div className="flex items-center gap-3 font-serif text-lg">
-                    <span className="font-bold">P<sub className="text-xs">s</sub></span>
-                    <span>=</span>
-                    <div className="inline-flex flex-col items-center text-center">
-                      <span className="border-b-2 border-foreground px-2 pb-0.5 text-sm">
-                        <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.steps[6]?.match(/\(([^×]+)/)?.[1]?.trim() || flowRate}</span>
+                
+                {/* Changed to a unified grid for horizontal alignment */}
+                <div className="p-6 overflow-x-auto">
+                  <div className="grid grid-cols-[auto_auto_1fr] items-center gap-y-5 gap-x-4 font-serif text-lg min-w-max">
+                    
+                    {/* Step 1: Substitution */}
+                    <span className="font-bold text-right whitespace-nowrap">P<sub className="text-xs">s</sub></span>
+                    <span className="text-center">=</span>
+                    <div className="flex flex-col items-center justify-self-start">
+                      <span className="border-b-2 border-foreground px-4 pb-1 text-base whitespace-nowrap">
+                        <span className="bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1.5 py-0.5 rounded">{result.steps[6]?.match(/\(([^×]+)/)?.[1]?.trim() || flowRate}</span>
                         {" × "}
-                        <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{result.steps[6]?.match(/× ([^×]+) ×/)?.[1]?.trim() || head}</span>
+                        <span className="bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1.5 py-0.5 rounded">{result.steps[6]?.match(/× ([^×]+) ×/)?.[1]?.trim() || head}</span>
                         {" × "}
-                        <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{specificGravity}</span>
+                        <span className="bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1.5 py-0.5 rounded">{specificGravity}</span>
                       </span>
-                      <span className="pt-0.5 text-sm">
+                      <span className="pt-1 text-base whitespace-nowrap">
                         {"367.2 × "}
-                        <span className="bg-yellow-100 dark:bg-yellow-900/40 px-1 rounded">{efficiency ? (parseFloat(efficiency) / 100).toFixed(2) : "?"}</span>
+                        <span className="bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1.5 py-0.5 rounded">{efficiency ?(parseFloat(efficiency) / 100).toFixed(2) : "?"}</span>
                       </span>
                     </div>
-                  </div>
-                  
-                  {/* Step 2: Simplified */}
-                  <div className="flex items-center gap-3 font-serif text-lg">
-                    <span>=</span>
-                    <div className="inline-flex flex-col items-center text-center">
-                      <span className="border-b-2 border-foreground px-2 pb-0.5 text-sm">
+                    
+                    {/* Step 2: Simplified */}
+                    <span></span>
+                    <span className="text-center">=</span>
+                    <div className="flex flex-col items-center justify-self-start">
+                      <span className="border-b-2 border-foreground px-4 pb-1 text-base whitespace-nowrap">
                         {result.steps[7]?.match(/= ([^/]+)/)?.[1]?.trim() || "..."}
                       </span>
-                      <span className="pt-0.5 text-sm">
+                      <span className="pt-1 text-base whitespace-nowrap">
                         {result.steps[7]?.match(/\/ (.+)/)?.[1]?.trim() || "..."}
                       </span>
                     </div>
+                    
+                    {/* Step 3: Final Result (matching target image output) */}
+                    <span></span>
+                    <span className="text-center font-bold">≈</span>
+                    <span className="font-bold text-xl justify-self-start">{result.valueSI}</span>
+                    
+                    {/* Step 4: Unit Conversion (if not kW) */}
+                    {resultUnit !== 'kw' && (
+                      <>
+                        <span></span>
+                        <span className="text-center font-bold">≈</span>
+                        <span className="font-bold text-xl justify-self-start">{result.value} {powerUnits.find(u => u.value === resultUnit)?.label}</span>
+                      </>
+                    )}
                   </div>
-                  
-                  {/* Step 3: Final Result */}
-                  <div className="flex items-center gap-3 font-serif text-lg">
-                    <span>=</span>
-                    <span className="font-bold">{result.valueSI} kW</span>
-                  </div>
-                  
-                  {/* Step 4: Unit Conversion (if not kW) */}
-                  {resultUnit !== 'kw' && (
-                    <div className="flex items-center gap-3 font-serif text-lg">
-                      <span>=</span>
-                      <span className="font-bold">{result.value} {powerUnits.find(u => u.value === resultUnit)?.label}</span>
-                    </div>
-                  )}
                 </div>
               </div>
             )}
 
-            {/* Result Display - Horizontal Layout */}
+            {/* Result Display */}
             <div className="mt-auto" ref={resultRef}>
               <div className={`rounded-lg px-6 py-4 text-white shadow-lg transition-all duration-500 relative ${result.calculated ? "bg-gradient-to-br from-green-500 to-green-600" : "bg-muted"}`}>
                  {result.calculated && (
@@ -751,9 +751,3 @@ export default function PumpPowerCalculator() {
     </div>
   )
 }
-
-
-
-
-
-
