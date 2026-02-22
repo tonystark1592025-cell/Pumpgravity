@@ -16,6 +16,7 @@ import {
 } from "@/lib/unit-conversions"
 import { calculateFlowRate, calculateHead, calculatePower, formatResult } from "@/lib/affinity-calculator"
 import { formatSignificant } from "@/lib/precision-math"
+import { formatDisplayNumber } from "@/lib/number-formatter"
 
 type LawMode = "CONSTANT_DIAMETER" | "CONSTANT_SPEED"
 
@@ -593,14 +594,17 @@ export default function PumpAffinityCalculator() {
   }
 
   const copyResult = () => {
-    // Extract the variable name and unit from the label
+    // Extract the value and unit from the label (e.g., "Q₂ = 150.000 m³/h")
     const labelParts = result.label.split(' = ')
-    const variableName = labelParts[0]
-    const unitPart = labelParts[1]?.split(' ').slice(1).join(' ') || ''
+    const valuePart = labelParts[1] || ''
     
     // Use reasonable precision for copy (8 decimal places)
     const displayValue = parseFloat(result.fullValue).toFixed(8)
-    const resultText = `${variableName} = ${displayValue} ${unitPart}`
+    // Extract unit from the label
+    const unitMatch = valuePart.match(/[\d.]+\s*(.+)/)
+    const unit = unitMatch ? unitMatch[1] : ''
+    
+    const resultText = `${displayValue} ${unit}`.trim()
     navigator.clipboard.writeText(resultText)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
@@ -608,6 +612,27 @@ export default function PumpAffinityCalculator() {
       title: "Copied to clipboard!",
       description: resultText,
     })
+  }
+
+  // Reset calculation when any input changes
+  const resetCalculation = () => {
+    if (result.calculated) {
+      setResult({
+        value: "",
+        valueSI: "",
+        fullValue: "",
+        fullValueSI: "",
+        label: "",
+        calculated: false,
+        steps: [],
+        displayData: undefined
+      })
+      toast({
+        title: "Input Modified",
+        description: "Please click Calculate again to see updated results.",
+        variant: "default",
+      })
+    }
   }
 
 
@@ -639,7 +664,7 @@ export default function PumpAffinityCalculator() {
           
           <div className="flex">
             <button
-              onClick={() => setMode("CONSTANT_SPEED")}
+              onClick={() => { setMode("CONSTANT_SPEED"); resetCalculation(); }}
               className={`flex-1 py-3 text-sm font-bold uppercase tracking-wide border-r border-border transition-colors ${
                 mode === "CONSTANT_SPEED" 
                   ? "bg-card text-blue-600 border-t-4 border-t-blue-600" 
@@ -649,7 +674,7 @@ export default function PumpAffinityCalculator() {
               Constant Speed <span className="text-[10px] lowercase opacity-70">(Change Diameter)</span>
             </button>
             <button
-              onClick={() => setMode("CONSTANT_DIAMETER")}
+              onClick={() => { setMode("CONSTANT_DIAMETER"); resetCalculation(); }}
               className={`flex-1 py-3 text-sm font-bold uppercase tracking-wide transition-colors ${
                 mode === "CONSTANT_DIAMETER" 
                   ? "bg-card text-blue-600 border-t-4 border-t-blue-600" 
@@ -703,11 +728,11 @@ export default function PumpAffinityCalculator() {
                             <input 
                               type="number" 
                               value={q1} 
-                              onChange={e => setQ1(e.target.value)} 
+                              onChange={e => { setQ1(e.target.value); resetCalculation(); }} 
                               placeholder="?" 
                               className="w-24 border border-border bg-background rounded px-2 py-1 text-center text-sm"
                             />
-                            <Select value={q1Unit} onValueChange={setQ1Unit}>
+                            <Select value={q1Unit} onValueChange={(value) => { setQ1Unit(value); resetCalculation(); }}>
                               <SelectTrigger className="w-24 h-8 text-xs border border-border">
                                 <SelectValue />
                               </SelectTrigger>
@@ -727,7 +752,7 @@ export default function PumpAffinityCalculator() {
                             <input 
                               type="number" 
                               value={mode === "CONSTANT_DIAMETER" ? n1_flow : d1_flow} 
-                              onChange={e => mode === "CONSTANT_DIAMETER" ? setN1Flow(e.target.value) : setD1Flow(e.target.value)} 
+                              onChange={e => { mode === "CONSTANT_DIAMETER" ? setN1Flow(e.target.value) : setD1Flow(e.target.value); resetCalculation(); }} 
                               placeholder="?" 
                               className="w-24 border border-border bg-background rounded px-2 py-1 text-center text-sm"
                             />
@@ -744,11 +769,11 @@ export default function PumpAffinityCalculator() {
                             <input 
                               type="number" 
                               value={q2} 
-                              onChange={e => setQ2(e.target.value)} 
+                              onChange={e => { setQ2(e.target.value); resetCalculation(); }} 
                               placeholder="?" 
                               className="w-24 border border-border bg-background rounded px-2 py-1 text-center text-sm"
                             />
-                            <Select value={q2Unit} onValueChange={setQ2Unit}>
+                            <Select value={q2Unit} onValueChange={(value) => { setQ2Unit(value); resetCalculation(); }}>
                               <SelectTrigger className="w-24 h-8 text-xs border border-border">
                                 <SelectValue />
                               </SelectTrigger>
@@ -768,7 +793,7 @@ export default function PumpAffinityCalculator() {
                             <input 
                               type="number" 
                               value={mode === "CONSTANT_DIAMETER" ? n2_flow : d2_flow} 
-                              onChange={e => mode === "CONSTANT_DIAMETER" ? setN2Flow(e.target.value) : setD2Flow(e.target.value)} 
+                              onChange={e => { mode === "CONSTANT_DIAMETER" ? setN2Flow(e.target.value) : setD2Flow(e.target.value); resetCalculation(); }} 
                               placeholder="?" 
                               className="w-24 border border-border bg-background rounded px-2 py-1 text-center text-sm"
                             />
@@ -817,12 +842,12 @@ export default function PumpAffinityCalculator() {
                             <input 
                               type="number" 
                               value={h1} 
-                              onChange={e => setH1(e.target.value)} 
+                              onChange={e => { setH1(e.target.value); resetCalculation(); }} 
                               onBlur={e => validateOnBlur(e.target.value, setH1Error, "H₁")}
                               placeholder="?" 
                               className={`w-24 border-2 ${h1Error ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded px-2 py-1 text-center text-sm`}
                             />
-                            <Select value={h1Unit} onValueChange={setH1Unit}>
+                            <Select value={h1Unit} onValueChange={(value) => { setH1Unit(value); resetCalculation(); }}>
                               <SelectTrigger className="w-24 h-8 text-xs border border-border">
                                 <SelectValue />
                               </SelectTrigger>
@@ -850,7 +875,7 @@ export default function PumpAffinityCalculator() {
                             <input 
                               type="number" 
                               value={mode === "CONSTANT_DIAMETER" ? n1_head : d1_head} 
-                              onChange={e => mode === "CONSTANT_DIAMETER" ? setN1Head(e.target.value) : setD1Head(e.target.value)} 
+                              onChange={e => { mode === "CONSTANT_DIAMETER" ? setN1Head(e.target.value) : setD1Head(e.target.value); resetCalculation(); }} 
                               onBlur={e => mode === "CONSTANT_DIAMETER" ? validateOnBlur(e.target.value, setN1HeadError, "N₁") : validateOnBlur(e.target.value, setD1HeadError, "D₁")}
                               placeholder="?" 
                               className={`w-24 border-2 ${(mode === "CONSTANT_DIAMETER" ? n1HeadError : d1HeadError) ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded px-2 py-1 text-center text-sm`}
@@ -876,12 +901,12 @@ export default function PumpAffinityCalculator() {
                             <input 
                               type="number" 
                               value={h2} 
-                              onChange={e => setH2(e.target.value)} 
+                              onChange={e => { setH2(e.target.value); resetCalculation(); }} 
                               onBlur={e => validateOnBlur(e.target.value, setH2Error, "H₂")}
                               placeholder="?" 
                               className={`w-24 border-2 ${h2Error ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded px-2 py-1 text-center text-sm`}
                             />
-                            <Select value={h2Unit} onValueChange={setH2Unit}>
+                            <Select value={h2Unit} onValueChange={(value) => { setH2Unit(value); resetCalculation(); }}>
                               <SelectTrigger className="w-24 h-8 text-xs border border-border">
                                 <SelectValue />
                               </SelectTrigger>
@@ -909,7 +934,7 @@ export default function PumpAffinityCalculator() {
                             <input 
                               type="number" 
                               value={mode === "CONSTANT_DIAMETER" ? n2_head : d2_head} 
-                              onChange={e => mode === "CONSTANT_DIAMETER" ? setN2Head(e.target.value) : setD2Head(e.target.value)} 
+                              onChange={e => { mode === "CONSTANT_DIAMETER" ? setN2Head(e.target.value) : setD2Head(e.target.value); resetCalculation(); }} 
                               onBlur={e => mode === "CONSTANT_DIAMETER" ? validateOnBlur(e.target.value, setN2HeadError, "N₂") : validateOnBlur(e.target.value, setD2HeadError, "D₂")}
                               placeholder="?" 
                               className={`w-24 border-2 ${(mode === "CONSTANT_DIAMETER" ? n2HeadError : d2HeadError) ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded px-2 py-1 text-center text-sm`}
@@ -967,12 +992,12 @@ export default function PumpAffinityCalculator() {
                             <input 
                               type="number" 
                               value={p1} 
-                              onChange={e => setP1(e.target.value)} 
+                              onChange={e => { setP1(e.target.value); resetCalculation(); }} 
                               onBlur={e => validateOnBlur(e.target.value, setP1Error, "P₁")}
                               placeholder="?" 
                               className={`w-24 border-2 ${p1Error ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded px-2 py-1 text-center text-sm`}
                             />
-                            <Select value={p1Unit} onValueChange={setP1Unit}>
+                            <Select value={p1Unit} onValueChange={(value) => { setP1Unit(value); resetCalculation(); }}>
                               <SelectTrigger className="w-24 h-8 text-xs border border-border">
                                 <SelectValue />
                               </SelectTrigger>
@@ -1000,7 +1025,7 @@ export default function PumpAffinityCalculator() {
                             <input 
                               type="number" 
                               value={mode === "CONSTANT_DIAMETER" ? n1_power : d1_power} 
-                              onChange={e => mode === "CONSTANT_DIAMETER" ? setN1Power(e.target.value) : setD1Power(e.target.value)} 
+                              onChange={e => { mode === "CONSTANT_DIAMETER" ? setN1Power(e.target.value) : setD1Power(e.target.value); resetCalculation(); }} 
                               onBlur={e => mode === "CONSTANT_DIAMETER" ? validateOnBlur(e.target.value, setN1PowerError, "N₁") : validateOnBlur(e.target.value, setD1PowerError, "D₁")}
                               placeholder="?" 
                               className={`w-24 border-2 ${(mode === "CONSTANT_DIAMETER" ? n1PowerError : d1PowerError) ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded px-2 py-1 text-center text-sm`}
@@ -1026,12 +1051,12 @@ export default function PumpAffinityCalculator() {
                             <input 
                               type="number" 
                               value={p2} 
-                              onChange={e => setP2(e.target.value)} 
+                              onChange={e => { setP2(e.target.value); resetCalculation(); }} 
                               onBlur={e => validateOnBlur(e.target.value, setP2Error, "P₂")}
                               placeholder="?" 
                               className={`w-24 border-2 ${p2Error ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded px-2 py-1 text-center text-sm`}
                             />
-                            <Select value={p2Unit} onValueChange={setP2Unit}>
+                            <Select value={p2Unit} onValueChange={(value) => { setP2Unit(value); resetCalculation(); }}>
                               <SelectTrigger className="w-24 h-8 text-xs border border-border">
                                 <SelectValue />
                               </SelectTrigger>
@@ -1059,7 +1084,7 @@ export default function PumpAffinityCalculator() {
                             <input 
                               type="number" 
                               value={mode === "CONSTANT_DIAMETER" ? n2_power : d2_power} 
-                              onChange={e => mode === "CONSTANT_DIAMETER" ? setN2Power(e.target.value) : setD2Power(e.target.value)} 
+                              onChange={e => { mode === "CONSTANT_DIAMETER" ? setN2Power(e.target.value) : setD2Power(e.target.value); resetCalculation(); }} 
                               onBlur={e => mode === "CONSTANT_DIAMETER" ? validateOnBlur(e.target.value, setN2PowerError, "N₂") : validateOnBlur(e.target.value, setD2PowerError, "D₂")}
                               placeholder="?" 
                               className={`w-24 border-2 ${(mode === "CONSTANT_DIAMETER" ? n2PowerError : d2PowerError) ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded px-2 py-1 text-center text-sm`}
@@ -1412,16 +1437,16 @@ export default function PumpAffinityCalculator() {
                  )}
                  
                  {result.calculated ? (
-                   <div className="flex items-center justify-center gap-4">
+                   <div className="flex items-center justify-center gap-4 overflow-hidden">
                      <div className="w-12 h-12 rounded-full border-4 border-white flex items-center justify-center flex-shrink-0">
                        <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                        </svg>
                      </div>
                      
-                     <div className="flex items-center gap-3">
-                       <h2 className="text-xl font-bold uppercase opacity-90">Result:</h2>
-                       <div className="text-3xl font-black">
+                     <div className="flex items-center gap-3 min-w-0 flex-1">
+                       <h2 className="text-xl font-bold uppercase opacity-90 whitespace-nowrap">Result:</h2>
+                       <div className="text-3xl font-black truncate min-w-0" title={result.label}>
                          {result.label}
                        </div>
                      </div>

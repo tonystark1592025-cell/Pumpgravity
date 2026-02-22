@@ -5,6 +5,7 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { useToast } from "@/hooks/use-toast"
 import { Copy, Check } from "lucide-react"
+import { formatDisplayNumber } from "@/lib/number-formatter"
 
 export default function PumpEfficiencyCalculator() {
   const { toast } = useToast()
@@ -114,11 +115,13 @@ export default function PumpEfficiencyCalculator() {
   const handleFlowChange = (value: string) => {
     setFlowRate(value)
     validateFlow(value)
+    resetCalculation()
   }
 
   const handleHeadChange = (value: string) => {
     setDifferentialHead(value)
     validateHead(value)
+    resetCalculation()
   }
 
   const handleSGChange = (value: string) => {
@@ -130,15 +133,18 @@ export default function PumpEfficiencyCalculator() {
       setSpecificGravity(value)
       validateSG(value)
     }
+    resetCalculation()
   }
 
   const handlePowerChange = (value: string) => {
     setShaftPower(value)
     validatePower(value)
+    resetCalculation()
   }
 
   const copyResult = () => {
-    const resultText = `η = ${result.value}%`
+    // Copy only the result value
+    const resultText = `${result.value}%`
     navigator.clipboard.writeText(resultText)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
@@ -146,6 +152,23 @@ export default function PumpEfficiencyCalculator() {
       title: "Copied to clipboard!",
       description: resultText,
     })
+  }
+
+  // Reset calculation when any input changes
+  const resetCalculation = () => {
+    if (result.calculated) {
+      setResult({
+        value: "",
+        fullValue: "",
+        calculated: false,
+        steps: null
+      })
+      toast({
+        title: "Input Modified",
+        description: "Please click Calculate again to see updated results.",
+        variant: "default",
+      })
+    }
   }
 
   const handleCalculate = () => {
@@ -497,17 +520,17 @@ export default function PumpEfficiencyCalculator() {
                  )}
                  
                  {result.calculated ? (
-                   <div className="flex items-center justify-center gap-4">
+                   <div className="flex items-center justify-center gap-4 overflow-hidden">
                      <div className="w-12 h-12 rounded-full border-4 border-white flex items-center justify-center flex-shrink-0">
                        <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                        </svg>
                      </div>
                      
-                     <div className="flex items-center gap-3">
-                       <h2 className="text-xl font-bold uppercase opacity-90">Result:</h2>
-                       <div className="text-3xl font-black">
-                         η = {result.value}%
+                     <div className="flex items-center gap-3 min-w-0 flex-1">
+                       <h2 className="text-xl font-bold uppercase opacity-90 whitespace-nowrap">Result:</h2>
+                       <div className="text-3xl font-black truncate min-w-0" title={`η = ${result.value}%`}>
+                         η = {formatDisplayNumber(result.value)}%
                        </div>
                      </div>
                    </div>

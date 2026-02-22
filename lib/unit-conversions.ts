@@ -18,26 +18,26 @@ export const flowUnits: UnitDefinition[] = [
   { value: 'm3h', label: 'm³/h', toSI: 1, fromSI: 1 },
   { value: 'lh', label: 'L/h', toSI: 0.001, fromSI: 1000 },
   { value: 'lmin', label: 'L/min', toSI: 0.06, fromSI: 16.6667 },
-  { value: 'gpm', label: 'GPM (US)', toSI: 0.227124, fromSI: 4.40287 },
-  { value: 'gph', label: 'GPH (US)', toSI: 0.00378541, fromSI: 264.172 },
+  { value: 'gpm', label: 'GPM', toSI: 0.227124, fromSI: 4.40287 },
+  { value: 'gph', label: 'GPH', toSI: 0.00378541, fromSI: 264.172 },
   { value: 'cfm', label: 'CFM', toSI: 1.69901, fromSI: 0.588578 },
   { value: 'm3min', label: 'm³/min', toSI: 60, fromSI: 0.0166667 },
 ]
 
 // Head/Length Units (SI: m)
 export const headUnits: UnitDefinition[] = [
-  { value: 'm', label: 'meters (m)', toSI: 1, fromSI: 1 },
-  { value: 'ft', label: 'feet (ft)', toSI: 0.3048, fromSI: 3.28084 },
-  { value: 'cm', label: 'centimeters (cm)', toSI: 0.01, fromSI: 100 },
-  { value: 'mm', label: 'millimeters (mm)', toSI: 0.001, fromSI: 1000 },
-  { value: 'in', label: 'inches (in)', toSI: 0.0254, fromSI: 39.3701 },
+  { value: 'm', label: 'm', toSI: 1, fromSI: 1 },
+  { value: 'ft', label: 'ft', toSI: 0.3048, fromSI: 3.28084 },
+  { value: 'cm', label: 'cm', toSI: 0.01, fromSI: 100 },
+  { value: 'mm', label: 'mm', toSI: 0.001, fromSI: 1000 },
+  { value: 'in', label: 'in', toSI: 0.0254, fromSI: 39.3701 },
 ]
 
 // Power Units (SI: kW)
 export const powerUnits: UnitDefinition[] = [
   { value: 'kw', label: 'kW', toSI: 1, fromSI: 1 },
   { value: 'hp', label: 'HP', toSI: 0.745699, fromSI: 1.34102 },
-  { value: 'w', label: 'Watts (W)', toSI: 0.001, fromSI: 1000 },
+  { value: 'w', label: 'W', toSI: 0.001, fromSI: 1000 },
 ]
 
 // Speed Units (SI: RPM)

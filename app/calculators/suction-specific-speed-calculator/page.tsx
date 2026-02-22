@@ -6,6 +6,7 @@ import { Footer } from "@/components/footer"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { Copy, Check } from "lucide-react"
+import { formatDisplayNumber } from "@/lib/number-formatter"
 
 // Unit definitions for Suction Specific Speed Calculator
 const speedUnits = [
@@ -144,20 +145,24 @@ export default function SuctionSpecificSpeedCalculator() {
   const handleSpeedChange = (value: string) => {
     setRotationalSpeed(value)
     validateSpeed(value)
+    resetCalculation()
   }
 
   const handleFlowChange = (value: string) => {
     setFlowRate(value)
     validateFlow(value)
+    resetCalculation()
   }
 
   const handleNPSHChange = (value: string) => {
     setNpshRequired(value)
     validateNPSH(value)
+    resetCalculation()
   }
 
   const copyResult = () => {
-    const resultText = `Nss = ${result.value}`
+    // Copy only the result value
+    const resultText = `${result.value}`
     navigator.clipboard.writeText(resultText)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
@@ -165,6 +170,24 @@ export default function SuctionSpecificSpeedCalculator() {
       title: "Copied to clipboard!",
       description: resultText,
     })
+  }
+
+  // Reset calculation when any input changes
+  const resetCalculation = () => {
+    if (result.calculated) {
+      setResult({
+        value: "",
+        valueSI: "",
+        fullValue: "",
+        calculated: false,
+        steps: null
+      })
+      toast({
+        title: "Input Modified",
+        description: "Please click Calculate again to see updated results.",
+        variant: "default",
+      })
+    }
   }
 
   const handleCalculate = () => {
@@ -289,7 +312,7 @@ export default function SuctionSpecificSpeedCalculator() {
                   placeholder="1000"
                   className={`flex-[2] min-w-0 border-2 ${speedError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
                 />
-                <Select value={speedUnit} onValueChange={setSpeedUnit}>
+                <Select value={speedUnit} onValueChange={(value) => { setSpeedUnit(value); resetCalculation(); }}>
                   <SelectTrigger className="flex-1 min-w-[100px] border-2 border-border bg-background text-sm h-10">
                     <SelectValue />
                   </SelectTrigger>
@@ -323,7 +346,7 @@ export default function SuctionSpecificSpeedCalculator() {
                   placeholder="100"
                   className={`flex-[2] min-w-0 border-2 ${flowError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
                 />
-                <Select value={flowUnit} onValueChange={setFlowUnit}>
+                <Select value={flowUnit} onValueChange={(value) => { setFlowUnit(value); resetCalculation(); }}>
                   <SelectTrigger className="flex-1 min-w-[100px] border-2 border-border bg-background text-sm h-10">
                     <SelectValue />
                   </SelectTrigger>
@@ -357,7 +380,7 @@ export default function SuctionSpecificSpeedCalculator() {
                   placeholder="10"
                   className={`flex-[2] min-w-0 border-2 ${npshError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
                 />
-                <Select value={npshUnit} onValueChange={setNpshUnit}>
+                <Select value={npshUnit} onValueChange={(value) => { setNpshUnit(value); resetCalculation(); }}>
                   <SelectTrigger className="flex-1 min-w-[100px] border-2 border-border bg-background text-sm h-10">
                     <SelectValue />
                   </SelectTrigger>
@@ -532,17 +555,17 @@ export default function SuctionSpecificSpeedCalculator() {
                  )}
                  
                  {result.calculated ? (
-                   <div className="flex items-center justify-center gap-4">
+                   <div className="flex items-center justify-center gap-4 overflow-hidden">
                      <div className="w-12 h-12 rounded-full border-4 border-white flex items-center justify-center flex-shrink-0">
                        <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                        </svg>
                      </div>
                      
-                     <div className="flex items-center gap-3">
-                       <h2 className="text-xl font-bold uppercase opacity-90">Result:</h2>
-                       <div className="text-3xl font-black">
-                         N<sub className="text-xl">ss</sub> = {result.value}
+                     <div className="flex items-center gap-3 min-w-0 flex-1">
+                       <h2 className="text-xl font-bold uppercase opacity-90 whitespace-nowrap">Result:</h2>
+                       <div className="text-3xl font-black truncate min-w-0" title={`Nss = ${result.value}`}>
+                         N<sub className="text-xl">ss</sub> = {formatDisplayNumber(result.value)}
                        </div>
                      </div>
                    </div>

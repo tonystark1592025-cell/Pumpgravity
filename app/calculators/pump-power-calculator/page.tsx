@@ -14,6 +14,7 @@ import {
   powerUnits 
 } from "@/lib/unit-conversions"
 import { multiply, divide, formatSignificant } from "@/lib/precision-math"
+import { formatDisplayNumber } from "@/lib/number-formatter"
 
 export default function PumpPowerCalculator() {
   const { toast } = useToast()
@@ -159,6 +160,7 @@ export default function PumpPowerCalculator() {
       setSpecificGravity(value)
       validateSG(value)
     }
+    resetCalculation()
   }
 
   // Handle Efficiency change
@@ -167,6 +169,7 @@ export default function PumpPowerCalculator() {
     if (value === "") {
       setEfficiency(value)
       validateEfficiency(value)
+      resetCalculation()
       return
     }
     
@@ -180,25 +183,27 @@ export default function PumpPowerCalculator() {
       setEfficiency(value)
       validateEfficiency(value)
     }
+    resetCalculation()
   }
 
   // Handle Flow Rate change
   const handleFlowChange = (value: string) => {
     setFlowRate(value)
     validateFlow(value)
+    resetCalculation()
   }
 
   // Handle Head change
   const handleHeadChange = (value: string) => {
     setHead(value)
     validateHead(value)
+    resetCalculation()
   }
 
   const copyResult = () => {
-    // Use reasonable precision for copy (8 decimal places)
+    // Copy only the result value in the selected unit (no SI conversion shown)
     const displayValue = parseFloat(result.fullValue).toFixed(8)
-    const displayValueSI = parseFloat(result.fullValueSI).toFixed(8)
-    const resultText = `Ps = ${displayValue} ${powerUnits.find(u => u.value === resultUnit)?.label} (${displayValueSI} kW)`
+    const resultText = `${displayValue} ${powerUnits.find(u => u.value === resultUnit)?.label}`
     navigator.clipboard.writeText(resultText)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
@@ -206,6 +211,25 @@ export default function PumpPowerCalculator() {
       title: "Copied to clipboard!",
       description: resultText,
     })
+  }
+
+  // Reset calculation when any input changes
+  const resetCalculation = () => {
+    if (result.calculated) {
+      setResult({
+        value: "",
+        valueSI: "",
+        fullValue: "",
+        fullValueSI: "",
+        calculated: false,
+        steps: []
+      })
+      toast({
+        title: "Input Modified",
+        description: "Please click Calculate again to see updated results.",
+        variant: "default",
+      })
+    }
   }
 
   const handleCalculate = () => {
@@ -435,7 +459,7 @@ export default function PumpPowerCalculator() {
                   placeholder="100"
                   className={`flex-[2] min-w-0 border-2 ${flowError ?'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
                 />
-                <Select value={flowUnit} onValueChange={setFlowUnit}>
+                <Select value={flowUnit} onValueChange={(value) => { setFlowUnit(value); resetCalculation(); }}>
                   <SelectTrigger className="flex-1 min-w-[100px] border-2 border-border bg-background text-sm h-10">
                     <SelectValue />
                   </SelectTrigger>
@@ -469,7 +493,7 @@ export default function PumpPowerCalculator() {
                   placeholder="50"
                   className={`flex-[2] min-w-0 border-2 ${headError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
                 />
-                <Select value={headUnit} onValueChange={setHeadUnit}>
+                <Select value={headUnit} onValueChange={(value) => { setHeadUnit(value); resetCalculation(); }}>
                   <SelectTrigger className="flex-1 min-w-[100px] border-2 border-border bg-background text-sm h-10">
                     <SelectValue />
                   </SelectTrigger>
@@ -556,7 +580,7 @@ export default function PumpPowerCalculator() {
             <div className="flex items-center gap-3">
               <label className="font-semibold text-foreground text-sm w-28 flex-shrink-0">Result Unit :</label>
               <div className="flex-[2] min-w-0 flex gap-2">
-                <Select value={resultUnit} onValueChange={setResultUnit}>
+                <Select value={resultUnit} onValueChange={(value) => { setResultUnit(value); resetCalculation(); }}>
                   <SelectTrigger className="flex-1 min-w-0 border-2 border-border bg-background text-base h-10 justify-center [&>span]:flex [&>span]:justify-center [&>span]:w-full">
                     <SelectValue />
                   </SelectTrigger>
@@ -719,17 +743,17 @@ export default function PumpPowerCalculator() {
                  )}
                  
                  {result.calculated ? (
-                   <div className="flex items-center justify-center gap-4">
+                   <div className="flex items-center justify-center gap-4 overflow-hidden">
                      <div className="w-12 h-12 rounded-full border-4 border-white flex items-center justify-center flex-shrink-0">
                        <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                        </svg>
                      </div>
                      
-                     <div className="flex items-center gap-3">
-                       <h2 className="text-xl font-bold uppercase opacity-90">Result:</h2>
-                       <div className="text-3xl font-black">
-                         P<sub className="text-xl">s</sub> = {result.value} {powerUnits.find(u => u.value === resultUnit)?.label}
+                     <div className="flex items-center gap-3 min-w-0 flex-1">
+                       <h2 className="text-xl font-bold uppercase opacity-90 whitespace-nowrap">Result:</h2>
+                       <div className="text-3xl font-black truncate min-w-0" title={`Ps = ${result.value} ${powerUnits.find(u => u.value === resultUnit)?.label}`}>
+                         P<sub className="text-xl">s</sub> = {formatDisplayNumber(result.value)} {powerUnits.find(u => u.value === resultUnit)?.label}
                        </div>
                      </div>
                    </div>
