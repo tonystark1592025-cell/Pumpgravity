@@ -243,7 +243,7 @@ export default function PumpEfficiencyCalculator() {
         {/* Left Panel - Inputs */}
         <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden flex flex-col w-full">
           <div className="bg-blue-50 dark:bg-blue-950/30 px-4 py-3 border-b border-border">
-             <h2 className="font-bold text-base uppercase text-foreground">Inputs & Parameters (Pump Efficiency)</h2>
+             <h2 className="font-bold text-base uppercase text-foreground">Inputs & Parameters</h2>
           </div>
 
           <div className="p-4 space-y-4 flex flex-col flex-1">
@@ -382,7 +382,7 @@ export default function PumpEfficiencyCalculator() {
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808020_1px,transparent_1px),linear-gradient(to_bottom,#80808020_1px,transparent_1px)] bg-[size:20px_20px]" />
           
           <div className="bg-muted px-4 py-3 border-b border-border relative z-10">
-             <h2 className="font-bold text-base uppercase text-foreground">Calculation & Result (Efficiency)</h2>
+             <h2 className="font-bold text-base uppercase text-foreground">Calculation & Result </h2>
           </div>
 
           <div className="p-4 flex-1 flex flex-col gap-4 relative z-10">
