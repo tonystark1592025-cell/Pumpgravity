@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast"
 import { Copy, Check } from "lucide-react"
 import { formatDisplayNumber } from "@/lib/number-formatter"
+import { RadicalSymbol } from "@/components/math-symbols"
 
 // Unit definitions for Suction Specific Speed Calculator
 const speedUnits = [
@@ -411,7 +412,9 @@ export default function SuctionSpecificSpeedCalculator() {
                   <span className="font-bold">N<sub className="text-xs">ss</sub></span>
                   <span>=</span>
                   <div className="flex flex-col items-center">
-                    <span className="border-b-2 border-foreground px-2 pb-0.5 text-base">N × √Q</span>
+                    <span className="border-b-2 border-foreground px-2 pb-0.5 text-base flex items-center">
+                      N × <RadicalSymbol>Q</RadicalSymbol>
+                    </span>
                     <span className="pt-0.5 text-base">NPSHr<sup className="text-xs">3/4</sup></span>
                   </div>
                 </div>
@@ -489,7 +492,9 @@ export default function SuctionSpecificSpeedCalculator() {
                     <span className="font-bold text-right whitespace-nowrap">N<sub className="text-xs">ss</sub></span>
                     <span className="text-center">=</span>
                     <div className="flex flex-col items-center justify-self-start">
-                      <span className="border-b-2 border-foreground px-4 pb-1 text-base whitespace-nowrap">N × √Q</span>
+                      <span className="border-b-2 border-foreground px-4 pb-1 text-base whitespace-nowrap flex items-center">
+                        N × <RadicalSymbol>Q</RadicalSymbol>
+                      </span>
                       <span className="pt-1 text-base whitespace-nowrap">NPSHr<sup className="text-xs">3/4</sup></span>
                     </div>
                     
@@ -497,10 +502,12 @@ export default function SuctionSpecificSpeedCalculator() {
                     <span></span>
                     <span className="text-center">=</span>
                     <div className="flex flex-col items-center justify-self-start">
-                      <span className="border-b-2 border-foreground px-4 pb-1 text-base whitespace-nowrap">
+                      <span className="border-b-2 border-foreground px-4 pb-1 text-base whitespace-nowrap flex items-center">
                         <span className="bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1.5 py-0.5 rounded">{result.steps.n_rpm}</span>
-                        {" × √"}
-                        <span className="bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1.5 py-0.5 rounded">{result.steps.q_m3h}</span>
+                        <span className="mx-1">×</span>
+                        <RadicalSymbol>
+                          <span className="bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1.5 py-0.5 rounded">{result.steps.q_m3h}</span>
+                        </RadicalSymbol>
                       </span>
                       <span className="pt-1 text-base whitespace-nowrap">
                         <span className="bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1.5 py-0.5 rounded">{result.steps.npshr_m}</span>
