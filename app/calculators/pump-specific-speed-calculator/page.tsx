@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Copy, Check } from "lucide-react"
 import { formatDisplayNumber } from "@/lib/number-formatter"
 import { RadicalSymbol } from "@/components/math-symbols"
+import { formatExact, formatValue } from "@/lib/format-exact"
 
 // Unit definitions for Pump Specific Speed Calculator
 const speedUnits = [
@@ -178,7 +179,6 @@ export default function PumpSpecificSpeedCalculator() {
     if (result.calculated) {
       setResult({
         value: "",
-        valueSI: "",
         fullValue: "",
         calculated: false,
         steps: null
@@ -254,9 +254,9 @@ export default function PumpSpecificSpeedCalculator() {
       fullValue: nsExact.toFixed(2),
       calculated: true,
       steps: {
-        n_rpm: N_rpm.toFixed(2),
-        q_m3h: Q_m3h.toFixed(2),
-        h_m: H_m.toFixed(4),
+        n_rpm: formatValue(N_rpm, true), // RPM - no decimals
+        q_m3h: formatExact(Q_m3h),
+        h_m: formatExact(H_m),
         sqrtQ: sqrtQ.toFixed(4),
         hPower: hPower.toFixed(3),
         numerator: numerator.toFixed(2),

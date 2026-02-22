@@ -6,6 +6,7 @@ import { Footer } from "@/components/footer"
 import { useToast } from "@/hooks/use-toast"
 import { Copy, Check } from "lucide-react"
 import { formatDisplayNumber } from "@/lib/number-formatter"
+import { formatExact } from "@/lib/format-exact"
 
 export default function PumpEfficiencyCalculator() {
   const { toast } = useToast()
@@ -230,11 +231,11 @@ export default function PumpEfficiencyCalculator() {
       fullValue: efficiencyPercent.toFixed(2),
       calculated: true,
       steps: {
-        q: Q.toString(),
-        h: H.toString(),
-        sg: SG.toString(),
-        ps: Ps.toString(),
-        numerator: (numerator % 1 === 0 ? numerator : numerator.toFixed(2)).toString(),
+        q: formatExact(Q),
+        h: formatExact(H),
+        sg: formatExact(SG),
+        ps: formatExact(Ps),
+        numerator: formatExact(numerator),
         denominator: denominator.toFixed(2),
         efficiencyDecimal: efficiencyDecimal.toFixed(4),
         efficiencyPercent: efficiencyPercent.toFixed(2)

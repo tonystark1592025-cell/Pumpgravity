@@ -17,6 +17,7 @@ import {
 import { calculateFlowRate, calculateHead, calculatePower, formatResult } from "@/lib/affinity-calculator"
 import { formatSignificant } from "@/lib/precision-math"
 import { formatDisplayNumber } from "@/lib/number-formatter"
+import { formatExact, formatValue } from "@/lib/format-exact"
 
 type LawMode = "CONSTANT_DIAMETER" | "CONSTANT_SPEED"
 
@@ -209,10 +210,10 @@ export default function PumpAffinityCalculator() {
       const v2_SI = v2_input // RPM or mm is already SI
 
       steps.push("Step 1: Converted inputs to SI units")
-      if (q1_input !== null) steps.push(`  Q₁ = ${formatSignificant(q1_SI.toString(), 6)} m³/h`)
-      if (q2_input !== null) steps.push(`  Q₂ = ${formatSignificant(q2_SI.toString(), 6)} m³/h`)
-      if (v1_input !== null) steps.push(`  ${symbol}₁ = ${v1_input} ${unit}`)
-      if (v2_input !== null) steps.push(`  ${symbol}₂ = ${v2_input} ${unit}`)
+      if (q1_input !== null) steps.push(`  Q₁ = ${formatExact(q1_SI!)} m³/h`)
+      if (q2_input !== null) steps.push(`  Q₂ = ${formatExact(q2_SI!)} m³/h`)
+      if (v1_input !== null) steps.push(`  ${symbol}₁ = ${formatValue(v1_input, isConstantDiameter)} ${unit}`)
+      if (v2_input !== null) steps.push(`  ${symbol}₂ = ${formatValue(v2_input, isConstantDiameter)} ${unit}`)
 
       // Use precision calculator
       const result = calculateFlowRate(q1_SI, q2_SI, v1_SI, v2_SI)
@@ -228,10 +229,10 @@ export default function PumpAffinityCalculator() {
           resultValueSI = parseFloat(result.value).toFixed(3)
           resultLabel = `Q₂ = ${resultValue} ${flowUnits.find(u => u.value === q2Unit)?.label}`
           displayData = {
-            var1: formatSignificant(q1_SI!.toString(), 6),  // Q₁ (numerator)
-            var2: v2_SI?.toString(),                        // N₂/D₂ (denominator - what we multiply by)
-            var3: v1_SI?.toString(),                        // N₁/D₁ (what we divide by)
-            var4: v2_SI?.toString(),                        // N₂/D₂ (for display)
+            var1: formatExact(q1_SI!),  // Q₁ (numerator)
+            var2: formatValue(v2_SI!, isConstantDiameter),  // N₂/D₂ (denominator - what we multiply by)
+            var3: formatValue(v1_SI!, isConstantDiameter),  // N₁/D₁ (what we divide by)
+            var4: formatValue(v2_SI!, isConstantDiameter),  // N₂/D₂ (for display)
             result: resultValue,
             formula: 'flow'
           }
@@ -243,10 +244,10 @@ export default function PumpAffinityCalculator() {
           resultValueSI = parseFloat(result.value).toFixed(3)
           resultLabel = `Q₁ = ${resultValue} ${flowUnits.find(u => u.value === q1Unit)?.label}`
           displayData = {
-            var1: formatSignificant(q2_SI!.toString(), 6),  // Q₂ (numerator)
-            var2: v1_SI?.toString(),                        // N₁/D₁ (denominator - what we multiply by)
-            var3: v2_SI?.toString(),                        // N₂/D₂ (what we divide by)
-            var4: v1_SI?.toString(),                        // N₁/D₁ (for display)
+            var1: formatExact(q2_SI!),  // Q₂ (numerator)
+            var2: formatValue(v1_SI!, isConstantDiameter),  // N₁/D₁ (denominator - what we multiply by)
+            var3: formatValue(v2_SI!, isConstantDiameter),  // N₂/D₂ (what we divide by)
+            var4: formatValue(v1_SI!, isConstantDiameter),  // N₁/D₁ (for display)
             result: resultValue,
             formula: 'flow'
           }
@@ -259,10 +260,10 @@ export default function PumpAffinityCalculator() {
           resultValueSI = resultValue
           resultLabel = isConstantDiameter ? `${symbol}₂ ≈ ${resultValue} ${unit}` : `${symbol}₂ = ${resultValue} ${unit}`
           displayData = {
-            var1: formatSignificant(q2_SI!.toString(), 6),  // Q₂ (numerator)
-            var2: v1_SI?.toString(),                        // N₁/D₁ (what we multiply by)
-            var3: formatSignificant(q1_SI!.toString(), 6),  // Q₁ (what we divide by)
-            var4: v1_SI?.toString(),                        // N₁/D₁ (for display)
+            var1: formatExact(q2_SI!),  // Q₂ (numerator)
+            var2: formatValue(v1_SI!, isConstantDiameter),  // N₁/D₁ (what we multiply by)
+            var3: formatExact(q1_SI!),  // Q₁ (what we divide by)
+            var4: formatValue(v1_SI!, isConstantDiameter),  // N₁/D₁ (for display)
             result: resultValue,
             formula: 'rpm'
           }
@@ -275,10 +276,10 @@ export default function PumpAffinityCalculator() {
           resultValueSI = resultValue
           resultLabel = isConstantDiameter ? `${symbol}₁ ≈ ${resultValue} ${unit}` : `${symbol}₁ = ${resultValue} ${unit}`
           displayData = {
-            var1: formatSignificant(q1_SI!.toString(), 6),  // Q₁ (numerator)
-            var2: v2_SI?.toString(),                        // N₂/D₂ (what we multiply by)
-            var3: formatSignificant(q2_SI!.toString(), 6),  // Q₂ (what we divide by)
-            var4: v2_SI?.toString(),                        // N₂/D₂ (for display)
+            var1: formatExact(q1_SI!),  // Q₁ (numerator)
+            var2: formatValue(v2_SI!, isConstantDiameter),  // N₂/D₂ (what we multiply by)
+            var3: formatExact(q2_SI!),  // Q₂ (what we divide by)
+            var4: formatValue(v2_SI!, isConstantDiameter),  // N₂/D₂ (for display)
             result: resultValue,
             formula: 'rpm'
           }
@@ -354,10 +355,10 @@ export default function PumpAffinityCalculator() {
       const v2_SI = v2_input // RPM or mm is already SI
 
       steps.push("Step 1: Converted inputs to SI units")
-      if (h1_input !== null) steps.push(`  H₁ = ${h1_SI?.toFixed(2)} m`)
-      if (h2_input !== null) steps.push(`  H₂ = ${h2_SI?.toFixed(2)} m`)
-      if (v1_input !== null) steps.push(`  ${symbol}₁ = ${v1_input} ${unit}`)
-      if (v2_input !== null) steps.push(`  ${symbol}₂ = ${v2_input} ${unit}`)
+      if (h1_input !== null) steps.push(`  H₁ = ${formatExact(h1_SI!)} m`)
+      if (h2_input !== null) steps.push(`  H₂ = ${formatExact(h2_SI!)} m`)
+      if (v1_input !== null) steps.push(`  ${symbol}₁ = ${formatValue(v1_input, isConstantDiameter)} ${unit}`)
+      if (v2_input !== null) steps.push(`  ${symbol}₂ = ${formatValue(v2_input, isConstantDiameter)} ${unit}`)
 
       // Use precision calculator
       const result = calculateHead(h1_SI, h2_SI, v1_SI, v2_SI)
@@ -373,10 +374,10 @@ export default function PumpAffinityCalculator() {
           resultValueSI = calc_SI.toFixed(3)
           resultLabel = `H₂ = ${resultValue} ${headUnits.find(u => u.value === h2Unit)?.label}`
           displayData = {
-            var1: h1_SI!.toFixed(2),      // H₁ (multiplied value)
-            var2: v2_SI?.toString(),      // N₂/D₂ (denominator)
-            var3: v1_SI?.toString(),      // N₁/D₁ (numerator)
-            var4: v2_SI?.toString(),      // N₂/D₂ (for display)
+            var1: formatExact(h1_SI!),      // H₁ (multiplied value)
+            var2: formatValue(v2_SI!, isConstantDiameter),      // N₂/D₂ (denominator)
+            var3: formatValue(v1_SI!, isConstantDiameter),      // N₁/D₁ (numerator)
+            var4: formatValue(v2_SI!, isConstantDiameter),      // N₂/D₂ (for display)
             result: resultValue,
             formula: 'head'
           }
@@ -388,10 +389,10 @@ export default function PumpAffinityCalculator() {
           resultValueSI = calc_SI.toFixed(3)
           resultLabel = `H₁ = ${resultValue} ${headUnits.find(u => u.value === h1Unit)?.label}`
           displayData = {
-            var1: h2_SI!.toFixed(2),      // H₂ (multiplied value)
-            var2: v1_SI?.toString(),      // N₁/D₁ (denominator)
-            var3: v2_SI?.toString(),      // N₂/D₂ (numerator)
-            var4: v1_SI?.toString(),      // N₁/D₁ (for display)
+            var1: formatExact(h2_SI!),      // H₂ (multiplied value)
+            var2: formatValue(v1_SI!, isConstantDiameter),      // N₁/D₁ (denominator)
+            var3: formatValue(v2_SI!, isConstantDiameter),      // N₂/D₂ (numerator)
+            var4: formatValue(v1_SI!, isConstantDiameter),      // N₁/D₁ (for display)
             result: resultValue,
             formula: 'head'
           }
@@ -404,10 +405,10 @@ export default function PumpAffinityCalculator() {
           resultValueSI = resultValue
           resultLabel = isConstantDiameter ? `${symbol}₂ ≈ ${resultValue} ${unit}` : `${symbol}₂ = ${resultValue} ${unit}`
           displayData = {
-            var1: h2_SI!.toFixed(2),      // H₂ (multiplied value)
-            var2: v1_SI?.toString(),      // N₁/D₁ (denominator)
-            var3: v1_SI?.toString(),      // N₁/D₁ (numerator)
-            var4: v1_SI?.toString(),      // N₁/D₁ (for display)
+            var1: formatExact(h2_SI!),      // H₂ (multiplied value)
+            var2: formatValue(v1_SI!, isConstantDiameter),      // N₁/D₁ (denominator)
+            var3: formatValue(v1_SI!, isConstantDiameter),      // N₁/D₁ (numerator)
+            var4: formatValue(v1_SI!, isConstantDiameter),      // N₁/D₁ (for display)
             result: resultValue,
             formula: 'rpm_sqrt'
           }
@@ -420,10 +421,10 @@ export default function PumpAffinityCalculator() {
           resultValueSI = resultValue
           resultLabel = isConstantDiameter ? `${symbol}₁ ≈ ${resultValue} ${unit}` : `${symbol}₁ = ${resultValue} ${unit}`
           displayData = {
-            var1: h1_SI!.toFixed(2),      // H₁ (multiplied value)
-            var2: v2_SI?.toString(),      // N₂/D₂ (denominator)
-            var3: v2_SI?.toString(),      // N₂/D₂ (numerator)
-            var4: v2_SI?.toString(),      // N₂/D₂ (for display)
+            var1: formatExact(h1_SI!),      // H₁ (multiplied value)
+            var2: formatValue(v2_SI!, isConstantDiameter),      // N₂/D₂ (denominator)
+            var3: formatValue(v2_SI!, isConstantDiameter),      // N₂/D₂ (numerator)
+            var4: formatValue(v2_SI!, isConstantDiameter),      // N₂/D₂ (for display)
             result: resultValue,
             formula: 'rpm_sqrt'
           }
@@ -499,10 +500,10 @@ export default function PumpAffinityCalculator() {
       const v2_SI = v2_input // RPM or mm is already SI
 
       steps.push("Step 1: Converted inputs to SI units")
-      if (p1_input !== null) steps.push(`  P₁ = ${p1_SI?.toFixed(2)} kW`)
-      if (p2_input !== null) steps.push(`  P₂ = ${p2_SI?.toFixed(2)} kW`)
-      if (v1_input !== null) steps.push(`  ${symbol}₁ = ${v1_input} ${unit}`)
-      if (v2_input !== null) steps.push(`  ${symbol}₂ = ${v2_input} ${unit}`)
+      if (p1_input !== null) steps.push(`  P₁ = ${formatExact(p1_SI!)} kW`)
+      if (p2_input !== null) steps.push(`  P₂ = ${formatExact(p2_SI!)} kW`)
+      if (v1_input !== null) steps.push(`  ${symbol}₁ = ${formatValue(v1_input, isConstantDiameter)} ${unit}`)
+      if (v2_input !== null) steps.push(`  ${symbol}₂ = ${formatValue(v2_input, isConstantDiameter)} ${unit}`)
 
       // Use precision calculator
       const result = calculatePower(p1_SI, p2_SI, v1_SI, v2_SI)
@@ -518,10 +519,10 @@ export default function PumpAffinityCalculator() {
           resultValueSI = calc_SI.toFixed(3)
           resultLabel = `P₂ = ${resultValue} ${powerUnits.find(u => u.value === p2Unit)?.label}`
           displayData = {
-            var1: p1_SI!.toFixed(2),      // P₁ (multiplied value)
-            var2: v2_SI?.toString(),      // N₂/D₂ (denominator)
-            var3: v1_SI?.toString(),      // N₁/D₁ (numerator)
-            var4: v2_SI?.toString(),      // N₂/D₂ (for display)
+            var1: formatExact(p1_SI!),      // P₁ (multiplied value)
+            var2: formatValue(v2_SI!, isConstantDiameter),      // N₂/D₂ (denominator)
+            var3: formatValue(v1_SI!, isConstantDiameter),      // N₁/D₁ (numerator)
+            var4: formatValue(v2_SI!, isConstantDiameter),      // N₂/D₂ (for display)
             result: resultValue,
             formula: 'power'
           }
@@ -533,10 +534,10 @@ export default function PumpAffinityCalculator() {
           resultValueSI = calc_SI.toFixed(3)
           resultLabel = `P₁ = ${resultValue} ${powerUnits.find(u => u.value === p1Unit)?.label}`
           displayData = {
-            var1: p2_SI!.toFixed(2),      // P₂ (multiplied value)
-            var2: v1_SI?.toString(),      // N₁/D₁ (denominator)
-            var3: v2_SI?.toString(),      // N₂/D₂ (numerator)
-            var4: v1_SI?.toString(),      // N₁/D₁ (for display)
+            var1: formatExact(p2_SI!),      // P₂ (multiplied value)
+            var2: formatValue(v1_SI!, isConstantDiameter),      // N₁/D₁ (denominator)
+            var3: formatValue(v2_SI!, isConstantDiameter),      // N₂/D₂ (numerator)
+            var4: formatValue(v1_SI!, isConstantDiameter),      // N₁/D₁ (for display)
             result: resultValue,
             formula: 'power'
           }
@@ -549,10 +550,10 @@ export default function PumpAffinityCalculator() {
           resultValueSI = resultValue
           resultLabel = isConstantDiameter ? `${symbol}₂ ≈ ${resultValue} ${unit}` : `${symbol}₂ = ${resultValue} ${unit}`
           displayData = {
-            var1: p2_SI!.toFixed(2),      // P₂ (multiplied value)
-            var2: v1_SI?.toString(),      // N₁/D₁ (denominator)
-            var3: v1_SI?.toString(),      // N₁/D₁ (numerator)
-            var4: v1_SI?.toString(),      // N₁/D₁ (for display)
+            var1: formatExact(p2_SI!),      // P₂ (multiplied value)
+            var2: formatValue(v1_SI!, isConstantDiameter),      // N₁/D₁ (denominator)
+            var3: formatValue(v1_SI!, isConstantDiameter),      // N₁/D₁ (numerator)
+            var4: formatValue(v1_SI!, isConstantDiameter),      // N₁/D₁ (for display)
             result: resultValue,
             formula: 'rpm_cbrt'
           }
@@ -565,10 +566,10 @@ export default function PumpAffinityCalculator() {
           resultValueSI = resultValue
           resultLabel = isConstantDiameter ? `${symbol}₁ ≈ ${resultValue} ${unit}` : `${symbol}₁ = ${resultValue} ${unit}`
           displayData = {
-            var1: p1_SI!.toFixed(2),      // P₁ (multiplied value)
-            var2: v2_SI?.toString(),      // N₂/D₂ (denominator)
-            var3: v2_SI?.toString(),      // N₂/D₂ (numerator)
-            var4: v2_SI?.toString(),      // N₂/D₂ (for display)
+            var1: formatExact(p1_SI!),      // P₁ (multiplied value)
+            var2: formatValue(v2_SI!, isConstantDiameter),      // N₂/D₂ (denominator)
+            var3: formatValue(v2_SI!, isConstantDiameter),      // N₂/D₂ (numerator)
+            var4: formatValue(v2_SI!, isConstantDiameter),      // N₂/D₂ (for display)
             result: resultValue,
             formula: 'rpm_cbrt'
           }

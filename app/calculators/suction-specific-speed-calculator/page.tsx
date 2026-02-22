@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Copy, Check } from "lucide-react"
 import { formatDisplayNumber } from "@/lib/number-formatter"
 import { RadicalSymbol } from "@/components/math-symbols"
+import { formatExact, formatValue } from "@/lib/format-exact"
 
 // Unit definitions for Suction Specific Speed Calculator
 const speedUnits = [
@@ -253,9 +254,9 @@ export default function SuctionSpecificSpeedCalculator() {
       fullValue: nssExact.toFixed(2),
       calculated: true,
       steps: {
-        n_rpm: N_rpm.toFixed(2),
-        q_m3h: Q_m3h.toFixed(2),
-        npshr_m: NPSHr_m.toFixed(4),
+        n_rpm: formatValue(N_rpm, true), // RPM - no decimals
+        q_m3h: formatExact(Q_m3h),
+        npshr_m: formatExact(NPSHr_m),
         sqrtQ: sqrtQ.toFixed(4),
         npshrPower: npshrPower.toFixed(4),
         numerator: numerator.toFixed(2),
