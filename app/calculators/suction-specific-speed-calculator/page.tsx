@@ -178,7 +178,6 @@ export default function SuctionSpecificSpeedCalculator() {
     if (result.calculated) {
       setResult({
         value: "",
-        valueSI: "",
         fullValue: "",
         calculated: false,
         steps: null
@@ -305,7 +304,7 @@ export default function SuctionSpecificSpeedCalculator() {
             {/* Rotational Speed Input */}
             <div>
               <div className="flex items-center gap-3">
-                <label className="font-semibold text-foreground text-sm w-32 flex-shrink-0">Rotational Speed (N):</label>
+                <label className="font-semibold text-foreground text-sm w-32 flex-shrink-0">Speed (N):</label>
                 <input
                   type="number"
                   value={rotationalSpeed}
@@ -373,13 +372,13 @@ export default function SuctionSpecificSpeedCalculator() {
             {/* NPSH Required Input */}
             <div>
               <div className="flex items-center gap-3">
-                <label className="font-semibold text-foreground text-sm w-32 flex-shrink-0">NPSH Required (NPSHr):</label>
+                <label className="font-semibold text-foreground text-sm w-32 flex-shrink-0">NPSHr:</label>
                 <input
                   type="number"
                   value={npshRequired}
                   onChange={e => handleNPSHChange(e.target.value)}
                   placeholder="10"
-                  className={`flex-[2] min-w-0 border-2 ${npshError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
+                  className={`flex-[2] min-w-0 border-2 ${npshError ?'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-lg px-3 py-2 text-center text-base focus:border-blue-500 focus:outline-none transition-colors`}
                 />
                 <Select value={npshUnit} onValueChange={(value) => { setNpshUnit(value); resetCalculation(); }}>
                   <SelectTrigger className="flex-1 min-w-[100px] border-2 border-border bg-background text-sm h-10">
@@ -405,17 +404,17 @@ export default function SuctionSpecificSpeedCalculator() {
             </div>
 
             {/* Formula Display */}
-            <div className="mt-auto mb-4 bg-muted rounded-lg p-4 border-2 border-border">
-              <h4 className="font-bold text-foreground mb-3 uppercase text-xs text-center">Formula:</h4>
+            <div className="mt-auto mb-4 bg-muted rounded-lg p-8 py-10 border-2 border-border flex flex-col items-center justify-center">
+              <h4 className="font-bold text-foreground mb-4 uppercase text-sm text-center">Formula:</h4>
               <div className="flex flex-col items-center gap-2">
-                <div className="font-serif text-xl flex items-center gap-2">
-                  <span className="font-bold">N<sub className="text-xs">ss</sub></span>
+                <div className="font-serif text-2xl flex items-center gap-3">
+                  <span className="font-bold">N<sub className="text-sm">ss</sub></span>
                   <span>=</span>
                   <div className="flex flex-col items-center">
-                    <span className="border-b-2 border-foreground px-2 pb-0.5 text-base flex items-center">
+                    <span className="border-b-2 border-foreground px-3 pb-1 text-xl flex items-center">
                       N × <RadicalSymbol>Q</RadicalSymbol>
                     </span>
-                    <span className="pt-0.5 text-base">NPSHr<sup className="text-xs">3/4</sup></span>
+                    <span className="pt-1 text-xl">NPSHr<sup className="text-sm">3/4</sup></span>
                   </div>
                 </div>
               </div>
@@ -515,19 +514,7 @@ export default function SuctionSpecificSpeedCalculator() {
                       </span>
                     </div>
                     
-                    {/* Step 3: Simplified */}
-                    <span></span>
-                    <span className="text-center">=</span>
-                    <div className="flex flex-col items-center justify-self-start">
-                      <span className="border-b-2 border-foreground px-4 pb-1 text-base whitespace-nowrap">
-                        {result.steps.n_rpm} × {result.steps.sqrtQ}
-                      </span>
-                      <span className="pt-1 text-base whitespace-nowrap">
-                        {result.steps.npshrPower}
-                      </span>
-                    </div>
-                    
-                    {/* Step 4: Further Simplified */}
+                    {/* Step 3: Simplified Fraction */}
                     <span></span>
                     <span className="text-center">=</span>
                     <div className="flex flex-col items-center justify-self-start">
@@ -539,7 +526,7 @@ export default function SuctionSpecificSpeedCalculator() {
                       </span>
                     </div>
                     
-                    {/* Step 5: Final Result */}
+                    {/* Step 4: Final Result */}
                     <span></span>
                     <span className="text-center font-bold">≈</span>
                     <span className="font-bold text-xl justify-self-start">{result.fullValue}</span>
