@@ -705,21 +705,6 @@ export default function PumpAffinityCalculator() {
                 </AccordionTrigger>
                 <AccordionContent>
                   <div className="pt-4 space-y-4">
-                    {/* Formula Box - On Top */}
-                    <div className="bg-muted p-4 flex justify-center border border-border rounded">
-                       <div className="font-serif text-2xl flex items-center gap-3">
-                          <div className="flex flex-col items-center">
-                            <span className="border-b border-foreground px-1">Q₁</span>
-                            <span>Q₂</span>
-                          </div>
-                          <span>=</span>
-                          <div className="flex flex-col items-center">
-                            <span className="border-b border-foreground px-1">{mode === "CONSTANT_DIAMETER" ? "N₁" : "D₁"}</span>
-                            <span>{mode === "CONSTANT_DIAMETER" ? "N₂" : "D₂"}</span>
-                          </div>
-                       </div>
-                    </div>
-
                     {/* Inputs Grid */}
                     <div className="grid grid-cols-2 gap-4 w-full">
                        {/* Q1 with unit selector */}
@@ -816,25 +801,6 @@ export default function PumpAffinityCalculator() {
                 </AccordionTrigger>
                 <AccordionContent>
                   <div className="pt-4 space-y-4">
-                    <div className="bg-muted p-4 flex justify-center border border-border rounded">
-                       <div className="font-serif text-2xl flex items-center gap-3">
-                          <div className="flex flex-col items-center">
-                            <span className="border-b border-foreground px-1">H₁</span>
-                            <span>H₂</span>
-                          </div>
-                          <span>=</span>
-                          <div className="flex items-center">
-                            <span className="text-4xl text-muted-foreground font-light">(</span>
-                            <div className="flex flex-col items-center">
-                              <span className="border-b border-foreground px-1">{mode === "CONSTANT_DIAMETER" ? "N₁" : "D₁"}</span>
-                              <span>{mode === "CONSTANT_DIAMETER" ? "N₂" : "D₂"}</span>
-                            </div>
-                            <span className="text-4xl text-muted-foreground font-light">)</span>
-                            <sup className="text-sm font-bold mb-6">2</sup>
-                          </div>
-                       </div>
-                    </div>
-
                     <div className="grid grid-cols-2 gap- 4 w-full">
                        {/* H1 with unit selector */}
                        <div>
@@ -966,25 +932,6 @@ export default function PumpAffinityCalculator() {
                 </AccordionTrigger>
                 <AccordionContent>
                   <div className="pt-4 space-y-4">
-                    <div className="bg-muted p-4 flex justify-center border border-border rounded">
-                       <div className="font-serif text-2xl flex items-center gap-3">
-                          <div className="flex flex-col items-center">
-                            <span className="border-b border-foreground px-1">P₁</span>
-                            <span>P₂</span>
-                          </div>
-                          <span>=</span>
-                          <div className="flex items-center">
-                            <span className="text-4xl text-muted-foreground font-light">(</span>
-                            <div className="flex flex-col items-center">
-                              <span className="border-b border-foreground px-1">{mode === "CONSTANT_DIAMETER" ? "N₁" : "D₁"}</span>
-                              <span>{mode === "CONSTANT_DIAMETER" ? "N₂" : "D₂"}</span>
-                            </div>
-                            <span className="text-4xl text-muted-foreground font-light">)</span>
-                            <sup className="text-sm font-bold mb-6">3</sup>
-                          </div>
-                       </div>
-                    </div>
-
                     <div className="grid grid-cols-2 gap-4 w-full">
                        {/* P1 with unit selector */}
                        <div>
@@ -1321,17 +1268,69 @@ export default function PumpAffinityCalculator() {
               </div>
             </div>
 
-            {/* Calculation Steps - Unified Grid Layout for Perfect Alignment */}
-            {result.calculated && result.displayData && (
-              <div className="bg-background rounded-lg border border-border overflow-hidden shadow-sm">
-                <div className="bg-muted px-3 py-2 border-b border-border">
-                  <h4 className="font-bold text-foreground uppercase text-xs">Step-by-Step Calculation</h4>
-                </div>
-                
-                {/* Changed to a unified grid for horizontal alignment */}
+            {/* Calculation Steps & Active Formula */}
+            <div className="bg-background rounded-lg border border-border overflow-hidden shadow-sm mb-4 flex flex-col">
+              <div className="bg-muted px-3 py-2 border-b border-border">
+                <h4 className="font-bold text-foreground uppercase text-xs">Step-by-Step Calculation</h4>
+              </div>
+              
+              {/* Dynamic Base Formula (Always visible based on active section) */}
+              <div className="bg-muted/30 p-5 flex justify-center border-b border-border">
+                 {activeSection === "flow" && (
+                   <div className="font-serif text-2xl flex items-center gap-3">
+                      <div className="flex flex-col items-center">
+                        <span className="border-b border-foreground px-1">Q₁</span>
+                        <span>Q₂</span>
+                      </div>
+                      <span>=</span>
+                      <div className="flex flex-col items-center">
+                        <span className="border-b border-foreground px-1">{mode === "CONSTANT_DIAMETER" ? "N₁" : "D₁"}</span>
+                        <span>{mode === "CONSTANT_DIAMETER" ? "N₂" : "D₂"}</span>
+                      </div>
+                   </div>
+                 )}
+                 {activeSection === "head" && (
+                   <div className="font-serif text-2xl flex items-center gap-3">
+                      <div className="flex flex-col items-center">
+                        <span className="border-b border-foreground px-1">H₁</span>
+                        <span>H₂</span>
+                      </div>
+                      <span>=</span>
+                      <div className="flex items-center">
+                        <span className="text-4xl text-muted-foreground font-light">(</span>
+                        <div className="flex flex-col items-center">
+                          <span className="border-b border-foreground px-1">{mode === "CONSTANT_DIAMETER" ? "N₁" : "D₁"}</span>
+                          <span>{mode === "CONSTANT_DIAMETER" ? "N₂" : "D₂"}</span>
+                        </div>
+                        <span className="text-4xl text-muted-foreground font-light">)</span>
+                        <sup className="text-sm font-bold mb-6">2</sup>
+                      </div>
+                   </div>
+                 )}
+                 {activeSection === "power" && (
+                   <div className="font-serif text-2xl flex items-center gap-3">
+                      <div className="flex flex-col items-center">
+                        <span className="border-b border-foreground px-1">P₁</span>
+                        <span>P₂</span>
+                      </div>
+                      <span>=</span>
+                      <div className="flex items-center">
+                        <span className="text-4xl text-muted-foreground font-light">(</span>
+                        <div className="flex flex-col items-center">
+                          <span className="border-b border-foreground px-1">{mode === "CONSTANT_DIAMETER" ? "N₁" : "D₁"}</span>
+                          <span>{mode === "CONSTANT_DIAMETER" ? "N₂" : "D₂"}</span>
+                        </div>
+                        <span className="text-4xl text-muted-foreground font-light">)</span>
+                        <sup className="text-sm font-bold mb-6">3</sup>
+                      </div>
+                   </div>
+                 )}
+              </div>
+
+              {/* Dynamic Steps Grid (Only visible after calculation) */}
+              {result.calculated && result.displayData ? (
                 <div className="p-6 overflow-x-auto">
                   <div className="grid grid-cols-[auto_auto_1fr] items-center gap-y-5 gap-x-4 font-serif text-lg min-w-max">
-                    
                     {/* Flow Rate Formulas */}
                     {(result.displayData.formula === 'flow' || result.displayData.formula === 'rpm') && (
                       <>
@@ -1421,8 +1420,15 @@ export default function PumpAffinityCalculator() {
                     )}
                   </div>
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="p-8 text-center flex flex-col items-center justify-center text-muted-foreground min-h-[120px]">
+                  <svg className="w-8 h-8 opacity-20 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                  <span className="text-sm font-medium">Enter values and click calculate to see step-by-step breakdown</span>
+                </div>
+              )}
+            </div>
 
             {/* Result Display - Horizontal Layout */}
             <div className="mt-auto" ref={resultRef}>
@@ -1470,15 +1476,3 @@ export default function PumpAffinityCalculator() {
     </div>
   )
 }
-
-
-
-
-
-
-
-
-
-
-
-

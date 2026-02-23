@@ -5,59 +5,21 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
-import { Copy, Check } from "lucide-react"
+import { Copy, Check, ChevronDown } from "lucide-react"
 import { formatDisplayNumber } from "@/lib/number-formatter"
 import { RadicalSymbol } from "@/components/math-symbols"
 import { formatExact, formatValue } from "@/lib/format-exact"
-
-// Unit definitions for Pump Specific Speed Calculator
-const speedUnits = [
-  { value: "rpm", label: "RPM" },
-  { value: "rads", label: "rad/s" },
-]
-
-const flowUnits = [
-  { value: "m3h", label: "m³/h" },
-  { value: "m3s", label: "m³/s" },
-  { value: "lpm", label: "L/min" },
-  { value: "gpm", label: "GPM" },
-]
-
-const headUnits = [
-  { value: "m", label: "m" },
-  { value: "ft", label: "ft" },
-]
-
-// Unit conversion functions
-const convertSpeedToRPM = (value: number, unit: string): number => {
-  switch (unit) {
-    case "rpm": return value
-    case "rads": return value * 9.5493 // rad/s to RPM
-    default: return value
-  }
-}
-
-const convertFlowToM3H = (value: number, unit: string): number => {
-  switch (unit) {
-    case "m3h": return value
-    case "m3s": return value * 3600
-    case "lpm": return value * 0.06
-    case "gpm": return value * 0.227124
-    default: return value
-  }
-}
-
-const convertHeadToM = (value: number, unit: string): number => {
-  switch (unit) {
-    case "m": return value
-    case "ft": return value * 0.3048
-    default: return value
-  }
-}
+import { 
+  convertToSI, 
+  speedUnits, 
+  flowUnits, 
+  headUnits 
+} from "@/lib/unit-conversions"
 
 export default function PumpSpecificSpeedCalculator() {
   const { toast } = useToast()
   const resultRef = useRef<HTMLDivElement>(null)
+  const [showStep1, setShowStep1] = useState(false)
   
   const [rotationalSpeed, setRotationalSpeed] = useState<string>("")
   const [speedUnit, setSpeedUnit] = useState<string>("rpm")
@@ -237,10 +199,10 @@ export default function PumpSpecificSpeedCalculator() {
       return
     }
 
-    // Step 1: Convert all inputs to standard units
-    const N_rpm = convertSpeedToRPM(N_input, speedUnit)
-    const Q_m3h = convertFlowToM3H(Q_input, flowUnit)
-    const H_m = convertHeadToM(H_input, headUnit)
+    // Step 1: Convert inputs to SI units
+    const N_rpm = convertToSI(N_input, speedUnit, 'speed') // RPM
+    const Q_m3h = convertToSI(Q_input, flowUnit, 'flow') // m³/h
+    const H_m = convertToSI(H_input, headUnit, 'head') // m
 
     // Step 2: Calculate Ns using formula: Ns = (N × √Q) / H^(3/4)
     const sqrtQ = Math.sqrt(Q_m3h)
@@ -484,9 +446,29 @@ export default function PumpSpecificSpeedCalculator() {
                   <h4 className="font-bold text-foreground uppercase text-xs">Calculation</h4>
                 </div>
                 
-                {/* Changed to a unified grid for horizontal alignment */}
-                <div className="p-6 overflow-x-auto">
-                  <div className="grid grid-cols-[auto_auto_1fr] items-center gap-y-5 gap-x-4 font-serif text-lg min-w-max">
+                {/* Step 1: SI Conversion - Collapsible */}
+                <div className="border-b border-border">
+                  <button
+                    onClick={() => setShowStep1(!showStep1)}
+                    className="w-full px-6 py-3 flex items-center justify-between hover:bg-muted/50 transition-colors"
+                  >
+                    <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">
+                      Step 1: Convert to SI units
+                    </span>
+                    <ChevronDown className={`h-4 w-4 transition-transform ${showStep1 ? 'rotate-180' : ''}`} />
+                  </button>
+                  {showStep1 && (
+                    <div className="px-6 pb-4 space-y-1 text-sm font-mono bg-blue-50/50 dark:bg-blue-950/20">
+                      <div>N = {rotationalSpeed} {speedUnits.find(u => u.value === speedUnit)?.label} = {result.steps.n_rpm} RPM</div>
+                      <div>Q = {flowRate} {flowUnits.find(u => u.value === flowUnit)?.label} = {result.steps.q_m3h} m³/h</div>
+                      <div>H = {totalHead} {headUnits.find(u => u.value === headUnit)?.label} = {result.steps.h_m} m</div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Step 2: Calculate using formula */}
+                <div className="px-6 py-4">
+                  <div className="grid grid-cols-[auto_auto_1fr] items-center gap-y-5 gap-x-4 font-serif text-lg min-w-max overflow-x-auto">
                     
                     {/* Step 1: Formula */}
                     <span className="font-bold text-right whitespace-nowrap">N<sub className="text-xs">s</sub></span>
@@ -527,19 +509,7 @@ export default function PumpSpecificSpeedCalculator() {
                       </span>
                     </div>
                     
-                    {/* Step 4: Further Simplified */}
-                    <span></span>
-                    <span className="text-center">=</span>
-                    <div className="flex flex-col items-center justify-self-start">
-                      <span className="border-b-2 border-foreground px-4 pb-1 text-base whitespace-nowrap">
-                        {result.steps.numerator}
-                      </span>
-                      <span className="pt-1 text-base whitespace-nowrap">
-                        {result.steps.hPower}
-                      </span>
-                    </div>
-                    
-                    {/* Step 5: Final Result */}
+                    {/* Step 4: Final Result */}
                     <span></span>
                     <span className="text-center font-bold">≈</span>
                     <span className="font-bold text-xl justify-self-start">{result.fullValue}</span>

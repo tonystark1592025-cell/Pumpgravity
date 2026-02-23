@@ -4,8 +4,9 @@ import { useState, useRef } from "react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
 import { useToast } from "@/hooks/use-toast"
-import { Copy, Check } from "lucide-react"
+import { Copy, Check, ChevronDown } from "lucide-react"
 import { 
   convertToSI, 
   convertFromSI, 
@@ -18,6 +19,7 @@ import { formatDisplayNumber } from "@/lib/number-formatter"
 
 export default function PumpPowerCalculator() {
   const { toast } = useToast()
+  const [showStep1, setShowStep1] = useState(false)
   const resultRef = useRef<HTMLDivElement>(null)
   const [flowRate, setFlowRate] = useState<string>("")
   const [flowUnit, setFlowUnit] = useState<string>("m3h")
@@ -675,14 +677,34 @@ export default function PumpPowerCalculator() {
             {result.calculated && (
               <div className="bg-background rounded-lg border border-border overflow-hidden shadow-sm">
                 <div className="bg-muted px-3 py-2 border-b border-border">
-                  <h4 className="font-bold text-foreground uppercase text-xs">Step-by-Step Calculation</h4>
+                  <h4 className="font-bold text-foreground uppercase text-xs">Calculation</h4>
                 </div>
                 
-                {/* Changed to a unified grid for horizontal alignment */}
+                {/* Step 1: SI Conversion - Collapsible */}
+                <div className="border-b border-border">
+                  <button
+                    onClick={() => setShowStep1(!showStep1)}
+                    className="w-full px-6 py-3 flex items-center justify-between hover:bg-muted/50 transition-colors"
+                  >
+                    <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">
+                      Step 1: Convert to SI units
+                    </span>
+                    <ChevronDown className={`h-4 w-4 transition-transform ${showStep1 ? 'rotate-180' : ''}`} />
+                  </button>
+                  {showStep1 && (
+                    <div className="px-6 pb-4 space-y-1 text-sm font-mono bg-blue-50/50 dark:bg-blue-950/20">
+                      <div>Q = {flowRate} {flowUnits.find(u => u.value === flowUnit)?.label} = {result.steps[1]?.split('=')[2]?.trim()}</div>
+                      <div>H = {head} {headUnits.find(u => u.value === headUnit)?.label} = {result.steps[2]?.split('=')[2]?.trim()}</div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Step 2: Calculate using formula */}
                 <div className="p-6 overflow-x-auto">
+                  <div className="text-sm font-semibold text-blue-700 dark:text-blue-300 mb-3">Step 2: Calculate in SI (kW)</div>
                   <div className="grid grid-cols-[auto_auto_1fr] items-center gap-y-5 gap-x-4 font-serif text-lg min-w-max">
                     
-                    {/* Step 1: Substitution */}
+                    {/* Formula with substitution */}
                     <span className="font-bold text-right whitespace-nowrap">P<sub className="text-xs">s</sub></span>
                     <span className="text-center">=</span>
                     <div className="flex flex-col items-center justify-self-start">
@@ -699,7 +721,7 @@ export default function PumpPowerCalculator() {
                       </span>
                     </div>
                     
-                    {/* Step 2: Simplified */}
+                    {/* Simplified */}
                     <span></span>
                     <span className="text-center">=</span>
                     <div className="flex flex-col items-center justify-self-start">
@@ -711,21 +733,22 @@ export default function PumpPowerCalculator() {
                       </span>
                     </div>
                     
-                    {/* Step 3: Final Result (matching target image output) */}
+                    {/* Final Result */}
                     <span></span>
                     <span className="text-center font-bold">≈</span>
-                    <span className="font-bold text-xl justify-self-start">{result.valueSI}</span>
-                    
-                    {/* Step 4: Unit Conversion (if not kW) */}
-                    {resultUnit !== 'kw' && (
-                      <>
-                        <span></span>
-                        <span className="text-center font-bold">≈</span>
-                        <span className="font-bold text-xl justify-self-start">{result.value} {powerUnits.find(u => u.value === resultUnit)?.label}</span>
-                      </>
-                    )}
+                    <span className="font-bold text-xl justify-self-start">{result.valueSI} kW</span>
                   </div>
                 </div>
+                
+                {/* Step 3: Unit Conversion (if not kW) */}
+                {resultUnit !== 'kw' && (
+                  <div className="px-6 pb-4 border-t border-border">
+                    <div className="text-sm font-semibold text-blue-700 dark:text-blue-300 mb-2 mt-4">Step 3: Convert to {powerUnits.find(u => u.value === resultUnit)?.label}</div>
+                    <div className="font-mono text-base">
+                      Ps = {result.value} {powerUnits.find(u => u.value === resultUnit)?.label}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
