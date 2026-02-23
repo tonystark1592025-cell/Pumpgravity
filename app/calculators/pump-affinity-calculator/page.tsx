@@ -93,12 +93,21 @@ export default function PumpAffinityCalculator() {
     calculated: boolean
     steps: string[]
     displayData?: {
-      var1?: string
-      var2?: string
-      var3?: string
-      var4?: string
+      type?: 'simple_fraction' | 'power' | 'root'
+      targetVariable?: string
+      varNum1?: string
+      varNum2?: string
+      varDenom?: string
+      varMultiplier?: string
+      varNum?: string
+      num1?: string
+      num2?: string
+      num?: string
+      denom?: string
+      multiplier?: string
+      exponent?: string
       result?: string
-      formula?: string
+      resultUnit?: string
     }
   }>({
     value: "", 
@@ -147,75 +156,35 @@ export default function PumpAffinityCalculator() {
       const q1_input = q1 ? parseFloat(q1) : null
       const q2_input = q2 ? parseFloat(q2) : null
       
-      // Get N or D values based on mode
-      const v1_input = isConstantDiameter 
-        ? (n1_flow ? parseFloat(n1_flow) : null)
-        : (d1_flow ? parseFloat(d1_flow) : null)
-      const v2_input = isConstantDiameter 
-        ? (n2_flow ? parseFloat(n2_flow) : null)
-        : (d2_flow ? parseFloat(d2_flow) : null)
+      const v1_input = isConstantDiameter ? (n1_flow ? parseFloat(n1_flow) : null) : (d1_flow ? parseFloat(d1_flow) : null)
+      const v2_input = isConstantDiameter ? (n2_flow ? parseFloat(n2_flow) : null) : (d2_flow ? parseFloat(d2_flow) : null)
 
       const allValues = [q1_input, q2_input, v1_input, v2_input]
       const filledCount = allValues.filter(v => v !== null).length
 
       if (filledCount < 3) {
-        setResult({ 
-          value: "", 
-          valueSI: "",
-          fullValue: "",
-          fullValueSI: "",
-          label: "Please enter any 3 values to calculate the 4th", 
-          calculated: false,
-          steps: []
-        })
+        setResult({ value: "", valueSI: "", fullValue: "", fullValueSI: "", label: "Please enter any 3 values to calculate the 4th", calculated: false, steps: [] })
         return
       }
 
       if (filledCount > 3) {
-        setResult({ 
-          value: "", 
-          valueSI: "",
-          fullValue: "",
-          fullValueSI: "",
-          label: "Please leave ONE value empty to calculate", 
-          calculated: false,
-          steps: []
-        })
+        setResult({ value: "", valueSI: "", fullValue: "", fullValueSI: "", label: "Please leave ONE value empty to calculate", calculated: false, steps: [] })
         return
       }
 
-      // Zero validation
       if (q1_input === 0 || q2_input === 0 || v1_input === 0 || v2_input === 0) {
-        toast({
-          title: "Invalid Input",
-          description: "Values cannot be zero. Please enter valid values.",
-          variant: "destructive",
-        })
-        setResult({ 
-          value: "", 
-          valueSI: "",
-          fullValue: "",
-          fullValueSI: "",
-          label: "Values cannot be zero", 
-          calculated: false,
-          steps: []
-        })
+        toast({ title: "Invalid Input", description: "Values cannot be zero.", variant: "destructive" })
+        setResult({ value: "", valueSI: "", fullValue: "", fullValueSI: "", label: "Values cannot be zero", calculated: false, steps: [] })
         return
       }
 
-      // Convert to SI
       const q1_SI = q1_input !== null ? convertToSI(q1_input, q1Unit, 'flow') : null
       const q2_SI = q2_input !== null ? convertToSI(q2_input, q2Unit, 'flow') : null
-      const v1_SI = v1_input // RPM or mm is already SI
-      const v2_SI = v2_input // RPM or mm is already SI
+      const v1_SI = v1_input 
+      const v2_SI = v2_input 
 
       steps.push("Step 1: Converted inputs to SI units")
-      if (q1_input !== null) steps.push(`  Q₁ = ${formatExact(q1_SI!)} m³/h`)
-      if (q2_input !== null) steps.push(`  Q₂ = ${formatExact(q2_SI!)} m³/h`)
-      if (v1_input !== null) steps.push(`  ${symbol}₁ = ${formatValue(v1_input, isConstantDiameter)} ${unit}`)
-      if (v2_input !== null) steps.push(`  ${symbol}₂ = ${formatValue(v2_input, isConstantDiameter)} ${unit}`)
 
-      // Use precision calculator
       const result = calculateFlowRate(q1_SI, q2_SI, v1_SI, v2_SI)
       
       if (result) {
@@ -227,62 +196,34 @@ export default function PumpAffinityCalculator() {
           fullResultValueSI = result.value
           resultValue = parseFloat(calc_output.toString()).toFixed(3)
           resultValueSI = parseFloat(result.value).toFixed(3)
-          resultLabel = `Q₂ = ${resultValue} ${flowUnits.find(u => u.value === q2Unit)?.label}`
-          displayData = {
-            var1: formatExact(q1_SI!),  // Q₁ (numerator)
-            var2: formatValue(v2_SI!, isConstantDiameter),  // N₂/D₂ (denominator - what we multiply by)
-            var3: formatValue(v1_SI!, isConstantDiameter),  // N₁/D₁ (what we divide by)
-            var4: formatValue(v2_SI!, isConstantDiameter),  // N₂/D₂ (for display)
-            result: resultValue,
-            formula: 'flow'
-          }
+          const finalUnit = flowUnits.find(u => u.value === q2Unit)?.label || ""
+          resultLabel = `Q₂ = ${resultValue} ${finalUnit}`
+          displayData = { type: 'simple_fraction', targetVariable: 'Q₂', varNum1: 'Q₁', varNum2: `${symbol}₂`, varDenom: `${symbol}₁`, num1: formatExact(q1_SI!), num2: formatValue(v2_SI!, isConstantDiameter), denom: formatValue(v1_SI!, isConstantDiameter), result: resultValue, resultUnit: finalUnit }
         } else if (result.variable === 'q1') {
           const calc_output = convertFromSI(calc_SI, q1Unit, 'flow')
           fullResultValue = calc_output.toString()
           fullResultValueSI = result.value
           resultValue = parseFloat(calc_output.toString()).toFixed(3)
           resultValueSI = parseFloat(result.value).toFixed(3)
-          resultLabel = `Q₁ = ${resultValue} ${flowUnits.find(u => u.value === q1Unit)?.label}`
-          displayData = {
-            var1: formatExact(q2_SI!),  // Q₂ (numerator)
-            var2: formatValue(v1_SI!, isConstantDiameter),  // N₁/D₁ (denominator - what we multiply by)
-            var3: formatValue(v2_SI!, isConstantDiameter),  // N₂/D₂ (what we divide by)
-            var4: formatValue(v1_SI!, isConstantDiameter),  // N₁/D₁ (for display)
-            result: resultValue,
-            formula: 'flow'
-          }
+          const finalUnit = flowUnits.find(u => u.value === q1Unit)?.label || ""
+          resultLabel = `Q₁ = ${resultValue} ${finalUnit}`
+          displayData = { type: 'simple_fraction', targetVariable: 'Q₁', varNum1: 'Q₂', varNum2: `${symbol}₁`, varDenom: `${symbol}₂`, num1: formatExact(q2_SI!), num2: formatValue(v1_SI!, isConstantDiameter), denom: formatValue(v2_SI!, isConstantDiameter), result: resultValue, resultUnit: finalUnit }
         } else if (result.variable === 'v2') {
-          // Round RPM to whole number
           const calc_rounded = isConstantDiameter ? Math.round(parseFloat(result.value)) : parseFloat(result.value)
           fullResultValue = isConstantDiameter ? calc_rounded.toString() : result.value
           fullResultValueSI = fullResultValue
           resultValue = isConstantDiameter ? calc_rounded.toString() : parseFloat(result.value).toFixed(3)
           resultValueSI = resultValue
           resultLabel = isConstantDiameter ? `${symbol}₂ ≈ ${resultValue} ${unit}` : `${symbol}₂ = ${resultValue} ${unit}`
-          displayData = {
-            var1: formatExact(q2_SI!),  // Q₂ (numerator)
-            var2: formatValue(v1_SI!, isConstantDiameter),  // N₁/D₁ (what we multiply by)
-            var3: formatExact(q1_SI!),  // Q₁ (what we divide by)
-            var4: formatValue(v1_SI!, isConstantDiameter),  // N₁/D₁ (for display)
-            result: resultValue,
-            formula: 'rpm'
-          }
+          displayData = { type: 'simple_fraction', targetVariable: `${symbol}₂`, varNum1: `${symbol}₁`, varNum2: 'Q₂', varDenom: 'Q₁', num1: formatValue(v1_SI!, isConstantDiameter), num2: formatExact(q2_SI!), denom: formatExact(q1_SI!), result: resultValue, resultUnit: unit }
         } else if (result.variable === 'v1') {
-          // Round RPM to whole number
           const calc_rounded = isConstantDiameter ? Math.round(parseFloat(result.value)) : parseFloat(result.value)
           fullResultValue = isConstantDiameter ? calc_rounded.toString() : result.value
           fullResultValueSI = fullResultValue
           resultValue = isConstantDiameter ? calc_rounded.toString() : parseFloat(result.value).toFixed(3)
           resultValueSI = resultValue
           resultLabel = isConstantDiameter ? `${symbol}₁ ≈ ${resultValue} ${unit}` : `${symbol}₁ = ${resultValue} ${unit}`
-          displayData = {
-            var1: formatExact(q1_SI!),  // Q₁ (numerator)
-            var2: formatValue(v2_SI!, isConstantDiameter),  // N₂/D₂ (what we multiply by)
-            var3: formatExact(q2_SI!),  // Q₂ (what we divide by)
-            var4: formatValue(v2_SI!, isConstantDiameter),  // N₂/D₂ (for display)
-            result: resultValue,
-            formula: 'rpm'
-          }
+          displayData = { type: 'simple_fraction', targetVariable: `${symbol}₁`, varNum1: `${symbol}₂`, varNum2: 'Q₁', varDenom: 'Q₂', num1: formatValue(v2_SI!, isConstantDiameter), num2: formatExact(q1_SI!), denom: formatExact(q2_SI!), result: resultValue, resultUnit: unit }
         }
       }
     }
@@ -291,76 +232,35 @@ export default function PumpAffinityCalculator() {
     if (activeSection === "head") {
       const h1_input = h1 ? parseFloat(h1) : null
       const h2_input = h2 ? parseFloat(h2) : null
-      
-      // Get N or D values based on mode
-      const v1_input = isConstantDiameter 
-        ? (n1_head ? parseFloat(n1_head) : null)
-        : (d1_head ? parseFloat(d1_head) : null)
-      const v2_input = isConstantDiameter 
-        ? (n2_head ? parseFloat(n2_head) : null)
-        : (d2_head ? parseFloat(d2_head) : null)
+      const v1_input = isConstantDiameter ? (n1_head ? parseFloat(n1_head) : null) : (d1_head ? parseFloat(d1_head) : null)
+      const v2_input = isConstantDiameter ? (n2_head ? parseFloat(n2_head) : null) : (d2_head ? parseFloat(d2_head) : null)
 
       const allValues = [h1_input, h2_input, v1_input, v2_input]
       const filledCount = allValues.filter(v => v !== null).length
 
       if (filledCount < 3) {
-        setResult({ 
-          value: "", 
-          valueSI: "",
-          fullValue: "",
-          fullValueSI: "",
-          label: "Please enter any 3 values to calculate the 4th", 
-          calculated: false,
-          steps: []
-        })
+        setResult({ value: "", valueSI: "", fullValue: "", fullValueSI: "", label: "Please enter any 3 values to calculate the 4th", calculated: false, steps: [] })
         return
       }
 
       if (filledCount > 3) {
-        setResult({ 
-          value: "", 
-          valueSI: "",
-          fullValue: "",
-          fullValueSI: "",
-          label: "Please leave ONE value empty to calculate", 
-          calculated: false,
-          steps: []
-        })
+        setResult({ value: "", valueSI: "", fullValue: "", fullValueSI: "", label: "Please leave ONE value empty to calculate", calculated: false, steps: [] })
         return
       }
 
-      // Zero validation
       if (h1_input === 0 || h2_input === 0 || v1_input === 0 || v2_input === 0) {
-        toast({
-          title: "Invalid Input",
-          description: "Values cannot be zero. Please enter valid values.",
-          variant: "destructive",
-        })
-        setResult({ 
-          value: "", 
-          valueSI: "",
-          fullValue: "",
-          fullValueSI: "",
-          label: "Values cannot be zero", 
-          calculated: false,
-          steps: []
-        })
+        toast({ title: "Invalid Input", description: "Values cannot be zero.", variant: "destructive" })
+        setResult({ value: "", valueSI: "", fullValue: "", fullValueSI: "", label: "Values cannot be zero", calculated: false, steps: [] })
         return
       }
 
-      // Convert to SI
       const h1_SI = h1_input !== null ? convertToSI(h1_input, h1Unit, 'head') : null
       const h2_SI = h2_input !== null ? convertToSI(h2_input, h2Unit, 'head') : null
-      const v1_SI = v1_input // RPM or mm is already SI
-      const v2_SI = v2_input // RPM or mm is already SI
+      const v1_SI = v1_input 
+      const v2_SI = v2_input 
 
       steps.push("Step 1: Converted inputs to SI units")
-      if (h1_input !== null) steps.push(`  H₁ = ${formatExact(h1_SI!)} m`)
-      if (h2_input !== null) steps.push(`  H₂ = ${formatExact(h2_SI!)} m`)
-      if (v1_input !== null) steps.push(`  ${symbol}₁ = ${formatValue(v1_input, isConstantDiameter)} ${unit}`)
-      if (v2_input !== null) steps.push(`  ${symbol}₂ = ${formatValue(v2_input, isConstantDiameter)} ${unit}`)
 
-      // Use precision calculator
       const result = calculateHead(h1_SI, h2_SI, v1_SI, v2_SI)
       
       if (result) {
@@ -372,62 +272,34 @@ export default function PumpAffinityCalculator() {
           fullResultValueSI = result.value
           resultValue = calc_output.toFixed(3)
           resultValueSI = calc_SI.toFixed(3)
-          resultLabel = `H₂ = ${resultValue} ${headUnits.find(u => u.value === h2Unit)?.label}`
-          displayData = {
-            var1: formatExact(h1_SI!),      // H₁ (multiplied value)
-            var2: formatValue(v2_SI!, isConstantDiameter),      // N₂/D₂ (denominator)
-            var3: formatValue(v1_SI!, isConstantDiameter),      // N₁/D₁ (numerator)
-            var4: formatValue(v2_SI!, isConstantDiameter),      // N₂/D₂ (for display)
-            result: resultValue,
-            formula: 'head'
-          }
+          const finalUnit = headUnits.find(u => u.value === h2Unit)?.label || ""
+          resultLabel = `H₂ = ${resultValue} ${finalUnit}`
+          displayData = { type: 'power', targetVariable: 'H₂', varMultiplier: 'H₁', varNum: `${symbol}₂`, varDenom: `${symbol}₁`, multiplier: formatExact(h1_SI!), num: formatValue(v2_SI!, isConstantDiameter), denom: formatValue(v1_SI!, isConstantDiameter), exponent: "2", result: resultValue, resultUnit: finalUnit }
         } else if (result.variable === 'h1') {
           const calc_output = convertFromSI(calc_SI, h1Unit, 'head')
           fullResultValue = calc_output.toString()
           fullResultValueSI = result.value
           resultValue = calc_output.toFixed(3)
           resultValueSI = calc_SI.toFixed(3)
-          resultLabel = `H₁ = ${resultValue} ${headUnits.find(u => u.value === h1Unit)?.label}`
-          displayData = {
-            var1: formatExact(h2_SI!),      // H₂ (multiplied value)
-            var2: formatValue(v1_SI!, isConstantDiameter),      // N₁/D₁ (denominator)
-            var3: formatValue(v2_SI!, isConstantDiameter),      // N₂/D₂ (numerator)
-            var4: formatValue(v1_SI!, isConstantDiameter),      // N₁/D₁ (for display)
-            result: resultValue,
-            formula: 'head'
-          }
+          const finalUnit = headUnits.find(u => u.value === h1Unit)?.label || ""
+          resultLabel = `H₁ = ${resultValue} ${finalUnit}`
+          displayData = { type: 'power', targetVariable: 'H₁', varMultiplier: 'H₂', varNum: `${symbol}₁`, varDenom: `${symbol}₂`, multiplier: formatExact(h2_SI!), num: formatValue(v1_SI!, isConstantDiameter), denom: formatValue(v2_SI!, isConstantDiameter), exponent: "2", result: resultValue, resultUnit: finalUnit }
         } else if (result.variable === 'v2') {
-          // Round RPM to whole number
           const calc_rounded = isConstantDiameter ? Math.round(parseFloat(result.value)) : parseFloat(result.value)
           fullResultValue = isConstantDiameter ? calc_rounded.toString() : result.value
           fullResultValueSI = fullResultValue
           resultValue = isConstantDiameter ? calc_rounded.toString() : calc_SI.toFixed(3)
           resultValueSI = resultValue
           resultLabel = isConstantDiameter ? `${symbol}₂ ≈ ${resultValue} ${unit}` : `${symbol}₂ = ${resultValue} ${unit}`
-          displayData = {
-            var1: formatExact(h2_SI!),      // H₂ (multiplied value)
-            var2: formatValue(v1_SI!, isConstantDiameter),      // N₁/D₁ (denominator)
-            var3: formatValue(v1_SI!, isConstantDiameter),      // N₁/D₁ (numerator)
-            var4: formatValue(v1_SI!, isConstantDiameter),      // N₁/D₁ (for display)
-            result: resultValue,
-            formula: 'rpm_sqrt'
-          }
+          displayData = { type: 'root', targetVariable: `${symbol}₂`, varMultiplier: `${symbol}₁`, varNum: 'H₂', varDenom: 'H₁', multiplier: formatValue(v1_SI!, isConstantDiameter), num: formatExact(h2_SI!), denom: formatExact(h1_SI!), exponent: "2", result: resultValue, resultUnit: unit }
         } else if (result.variable === 'v1') {
-          // Round RPM to whole number
           const calc_rounded = isConstantDiameter ? Math.round(parseFloat(result.value)) : parseFloat(result.value)
           fullResultValue = isConstantDiameter ? calc_rounded.toString() : result.value
           fullResultValueSI = fullResultValue
           resultValue = isConstantDiameter ? calc_rounded.toString() : calc_SI.toFixed(3)
           resultValueSI = resultValue
           resultLabel = isConstantDiameter ? `${symbol}₁ ≈ ${resultValue} ${unit}` : `${symbol}₁ = ${resultValue} ${unit}`
-          displayData = {
-            var1: formatExact(h1_SI!),      // H₁ (multiplied value)
-            var2: formatValue(v2_SI!, isConstantDiameter),      // N₂/D₂ (denominator)
-            var3: formatValue(v2_SI!, isConstantDiameter),      // N₂/D₂ (numerator)
-            var4: formatValue(v2_SI!, isConstantDiameter),      // N₂/D₂ (for display)
-            result: resultValue,
-            formula: 'rpm_sqrt'
-          }
+          displayData = { type: 'root', targetVariable: `${symbol}₁`, varMultiplier: `${symbol}₂`, varNum: 'H₁', varDenom: 'H₂', multiplier: formatValue(v2_SI!, isConstantDiameter), num: formatExact(h1_SI!), denom: formatExact(h2_SI!), exponent: "2", result: resultValue, resultUnit: unit }
         }
       }
     }
@@ -436,76 +308,35 @@ export default function PumpAffinityCalculator() {
     if (activeSection === "power") {
       const p1_input = p1 ? parseFloat(p1) : null
       const p2_input = p2 ? parseFloat(p2) : null
-      
-      // Get N or D values based on mode
-      const v1_input = isConstantDiameter 
-        ? (n1_power ? parseFloat(n1_power) : null)
-        : (d1_power ? parseFloat(d1_power) : null)
-      const v2_input = isConstantDiameter 
-        ? (n2_power ? parseFloat(n2_power) : null)
-        : (d2_power ? parseFloat(d2_power) : null)
+      const v1_input = isConstantDiameter ? (n1_power ? parseFloat(n1_power) : null) : (d1_power ? parseFloat(d1_power) : null)
+      const v2_input = isConstantDiameter ? (n2_power ? parseFloat(n2_power) : null) : (d2_power ? parseFloat(d2_power) : null)
 
       const allValues = [p1_input, p2_input, v1_input, v2_input]
       const filledCount = allValues.filter(v => v !== null).length
 
       if (filledCount < 3) {
-        setResult({ 
-          value: "", 
-          valueSI: "",
-          fullValue: "",
-          fullValueSI: "",
-          label: "Please enter any 3 values to calculate the 4th", 
-          calculated: false,
-          steps: []
-        })
+        setResult({ value: "", valueSI: "", fullValue: "", fullValueSI: "", label: "Please enter any 3 values to calculate the 4th", calculated: false, steps: [] })
         return
       }
 
       if (filledCount > 3) {
-        setResult({ 
-          value: "", 
-          valueSI: "",
-          fullValue: "",
-          fullValueSI: "",
-          label: "Please leave ONE value empty to calculate", 
-          calculated: false,
-          steps: []
-        })
+        setResult({ value: "", valueSI: "", fullValue: "", fullValueSI: "", label: "Please leave ONE value empty to calculate", calculated: false, steps: [] })
         return
       }
 
-      // Zero validation
       if (p1_input === 0 || p2_input === 0 || v1_input === 0 || v2_input === 0) {
-        toast({
-          title: "Invalid Input",
-          description: "Values cannot be zero. Please enter valid values.",
-          variant: "destructive",
-        })
-        setResult({ 
-          value: "", 
-          valueSI: "",
-          fullValue: "",
-          fullValueSI: "",
-          label: "Values cannot be zero", 
-          calculated: false,
-          steps: []
-        })
+        toast({ title: "Invalid Input", description: "Values cannot be zero.", variant: "destructive" })
+        setResult({ value: "", valueSI: "", fullValue: "", fullValueSI: "", label: "Values cannot be zero", calculated: false, steps: [] })
         return
       }
 
-      // Convert to SI
       const p1_SI = p1_input !== null ? convertToSI(p1_input, p1Unit, 'power') : null
       const p2_SI = p2_input !== null ? convertToSI(p2_input, p2Unit, 'power') : null
-      const v1_SI = v1_input // RPM or mm is already SI
-      const v2_SI = v2_input // RPM or mm is already SI
+      const v1_SI = v1_input 
+      const v2_SI = v2_input 
 
       steps.push("Step 1: Converted inputs to SI units")
-      if (p1_input !== null) steps.push(`  P₁ = ${formatExact(p1_SI!)} kW`)
-      if (p2_input !== null) steps.push(`  P₂ = ${formatExact(p2_SI!)} kW`)
-      if (v1_input !== null) steps.push(`  ${symbol}₁ = ${formatValue(v1_input, isConstantDiameter)} ${unit}`)
-      if (v2_input !== null) steps.push(`  ${symbol}₂ = ${formatValue(v2_input, isConstantDiameter)} ${unit}`)
 
-      // Use precision calculator
       const result = calculatePower(p1_SI, p2_SI, v1_SI, v2_SI)
       
       if (result) {
@@ -517,62 +348,34 @@ export default function PumpAffinityCalculator() {
           fullResultValueSI = result.value
           resultValue = calc_output.toFixed(3)
           resultValueSI = calc_SI.toFixed(3)
-          resultLabel = `P₂ = ${resultValue} ${powerUnits.find(u => u.value === p2Unit)?.label}`
-          displayData = {
-            var1: formatExact(p1_SI!),      // P₁ (multiplied value)
-            var2: formatValue(v2_SI!, isConstantDiameter),      // N₂/D₂ (denominator)
-            var3: formatValue(v1_SI!, isConstantDiameter),      // N₁/D₁ (numerator)
-            var4: formatValue(v2_SI!, isConstantDiameter),      // N₂/D₂ (for display)
-            result: resultValue,
-            formula: 'power'
-          }
+          const finalUnit = powerUnits.find(u => u.value === p2Unit)?.label || ""
+          resultLabel = `P₂ = ${resultValue} ${finalUnit}`
+          displayData = { type: 'power', targetVariable: 'P₂', varMultiplier: 'P₁', varNum: `${symbol}₂`, varDenom: `${symbol}₁`, multiplier: formatExact(p1_SI!), num: formatValue(v2_SI!, isConstantDiameter), denom: formatValue(v1_SI!, isConstantDiameter), exponent: "3", result: resultValue, resultUnit: finalUnit }
         } else if (result.variable === 'p1') {
           const calc_output = convertFromSI(calc_SI, p1Unit, 'power')
           fullResultValue = calc_output.toString()
           fullResultValueSI = result.value
           resultValue = calc_output.toFixed(3)
           resultValueSI = calc_SI.toFixed(3)
-          resultLabel = `P₁ = ${resultValue} ${powerUnits.find(u => u.value === p1Unit)?.label}`
-          displayData = {
-            var1: formatExact(p2_SI!),      // P₂ (multiplied value)
-            var2: formatValue(v1_SI!, isConstantDiameter),      // N₁/D₁ (denominator)
-            var3: formatValue(v2_SI!, isConstantDiameter),      // N₂/D₂ (numerator)
-            var4: formatValue(v1_SI!, isConstantDiameter),      // N₁/D₁ (for display)
-            result: resultValue,
-            formula: 'power'
-          }
+          const finalUnit = powerUnits.find(u => u.value === p1Unit)?.label || ""
+          resultLabel = `P₁ = ${resultValue} ${finalUnit}`
+          displayData = { type: 'power', targetVariable: 'P₁', varMultiplier: 'P₂', varNum: `${symbol}₁`, varDenom: `${symbol}₂`, multiplier: formatExact(p2_SI!), num: formatValue(v1_SI!, isConstantDiameter), denom: formatValue(v2_SI!, isConstantDiameter), exponent: "3", result: resultValue, resultUnit: finalUnit }
         } else if (result.variable === 'v2') {
-          // Round RPM to whole number
           const calc_rounded = isConstantDiameter ? Math.round(parseFloat(result.value)) : parseFloat(result.value)
           fullResultValue = isConstantDiameter ? calc_rounded.toString() : result.value
           fullResultValueSI = fullResultValue
           resultValue = isConstantDiameter ? calc_rounded.toString() : calc_SI.toFixed(3)
           resultValueSI = resultValue
           resultLabel = isConstantDiameter ? `${symbol}₂ ≈ ${resultValue} ${unit}` : `${symbol}₂ = ${resultValue} ${unit}`
-          displayData = {
-            var1: formatExact(p2_SI!),      // P₂ (multiplied value)
-            var2: formatValue(v1_SI!, isConstantDiameter),      // N₁/D₁ (denominator)
-            var3: formatValue(v1_SI!, isConstantDiameter),      // N₁/D₁ (numerator)
-            var4: formatValue(v1_SI!, isConstantDiameter),      // N₁/D₁ (for display)
-            result: resultValue,
-            formula: 'rpm_cbrt'
-          }
+          displayData = { type: 'root', targetVariable: `${symbol}₂`, varMultiplier: `${symbol}₁`, varNum: 'P₂', varDenom: 'P₁', multiplier: formatValue(v1_SI!, isConstantDiameter), num: formatExact(p2_SI!), denom: formatExact(p1_SI!), exponent: "3", result: resultValue, resultUnit: unit }
         } else if (result.variable === 'v1') {
-          // Round RPM to whole number
           const calc_rounded = isConstantDiameter ? Math.round(parseFloat(result.value)) : parseFloat(result.value)
           fullResultValue = isConstantDiameter ? calc_rounded.toString() : result.value
           fullResultValueSI = fullResultValue
           resultValue = isConstantDiameter ? calc_rounded.toString() : calc_SI.toFixed(3)
           resultValueSI = resultValue
           resultLabel = isConstantDiameter ? `${symbol}₁ ≈ ${resultValue} ${unit}` : `${symbol}₁ = ${resultValue} ${unit}`
-          displayData = {
-            var1: formatExact(p1_SI!),      // P₁ (multiplied value)
-            var2: formatValue(v2_SI!, isConstantDiameter),      // N₂/D₂ (denominator)
-            var3: formatValue(v2_SI!, isConstantDiameter),      // N₂/D₂ (numerator)
-            var4: formatValue(v2_SI!, isConstantDiameter),      // N₂/D₂ (for display)
-            result: resultValue,
-            formula: 'rpm_cbrt'
-          }
+          displayData = { type: 'root', targetVariable: `${symbol}₁`, varMultiplier: `${symbol}₂`, varNum: 'P₁', varDenom: 'P₂', multiplier: formatValue(v2_SI!, isConstantDiameter), num: formatExact(p1_SI!), denom: formatExact(p2_SI!), exponent: "3", result: resultValue, resultUnit: unit }
         }
       }
     }
@@ -588,20 +391,15 @@ export default function PumpAffinityCalculator() {
       displayData
     })
 
-    // Scroll to result after a short delay
     setTimeout(() => {
       resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
     }, 100)
   }
 
   const copyResult = () => {
-    // Extract the value and unit from the label (e.g., "Q₂ = 150.000 m³/h")
     const labelParts = result.label.split(' = ')
     const valuePart = labelParts[1] || ''
-    
-    // Use reasonable precision for copy (8 decimal places)
     const displayValue = parseFloat(result.fullValue).toFixed(8)
-    // Extract unit from the label
     const unitMatch = valuePart.match(/[\d.]+\s*(.+)/)
     const unit = unitMatch ? unitMatch[1] : ''
     
@@ -615,7 +413,6 @@ export default function PumpAffinityCalculator() {
     })
   }
 
-  // Reset calculation when any input changes
   const resetCalculation = () => {
     if (result.calculated) {
       setResult({
@@ -636,6 +433,11 @@ export default function PumpAffinityCalculator() {
     }
   }
 
+  const MathPill = ({ children }: { children: React.ReactNode }) => (
+    <span className="bg-amber-100/80 text-amber-900 dark:bg-[#38260a] dark:text-[#eebb77] px-2 py-0.5 rounded text-[16px] font-mono mx-[2px] shadow-sm">
+      {children}
+    </span>
+  );
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -663,37 +465,74 @@ export default function PumpAffinityCalculator() {
         
         <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden flex flex-col">
           
-          <div className="flex">
-            <button
-              onClick={() => { setMode("CONSTANT_SPEED"); resetCalculation(); }}
-              className={`flex-1 py-3 text-sm font-bold uppercase tracking-wide border-r border-border transition-colors ${
-                mode === "CONSTANT_SPEED" 
-                  ? "bg-card text-blue-600 border-t-4 border-t-blue-600" 
-                  : "bg-muted text-muted-foreground hover:bg-card border-b border-border"
-              }`}
-            >
-              Constant Speed <span className="text-[10px] lowercase opacity-70">(Change Diameter)</span>
-            </button>
-            <button
-              onClick={() => { setMode("CONSTANT_DIAMETER"); resetCalculation(); }}
-              className={`flex-1 py-3 text-sm font-bold uppercase tracking-wide transition-colors ${
-                mode === "CONSTANT_DIAMETER" 
-                  ? "bg-card text-blue-600 border-t-4 border-t-blue-600" 
-                  : "bg-muted text-muted-foreground hover:bg-card border-b border-border"
-              }`}
-            >
-              Constant Diameter <span className="text-[10px] lowercase opacity-70">(Change Speed)</span>
-            </button>
+          {/* Mode Selector - High Contrast Segmented Control UI */}
+          <div className="p-3 md:p-4 bg-muted/40 border-b border-border">
+            <div className="flex flex-col sm:flex-row bg-muted/70 p-1.5 rounded-xl border border-border/50 shadow-inner gap-1">
+              <button
+                onClick={() => { setMode("CONSTANT_SPEED"); resetCalculation(); }}
+                className={`flex-1 py-3 px-2 rounded-lg flex flex-col items-center justify-center transition-all duration-300 ${
+                  mode === "CONSTANT_SPEED" 
+                    ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20 ring-1 ring-blue-500 md:scale-[1.02] z-10" 
+                    : "bg-transparent text-muted-foreground hover:text-foreground hover:bg-background/80"
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  {mode === "CONSTANT_SPEED" ? (
+                    <div className="w-2.5 h-2.5 rounded-full bg-white shadow-sm" />
+                  ) : (
+                    <div className="w-2.5 h-2.5 rounded-full border-[1.5px] border-muted-foreground/50" />
+                  )}
+                  <span className="text-sm font-black uppercase tracking-wider">Constant Speed</span>
+                </div>
+                <span className={`text-[11px] font-medium ${mode === "CONSTANT_SPEED" ? "text-blue-100" : "opacity-60"}`}>
+                  ( Solving for Change in Diameter - D )
+                </span>
+              </button>
+              
+              <button
+                onClick={() => { setMode("CONSTANT_DIAMETER"); resetCalculation(); }}
+                className={`flex-1 py-3 px-2 rounded-lg flex flex-col items-center justify-center transition-all duration-300 ${
+                  mode === "CONSTANT_DIAMETER" 
+                    ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20 ring-1 ring-blue-500 md:scale-[1.02] z-10" 
+                    : "bg-transparent text-muted-foreground hover:text-foreground hover:bg-background/80"
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  {mode === "CONSTANT_DIAMETER" ? (
+                    <div className="w-2.5 h-2.5 rounded-full bg-white shadow-sm" />
+                  ) : (
+                    <div className="w-2.5 h-2.5 rounded-full border-[1.5px] border-muted-foreground/50" />
+                  )}
+                  <span className="text-sm font-black uppercase tracking-wider">Constant Diameter</span>
+                </div>
+                <span className={`text-[11px] font-medium ${mode === "CONSTANT_DIAMETER" ? "text-blue-100" : "opacity-60"}`}>
+                  ( Solving for Change in Speed - N )
+                </span>
+              </button>
+            </div>
           </div>
 
           <div className="p-6 flex flex-col flex-1">
             
-            {/* Instructions Box */}
-            <div className="mb-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800 p-4">
-              <h4 className="font-bold text-foreground mb-2 uppercase text-sm">Instructions:</h4>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                Enter any 3 values. Leave the value you want to find empty. Click Calculate.
-              </p>
+            {/* Contextual Instructions Box */}
+            <div className="mb-5 bg-blue-50 dark:bg-blue-900/10 rounded-xl border border-blue-200 dark:border-blue-800/50 p-4 shadow-sm">
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 bg-blue-100 dark:bg-blue-900/50 p-1.5 rounded-md text-blue-600 dark:text-blue-400">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h4 className="font-bold text-blue-900 dark:text-blue-300 mb-1 uppercase text-sm tracking-wide">
+                    Active Mode: <span className="text-blue-600 dark:text-blue-400">{mode === "CONSTANT_SPEED" ? "Varying Impeller Diameter (D)" : "Varying Pump Speed (N)"}</span>
+                  </h4>
+                  <p className="text-blue-800/80 dark:text-blue-200/70 text-sm leading-relaxed">
+                    {mode === "CONSTANT_SPEED" 
+                      ? "You are evaluating the effect of trimming or changing the impeller diameter while keeping the RPM constant. Enter any 3 known values below to calculate the missing 4th value."
+                      : "You are evaluating the effect of changing the pump speed (RPM) while keeping the impeller diameter constant. Enter any 3 known values below to calculate the missing 4th value."}
+                  </p>
+                </div>
+              </div>
             </div>
 
             <Accordion type="single" value={activeSection} onValueChange={(value) => setActiveSection(value || "flow")} className="space-y-2 [&>*]:!border-b-0">
@@ -793,7 +632,6 @@ export default function PumpAffinityCalculator() {
                 </AccordionContent>
               </AccordionItem>
 
-
               {/* HEAD SECTION */}
               <AccordionItem value="head" className="border border-border rounded-lg px-4 bg-card [&:not(:last-child)]:mb-2">
                 <AccordionTrigger className="hover:no-underline">
@@ -801,11 +639,11 @@ export default function PumpAffinityCalculator() {
                 </AccordionTrigger>
                 <AccordionContent>
                   <div className="pt-4 space-y-4">
-                    <div className="grid grid-cols-2 gap- 4 w-full">
+                    <div className="grid grid-cols-2 gap-4 w-full">
                        {/* H1 with unit selector */}
                        <div>
                           <label className="text-xs font-bold mb-1 block">H₁:</label>
-                          <div className="flex gap- 2">
+                          <div className="flex gap-2">
                             <input 
                               type="number" 
                               value={h1} 
@@ -838,7 +676,7 @@ export default function PumpAffinityCalculator() {
                        {/* N1 - Fixed RPM */}
                        <div>
                           <label className="text-xs font-bold mb-1 block">{mode === "CONSTANT_DIAMETER" ? "N₁" : "D₁"}:</label>
-                          <div className="flex gap- 2">
+                          <div className="flex gap-2">
                             <input 
                               type="number" 
                               value={mode === "CONSTANT_DIAMETER" ? n1_head : d1_head} 
@@ -864,7 +702,7 @@ export default function PumpAffinityCalculator() {
                        {/* H2 with unit selector */}
                        <div>
                           <label className="text-xs font-bold mb-1 block">H₂:</label>
-                          <div className="flex gap- 2">
+                          <div className="flex gap-2">
                             <input 
                               type="number" 
                               value={h2} 
@@ -897,7 +735,7 @@ export default function PumpAffinityCalculator() {
                        {/* N2 - Fixed RPM */}
                        <div>
                           <label className="text-xs font-bold mb-1 block">{mode === "CONSTANT_DIAMETER" ? "N₂" : "D₂"}:</label>
-                          <div className="flex gap- 2">
+                          <div className="flex gap-2">
                             <input 
                               type="number" 
                               value={mode === "CONSTANT_DIAMETER" ? n2_head : d2_head} 
@@ -924,7 +762,6 @@ export default function PumpAffinityCalculator() {
                 </AccordionContent>
               </AccordionItem>
 
-
               {/* POWER SECTION */}
               <AccordionItem value="power" className="border border-border rounded-lg px-4 bg-card mb-1">
                 <AccordionTrigger className="hover:no-underline">
@@ -936,7 +773,7 @@ export default function PumpAffinityCalculator() {
                        {/* P1 with unit selector */}
                        <div>
                           <label className="text-xs font-bold mb-1 block">P₁:</label>
-                          <div className="flex gap- 2">
+                          <div className="flex gap-2">
                             <input 
                               type="number" 
                               value={p1} 
@@ -969,7 +806,7 @@ export default function PumpAffinityCalculator() {
                        {/* N1 - Fixed RPM */}
                        <div>
                           <label className="text-xs font-bold mb-1 block">{mode === "CONSTANT_DIAMETER" ? "N₁" : "D₁"}:</label>
-                          <div className="flex gap- 2">
+                          <div className="flex gap-2">
                             <input 
                               type="number" 
                               value={mode === "CONSTANT_DIAMETER" ? n1_power : d1_power} 
@@ -995,7 +832,7 @@ export default function PumpAffinityCalculator() {
                        {/* P2 with unit selector */}
                        <div>
                           <label className="text-xs font-bold mb-1 block">P₂:</label>
-                          <div className="flex gap- 2">
+                          <div className="flex gap-2">
                             <input 
                               type="number" 
                               value={p2} 
@@ -1028,7 +865,7 @@ export default function PumpAffinityCalculator() {
                        {/* N2 - Fixed RPM */}
                        <div>
                           <label className="text-xs font-bold mb-1 block">{mode === "CONSTANT_DIAMETER" ? "N₂" : "D₂"}:</label>
-                          <div className="flex gap- 2">
+                          <div className="flex gap-2">
                             <input 
                               type="number" 
                               value={mode === "CONSTANT_DIAMETER" ? n2_power : d2_power} 
@@ -1065,7 +902,6 @@ export default function PumpAffinityCalculator() {
             </button>
           </div>
         </div>
-
 
         {/* RIGHT PANEL - RESULTS */}
         <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden flex flex-col h-full relative">
@@ -1268,156 +1104,141 @@ export default function PumpAffinityCalculator() {
               </div>
             </div>
 
-            {/* Calculation Steps & Active Formula */}
-            <div className="bg-background rounded-lg border border-border overflow-hidden shadow-sm mb-4 flex flex-col">
+            {/* Mathematical Step-by-Step Calculation Block */}
+            <div className="bg-background rounded-lg border border-border overflow-hidden shadow-sm mb-4">
               <div className="bg-muted px-3 py-2 border-b border-border">
                 <h4 className="font-bold text-foreground uppercase text-xs">Step-by-Step Calculation</h4>
               </div>
               
-              {/* Dynamic Base Formula (Always visible based on active section) */}
-              <div className="bg-muted/30 p-5 flex justify-center border-b border-border">
-                 {activeSection === "flow" && (
-                   <div className="font-serif text-2xl flex items-center gap-3">
-                      <div className="flex flex-col items-center">
-                        <span className="border-b border-foreground px-1">Q₁</span>
-                        <span>Q₂</span>
-                      </div>
-                      <span>=</span>
-                      <div className="flex flex-col items-center">
-                        <span className="border-b border-foreground px-1">{mode === "CONSTANT_DIAMETER" ? "N₁" : "D₁"}</span>
-                        <span>{mode === "CONSTANT_DIAMETER" ? "N₂" : "D₂"}</span>
-                      </div>
-                   </div>
-                 )}
-                 {activeSection === "head" && (
-                   <div className="font-serif text-2xl flex items-center gap-3">
-                      <div className="flex flex-col items-center">
-                        <span className="border-b border-foreground px-1">H₁</span>
-                        <span>H₂</span>
-                      </div>
-                      <span>=</span>
-                      <div className="flex items-center">
-                        <span className="text-4xl text-muted-foreground font-light">(</span>
-                        <div className="flex flex-col items-center">
-                          <span className="border-b border-foreground px-1">{mode === "CONSTANT_DIAMETER" ? "N₁" : "D₁"}</span>
-                          <span>{mode === "CONSTANT_DIAMETER" ? "N₂" : "D₂"}</span>
-                        </div>
-                        <span className="text-4xl text-muted-foreground font-light">)</span>
-                        <sup className="text-sm font-bold mb-6">2</sup>
-                      </div>
-                   </div>
-                 )}
-                 {activeSection === "power" && (
-                   <div className="font-serif text-2xl flex items-center gap-3">
-                      <div className="flex flex-col items-center">
-                        <span className="border-b border-foreground px-1">P₁</span>
-                        <span>P₂</span>
-                      </div>
-                      <span>=</span>
-                      <div className="flex items-center">
-                        <span className="text-4xl text-muted-foreground font-light">(</span>
-                        <div className="flex flex-col items-center">
-                          <span className="border-b border-foreground px-1">{mode === "CONSTANT_DIAMETER" ? "N₁" : "D₁"}</span>
-                          <span>{mode === "CONSTANT_DIAMETER" ? "N₂" : "D₂"}</span>
-                        </div>
-                        <span className="text-4xl text-muted-foreground font-light">)</span>
-                        <sup className="text-sm font-bold mb-6">3</sup>
-                      </div>
-                   </div>
-                 )}
-              </div>
-
-              {/* Dynamic Steps Grid (Only visible after calculation) */}
               {result.calculated && result.displayData ? (
-                <div className="p-6 overflow-x-auto">
-                  <div className="grid grid-cols-[auto_auto_1fr] items-center gap-y-5 gap-x-4 font-serif text-lg min-w-max">
-                    {/* Flow Rate Formulas */}
-                    {(result.displayData.formula === 'flow' || result.displayData.formula === 'rpm') && (
+                <div className="p-6 overflow-x-auto flex justify-center w-full">
+                  <div className="grid grid-cols-[minmax(0,auto)_auto_minmax(0,1fr)] items-center gap-y-4 gap-x-4 font-serif text-xl min-w-max">
+                    
+                    {/* Simple Fraction Block */}
+                    {result.displayData.type === 'simple_fraction' && (
                       <>
-                        {/* Step 1: Substitution */}
-                        <span className="font-bold text-right whitespace-nowrap">
-                          {result.displayData.formula === 'flow' ? 'Q₂' : (mode === "CONSTANT_DIAMETER" ? 'N₂' : 'D₂')}
-                        </span>
-                        <span className="text-center">=</span>
+                        {/* Step 1: Variable Formula */}
+                        <div className="font-bold text-right pr-2">{result.displayData.targetVariable}</div>
+                        <div className="text-center px-2 text-2xl">=</div>
                         <div className="flex flex-col items-center justify-self-start">
-                          <span className="border-b-2 border-foreground px-4 pb-1 text-base whitespace-nowrap">
-                            <span className="bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1.5 py-0.5 rounded">{result.displayData.var1}</span>
-                            {" × "}
-                            <span className="bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1.5 py-0.5 rounded">{result.displayData.var4}</span>
+                          <span className="border-b-[3px] border-foreground px-6 pb-2 text-lg whitespace-nowrap flex items-center font-bold">
+                            <span>{result.displayData.varNum1}</span>
+                            <span className="mx-2 text-base font-sans opacity-70">×</span>
+                            <span>{result.displayData.varNum2}</span>
                           </span>
-                          <span className="pt-1 text-base whitespace-nowrap">
-                            <span className="bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1.5 py-0.5 rounded">{result.displayData.var2}</span>
+                          <span className="pt-2 text-lg whitespace-nowrap font-bold">
+                            <span>{result.displayData.varDenom}</span>
                           </span>
                         </div>
-                        
-                        {/* Step 2: Final Result */}
-                        <span></span>
-                        <span className="text-center font-bold">≈</span>
-                        <span className="font-bold text-xl justify-self-start">{result.displayData.result}</span>
+
+                        {/* Step 2: Substituted Numbers */}
+                        <div></div>
+                        <div className="text-center px-2 text-2xl">=</div>
+                        <div className="flex flex-col items-center justify-self-start">
+                          <span className="border-b-[3px] border-foreground px-6 pb-2 text-lg whitespace-nowrap flex items-center">
+                            <MathPill>{result.displayData.num1}</MathPill>
+                            <span className="mx-2 text-base font-sans opacity-70">×</span>
+                            <MathPill>{result.displayData.num2}</MathPill>
+                          </span>
+                          <span className="pt-2 text-lg whitespace-nowrap">
+                            <MathPill>{result.displayData.denom}</MathPill>
+                          </span>
+                        </div>
                       </>
                     )}
 
-                    {/* Head Formulas */}
-                    {(result.displayData.formula === 'head' || result.displayData.formula === 'rpm_sqrt') && (
+                    {/* Power Formula Block */}
+                    {result.displayData.type === 'power' && (
                       <>
-                        {/* Step 1: Substitution */}
-                        <span className="font-bold text-right whitespace-nowrap">
-                          {result.displayData.formula === 'head' ? 'H₂' : (mode === "CONSTANT_DIAMETER" ? 'N₂' : 'D₂')}
-                        </span>
-                        <span className="text-center">=</span>
-                        <div className="flex items-center justify-self-start">
-                          <span className="bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1.5 py-0.5 rounded text-base">{result.displayData.var1}</span>
-                          <span className="mx-2">×</span>
-                          <span className="text-4xl text-muted-foreground font-light">(</span>
+                        {/* Step 1: Variable Formula */}
+                        <div className="font-bold text-right pr-2">{result.displayData.targetVariable}</div>
+                        <div className="text-center px-2 text-2xl">=</div>
+                        <div className="flex items-center justify-self-start font-bold">
+                          <span>{result.displayData.varMultiplier}</span>
+                          <span className="mx-3 text-base font-sans opacity-70">×</span>
+                          <span className="text-[40px] text-muted-foreground font-light mr-1 leading-none mb-2">(</span>
                           <div className="flex flex-col items-center">
-                            <span className="border-b-2 border-foreground px-2 pb-1 text-base whitespace-nowrap">
-                              <span className="bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1.5 py-0.5 rounded">{result.displayData.var3}</span>
+                            <span className="border-b-[3px] border-foreground px-4 pb-1.5 text-lg whitespace-nowrap">
+                              <span>{result.displayData.varNum}</span>
                             </span>
-                            <span className="pt-1 text-base whitespace-nowrap">
-                              <span className="bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1.5 py-0.5 rounded">{result.displayData.var4}</span>
+                            <span className="pt-1.5 text-lg whitespace-nowrap">
+                              <span>{result.displayData.varDenom}</span>
                             </span>
                           </div>
-                          <span className="text-4xl text-muted-foreground font-light">)</span>
-                          <sup className="text-sm font-bold -ml-1" style={{verticalAlign: 'super'}}>2</sup>
+                          <span className="text-[40px] text-muted-foreground font-light ml-1 leading-none mb-2">)</span>
+                          <sup className="text-base font-bold -ml-1 mt-[-30px]">{result.displayData.exponent}</sup>
                         </div>
-                        
-                        {/* Step 2: Final Result */}
-                        <span></span>
-                        <span className="text-center font-bold">≈</span>
-                        <span className="font-bold text-xl justify-self-start">{result.displayData.result}</span>
+
+                        {/* Step 2: Substituted Numbers */}
+                        <div></div>
+                        <div className="text-center px-2 text-2xl">=</div>
+                        <div className="flex items-center justify-self-start">
+                          <MathPill>{result.displayData.multiplier}</MathPill>
+                          <span className="mx-3 text-base font-sans opacity-70">×</span>
+                          <span className="text-[40px] text-muted-foreground font-light mr-1 leading-none mb-2">(</span>
+                          <div className="flex flex-col items-center">
+                            <span className="border-b-[3px] border-foreground px-4 pb-1.5 text-lg whitespace-nowrap">
+                              <MathPill>{result.displayData.num}</MathPill>
+                            </span>
+                            <span className="pt-1.5 text-lg whitespace-nowrap">
+                              <MathPill>{result.displayData.denom}</MathPill>
+                            </span>
+                          </div>
+                          <span className="text-[40px] text-muted-foreground font-light ml-1 leading-none mb-2">)</span>
+                          <sup className="text-base font-bold -ml-1 mt-[-30px]">{result.displayData.exponent}</sup>
+                        </div>
                       </>
                     )}
 
-                    {/* Power Formulas */}
-                    {(result.displayData.formula === 'power' || result.displayData.formula === 'rpm_cbrt') && (
+                    {/* Root Formula Block */}
+                    {result.displayData.type === 'root' && (
                       <>
-                        {/* Step 1: Substitution */}
-                        <span className="font-bold text-right whitespace-nowrap">
-                          {result.displayData.formula === 'power' ? 'P₂' : (mode === "CONSTANT_DIAMETER" ? 'N₂' : 'D₂')}
-                        </span>
-                        <span className="text-center">=</span>
-                        <div className="flex items-center justify-self-start">
-                          <span className="bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1.5 py-0.5 rounded text-base">{result.displayData.var1}</span>
-                          <span className="mx-2">×</span>
-                          <span className="text-4xl text-muted-foreground font-light">(</span>
+                        {/* Step 1: Variable Formula */}
+                        <div className="font-bold text-right pr-2">{result.displayData.targetVariable}</div>
+                        <div className="text-center px-2 text-2xl">=</div>
+                        <div className="flex items-center justify-self-start font-bold">
+                          <span>{result.displayData.varMultiplier}</span>
+                          <span className="mx-3 text-base font-sans opacity-70">×</span>
+                          <span className="text-[40px] text-muted-foreground font-light mr-1 leading-none mb-2">(</span>
                           <div className="flex flex-col items-center">
-                            <span className="border-b-2 border-foreground px-2 pb-1 text-base whitespace-nowrap">
-                              <span className="bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1.5 py-0.5 rounded">{result.displayData.var3}</span>
+                            <span className="border-b-[3px] border-foreground px-4 pb-1.5 text-lg whitespace-nowrap">
+                              <span>{result.displayData.varNum}</span>
                             </span>
-                            <span className="pt-1 text-base whitespace-nowrap">
-                              <span className="bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1.5 py-0.5 rounded">{result.displayData.var4}</span>
+                            <span className="pt-1.5 text-lg whitespace-nowrap">
+                              <span>{result.displayData.varDenom}</span>
                             </span>
                           </div>
-                          <span className="text-4xl text-muted-foreground font-light">)</span>
-                          <sup className="text-sm font-bold -ml-1" style={{verticalAlign: 'super'}}>3</sup>
+                          <span className="text-[40px] text-muted-foreground font-light ml-1 leading-none mb-2">)</span>
+                          <sup className="text-sm font-bold -ml-1 mt-[-30px]">1/{result.displayData.exponent}</sup>
                         </div>
-                        
-                        {/* Step 2: Final Result */}
-                        <span></span>
-                        <span className="text-center font-bold">≈</span>
-                        <span className="font-bold text-xl justify-self-start">{result.displayData.result}</span>
+
+                        {/* Step 2: Substituted Numbers */}
+                        <div></div>
+                        <div className="text-center px-2 text-2xl">=</div>
+                        <div className="flex items-center justify-self-start">
+                          <MathPill>{result.displayData.multiplier}</MathPill>
+                          <span className="mx-3 text-base font-sans opacity-70">×</span>
+                          <span className="text-[40px] text-muted-foreground font-light mr-1 leading-none mb-2">(</span>
+                          <div className="flex flex-col items-center">
+                            <span className="border-b-[3px] border-foreground px-4 pb-1.5 text-lg whitespace-nowrap">
+                              <MathPill>{result.displayData.num}</MathPill>
+                            </span>
+                            <span className="pt-1.5 text-lg whitespace-nowrap">
+                              <MathPill>{result.displayData.denom}</MathPill>
+                            </span>
+                          </div>
+                          <span className="text-[40px] text-muted-foreground font-light ml-1 leading-none mb-2">)</span>
+                          <sup className="text-sm font-bold -ml-1 mt-[-30px]">1/{result.displayData.exponent}</sup>
+                        </div>
                       </>
                     )}
+
+                    {/* Final Result Evaluation Row */}
+                    <div></div>
+                    <div className="text-center px-2 font-bold text-2xl mt-4">≈</div>
+                    <div className="font-bold text-[22px] justify-self-start mt-4 tracking-tight">
+                      {result.displayData.result} <span className="font-sans opacity-90">{result.displayData.resultUnit}</span>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -1430,9 +1251,9 @@ export default function PumpAffinityCalculator() {
               )}
             </div>
 
-            {/* Result Display - Horizontal Layout */}
+            {/* Final Result Container */}
             <div className="mt-auto" ref={resultRef}>
-              <div className={`rounded-lg px-6 py-4 text-white shadow-lg transition-all duration-500 relative ${result.calculated ? "bg-gradient-to-br from-green-500 to-green-600" : "bg-muted"}`}>
+              <div className={`rounded-lg px-6 py-4 text-white shadow-lg transition-all duration-500 relative ${result.calculated ? "bg-[#0eb947]" : "bg-muted"}`}>
                  {result.calculated && (
                    <button
                      onClick={copyResult}
@@ -1447,13 +1268,13 @@ export default function PumpAffinityCalculator() {
                    <div className="flex items-center justify-center gap-4 overflow-hidden">
                      <div className="w-12 h-12 rounded-full border-4 border-white flex items-center justify-center flex-shrink-0">
                        <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
                        </svg>
                      </div>
                      
                      <div className="flex items-center gap-3 min-w-0 flex-1">
                        <h2 className="text-xl font-bold uppercase opacity-90 whitespace-nowrap">Result:</h2>
-                       <div className="text-3xl font-black truncate min-w-0" title={result.label}>
+                       <div className="text-[28px] font-black truncate min-w-0 tracking-tight" title={result.label}>
                          {result.label}
                        </div>
                      </div>
