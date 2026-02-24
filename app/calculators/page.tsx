@@ -96,6 +96,23 @@ export default function CalculatorsPage() {
           {/* Calculator Grid */}
           {filteredCalculators.length > 0 ? (
             <>
+              {/* Section label for primary results when searching */}
+              {searchQuery.trim() && (
+                <div className="mb-6 flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+                    <Calculator className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground">
+                      Results from Calculators
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      Found {filteredCalculators.length} {filteredCalculators.length === 1 ? "match" : "matches"} in calculators
+                    </p>
+                  </div>
+                </div>
+              )}
+              
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {filteredCalculators.map((calc) => {
                   const Icon = calc.icon

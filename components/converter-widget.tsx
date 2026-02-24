@@ -18,8 +18,15 @@ const presets = [
   { id: "all", label: "All" },
   { id: "flow", label: "Flow" },
   { id: "gas", label: "Gas" },
+  { id: "mass-flow", label: "Mass Flow" },
   { id: "pressure", label: "Pressure" },
+  { id: "head", label: "Head" },
+  { id: "npsh", label: "NPSH" },
   { id: "temperature", label: "Temperature" },
+  { id: "power", label: "Power" },
+  { id: "density", label: "Density" },
+  { id: "viscosity-dynamic", label: "Dynamic Viscosity" },
+  { id: "viscosity-kinematic", label: "Kinematic Viscosity" },
   { id: "mass", label: "Mass" },
   { id: "length", label: "Length" },
   { id: "volume", label: "Volume" },
@@ -36,19 +43,33 @@ const unitsByPreset: Record<string, { value: string; label: string; factor: numb
   ],
   flow: [
     { value: "m3h", label: "m³/hour", factor: 1 },
+    { value: "m3s", label: "m³/second", factor: 3600 },
+    { value: "ls", label: "L/s", factor: 3.6 },
+    { value: "lmin", label: "L/min (LPM)", factor: 0.06 },
     { value: "lh", label: "L/h", factor: 0.001 },
-    { value: "lmin", label: "L/min", factor: 0.06 },
-    { value: "bblh", label: "BBL/h (US Barrel/h)", factor: 0.158987 },
-    { value: "gph", label: "GPH (US Gallon/h)", factor: 0.00378541 },
     { value: "gpm", label: "GPM (US Gallon/min)", factor: 0.227125 },
+    { value: "gph", label: "GPH (US Gallon/h)", factor: 0.00378541 },
+    { value: "bblday", label: "bbl/day (BPD)", factor: 0.0066245 },
+    { value: "bblh", label: "bbl/h (US Barrel/h)", factor: 0.158987 },
+    { value: "cfm", label: "CFM", factor: 1.69901 },
   ],
   gas: [
-    { value: "nm3h", label: "Nm³/h (Normal)", factor: 1 },
-    { value: "nm3min", label: "Nm³/min", factor: 60 },
-    { value: "m3h_std", label: "m³/h (Standard)", factor: 1.0549 },
-    { value: "m3min_std", label: "m³/min", factor: 63.294 },
-    { value: "scfh", label: "SCFH", factor: 0.0268391 },
-    { value: "scfm", label: "SCFM", factor: 1.61035 },
+    { value: "sm3h", label: "Sm³/h (Standard)", factor: 1 },
+    { value: "nm3h", label: "Nm³/h (Normal)", factor: 1.0549 },
+    { value: "nm3min", label: "Nm³/min", factor: 63.294 },
+    { value: "scfh", label: "SCFH", factor: 35.3147 },
+    { value: "scfm", label: "SCFM", factor: 2118.88 },
+    { value: "mmscfd", label: "MMSCFD", factor: 1179.87 },
+  ],
+  "mass-flow": [
+    { value: "kgh", label: "kg/h", factor: 1 },
+    { value: "kgs", label: "kg/s", factor: 3600 },
+    { value: "gs", label: "g/s", factor: 3.6 },
+    { value: "gh", label: "g/h", factor: 0.001 },
+    { value: "lbh", label: "lb/h", factor: 0.453592 },
+    { value: "lbs", label: "lb/s", factor: 1632.93 },
+    { value: "tonh", label: "ton/h", factor: 1000 },
+    { value: "tonday", label: "ton/day", factor: 41.6667 },
   ],
   pressure: [
     { value: "mpa", label: "MPa", factor: 1000000 },
@@ -62,10 +83,56 @@ const unitsByPreset: Record<string, { value: string; label: string; factor: numb
     { value: "mmhg", label: "mmHg", factor: 133.322 },
     { value: "psi", label: "psi", factor: 6894.76 },
   ],
+  head: [
+    { value: "m", label: "Meters", factor: 1 },
+    { value: "ft", label: "Feet", factor: 0.3048 },
+    { value: "mh2o", label: "m H2O", factor: 1 },
+    { value: "fth2o", label: "ft H2O", factor: 0.3048 },
+  ],
+  npsh: [
+    { value: "m", label: "Meters", factor: 1 },
+    { value: "ft", label: "Feet", factor: 0.3048 },
+    { value: "mh2o", label: "m H2O", factor: 1 },
+    { value: "fth2o", label: "ft H2O", factor: 0.3048 },
+  ],
   temperature: [
     { value: "c", label: "Celsius (°C)", factor: 1 },
     { value: "f", label: "Fahrenheit (°F)", factor: 1 },
     { value: "k", label: "Kelvin (K)", factor: 1 },
+    { value: "r", label: "Rankine (°R)", factor: 1 },
+  ],
+  power: [
+    { value: "w", label: "Watt", factor: 0.001 },
+    { value: "kw", label: "Kilowatt", factor: 1 },
+    { value: "mw", label: "Megawatt", factor: 1000 },
+    { value: "hp", label: "Horsepower (Imperial)", factor: 0.7457 },
+    { value: "bhp", label: "Brake Horsepower", factor: 0.7457 },
+    { value: "whp", label: "Water Horsepower", factor: 0.7457 },
+    { value: "ps", label: "Pferdestärke (Metric HP)", factor: 0.7355 },
+    { value: "btuh", label: "BTU/h", factor: 0.00029307 },
+  ],
+  density: [
+    { value: "kgm3", label: "kg/m³", factor: 1 },
+    { value: "gcm3", label: "g/cm³", factor: 1000 },
+    { value: "gml", label: "g/ml", factor: 1000 },
+    { value: "gl", label: "g/L", factor: 1 },
+    { value: "lbft3", label: "lb/ft³", factor: 16.0185 },
+    { value: "lbgalus", label: "lb/gal US", factor: 119.8264 },
+    { value: "lbgaluk", label: "lb/gal UK", factor: 99.7764 },
+    { value: "sg", label: "SG (Specific Gravity)", factor: 1000 },
+  ],
+  "viscosity-dynamic": [
+    { value: "pas", label: "Pa·s", factor: 1 },
+    { value: "mpas", label: "mPa·s", factor: 0.001 },
+    { value: "cp", label: "cP (Centipoise)", factor: 0.001 },
+    { value: "p", label: "P (Poise)", factor: 0.1 },
+    { value: "dp", label: "dP (Decipoise)", factor: 0.01 },
+  ],
+  "viscosity-kinematic": [
+    { value: "cst", label: "cSt (Centistokes)", factor: 1 },
+    { value: "mm2s", label: "mm²/s", factor: 1 },
+    { value: "st", label: "St (Stokes)", factor: 100 },
+    { value: "m2s", label: "m²/s", factor: 1000000 },
   ],
   mass: [
     { value: "mcg", label: "Microgram", factor: 0.000001 },
@@ -253,18 +320,41 @@ export function ConverterWidget() {
   const handlePresetChange = (presetId: string) => {
     setActivePreset(presetId)
     const newUnits = unitsByPreset[presetId] || unitsByPreset.all
+    
+    // Set appropriate default units for each preset
     if (presetId === "flow") {
       setFromUnit("m3h")
-      setToUnit("lh")
+      setToUnit("lmin")
     } else if (presetId === "gas") {
-      setFromUnit("nm3h")
+      setFromUnit("sm3h")
       setToUnit("scfh")
+    } else if (presetId === "mass-flow") {
+      setFromUnit("kgh")
+      setToUnit("lbh")
     } else if (presetId === "pressure") {
       setFromUnit("bar")
       setToUnit("psi")
+    } else if (presetId === "head") {
+      setFromUnit("m")
+      setToUnit("ft")
+    } else if (presetId === "npsh") {
+      setFromUnit("m")
+      setToUnit("ft")
     } else if (presetId === "temperature") {
       setFromUnit("c")
       setToUnit("f")
+    } else if (presetId === "power") {
+      setFromUnit("kw")
+      setToUnit("hp")
+    } else if (presetId === "density") {
+      setFromUnit("kgm3")
+      setToUnit("sg")
+    } else if (presetId === "viscosity-dynamic") {
+      setFromUnit("pas")
+      setToUnit("cp")
+    } else if (presetId === "viscosity-kinematic") {
+      setFromUnit("cst")
+      setToUnit("mm2s")
     } else {
       setFromUnit(newUnits[0]?.value || "")
       setToUnit(newUnits[1]?.value || newUnits[0]?.value || "")
