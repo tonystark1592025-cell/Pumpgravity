@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useRef } from "react"
@@ -6,7 +7,7 @@ import { Footer } from "@/components/footer"
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
-import { Copy, Check } from "lucide-react"
+import { Copy, Check, ChevronDown } from "lucide-react"
 import { 
   convertToSI, 
   convertFromSI, 
@@ -27,6 +28,7 @@ export default function PumpAffinityCalculator() {
   const [mode, setMode] = useState<LawMode>("CONSTANT_DIAMETER")
   const [activeSection, setActiveSection] = useState<string>("flow")
   const [copied, setCopied] = useState(false)
+  const [showStep1, setShowStep1] = useState(false)
 
   // Flow section states with units (for CONSTANT_DIAMETER mode - uses N)
   const [q1, setQ1] = useState<string>("")
@@ -108,6 +110,14 @@ export default function PumpAffinityCalculator() {
       exponent?: string
       result?: string
       resultUnit?: string
+      conversions?: string[]
+      baseFormula?: {
+        leftNum: string
+        leftDenom: string
+        rightNum: string
+        rightDenom: string
+        exponent?: string
+      }
     }
   }>({
     value: "", 
@@ -145,6 +155,7 @@ export default function PumpAffinityCalculator() {
     let fullResultValueSI = ""
     let resultLabel = ""
     let displayData: any = {}
+    let conversionsList: string[] = []
 
     // Determine which values to use based on mode
     const isConstantDiameter = mode === "CONSTANT_DIAMETER"
@@ -183,8 +194,12 @@ export default function PumpAffinityCalculator() {
       const v1_SI = v1_input 
       const v2_SI = v2_input 
 
-      steps.push("Step 1: Converted inputs to SI units")
+      if (q1_input !== null) conversionsList.push(`Q₁ = ${q1_input} ${flowUnits.find(u=>u.value===q1Unit)?.label} = ${parseFloat(q1_SI!.toString()).toFixed(4)} m³/h`)
+      if (q2_input !== null) conversionsList.push(`Q₂ = ${q2_input} ${flowUnits.find(u=>u.value===q2Unit)?.label} = ${parseFloat(q2_SI!.toString()).toFixed(4)} m³/h`)
+      if (v1_input !== null) conversionsList.push(`${symbol}₁ = ${v1_input} ${unit}`)
+      if (v2_input !== null) conversionsList.push(`${symbol}₂ = ${v2_input} ${unit}`)
 
+      const baseFlow = { leftNum: 'Q₁', leftDenom: 'Q₂', rightNum: `${symbol}₁`, rightDenom: `${symbol}₂` }
       const result = calculateFlowRate(q1_SI, q2_SI, v1_SI, v2_SI)
       
       if (result) {
@@ -198,7 +213,7 @@ export default function PumpAffinityCalculator() {
           resultValueSI = parseFloat(result.value).toFixed(3)
           const finalUnit = flowUnits.find(u => u.value === q2Unit)?.label || ""
           resultLabel = `Q₂ = ${resultValue} ${finalUnit}`
-          displayData = { type: 'simple_fraction', targetVariable: 'Q₂', varNum1: 'Q₁', varNum2: `${symbol}₂`, varDenom: `${symbol}₁`, num1: formatExact(q1_SI!), num2: formatValue(v2_SI!, isConstantDiameter), denom: formatValue(v1_SI!, isConstantDiameter), result: resultValue, resultUnit: finalUnit }
+          displayData = { type: 'simple_fraction', targetVariable: 'Q₂', varNum1: 'Q₁', varNum2: `${symbol}₂`, varDenom: `${symbol}₁`, num1: formatExact(q1_SI!), num2: formatValue(v2_SI!, isConstantDiameter), denom: formatValue(v1_SI!, isConstantDiameter), result: resultValue, resultUnit: finalUnit, baseFormula: baseFlow, conversions: conversionsList }
         } else if (result.variable === 'q1') {
           const calc_output = convertFromSI(calc_SI, q1Unit, 'flow')
           fullResultValue = calc_output.toString()
@@ -207,7 +222,7 @@ export default function PumpAffinityCalculator() {
           resultValueSI = parseFloat(result.value).toFixed(3)
           const finalUnit = flowUnits.find(u => u.value === q1Unit)?.label || ""
           resultLabel = `Q₁ = ${resultValue} ${finalUnit}`
-          displayData = { type: 'simple_fraction', targetVariable: 'Q₁', varNum1: 'Q₂', varNum2: `${symbol}₁`, varDenom: `${symbol}₂`, num1: formatExact(q2_SI!), num2: formatValue(v1_SI!, isConstantDiameter), denom: formatValue(v2_SI!, isConstantDiameter), result: resultValue, resultUnit: finalUnit }
+          displayData = { type: 'simple_fraction', targetVariable: 'Q₁', varNum1: 'Q₂', varNum2: `${symbol}₁`, varDenom: `${symbol}₂`, num1: formatExact(q2_SI!), num2: formatValue(v1_SI!, isConstantDiameter), denom: formatValue(v2_SI!, isConstantDiameter), result: resultValue, resultUnit: finalUnit, baseFormula: baseFlow, conversions: conversionsList }
         } else if (result.variable === 'v2') {
           const calc_rounded = isConstantDiameter ? Math.round(parseFloat(result.value)) : parseFloat(result.value)
           fullResultValue = isConstantDiameter ? calc_rounded.toString() : result.value
@@ -215,7 +230,7 @@ export default function PumpAffinityCalculator() {
           resultValue = isConstantDiameter ? calc_rounded.toString() : parseFloat(result.value).toFixed(3)
           resultValueSI = resultValue
           resultLabel = isConstantDiameter ? `${symbol}₂ ≈ ${resultValue} ${unit}` : `${symbol}₂ = ${resultValue} ${unit}`
-          displayData = { type: 'simple_fraction', targetVariable: `${symbol}₂`, varNum1: `${symbol}₁`, varNum2: 'Q₂', varDenom: 'Q₁', num1: formatValue(v1_SI!, isConstantDiameter), num2: formatExact(q2_SI!), denom: formatExact(q1_SI!), result: resultValue, resultUnit: unit }
+          displayData = { type: 'simple_fraction', targetVariable: `${symbol}₂`, varNum1: `${symbol}₁`, varNum2: 'Q₂', varDenom: 'Q₁', num1: formatValue(v1_SI!, isConstantDiameter), num2: formatExact(q2_SI!), denom: formatExact(q1_SI!), result: resultValue, resultUnit: unit, baseFormula: baseFlow, conversions: conversionsList }
         } else if (result.variable === 'v1') {
           const calc_rounded = isConstantDiameter ? Math.round(parseFloat(result.value)) : parseFloat(result.value)
           fullResultValue = isConstantDiameter ? calc_rounded.toString() : result.value
@@ -223,7 +238,7 @@ export default function PumpAffinityCalculator() {
           resultValue = isConstantDiameter ? calc_rounded.toString() : parseFloat(result.value).toFixed(3)
           resultValueSI = resultValue
           resultLabel = isConstantDiameter ? `${symbol}₁ ≈ ${resultValue} ${unit}` : `${symbol}₁ = ${resultValue} ${unit}`
-          displayData = { type: 'simple_fraction', targetVariable: `${symbol}₁`, varNum1: `${symbol}₂`, varNum2: 'Q₁', varDenom: 'Q₂', num1: formatValue(v2_SI!, isConstantDiameter), num2: formatExact(q1_SI!), denom: formatExact(q2_SI!), result: resultValue, resultUnit: unit }
+          displayData = { type: 'simple_fraction', targetVariable: `${symbol}₁`, varNum1: `${symbol}₂`, varNum2: 'Q₁', varDenom: 'Q₂', num1: formatValue(v2_SI!, isConstantDiameter), num2: formatExact(q1_SI!), denom: formatExact(q2_SI!), result: resultValue, resultUnit: unit, baseFormula: baseFlow, conversions: conversionsList }
         }
       }
     }
@@ -259,8 +274,12 @@ export default function PumpAffinityCalculator() {
       const v1_SI = v1_input 
       const v2_SI = v2_input 
 
-      steps.push("Step 1: Converted inputs to SI units")
+      if (h1_input !== null) conversionsList.push(`H₁ = ${h1_input} ${headUnits.find(u=>u.value===h1Unit)?.label} = ${parseFloat(h1_SI!.toString()).toFixed(4)} m`)
+      if (h2_input !== null) conversionsList.push(`H₂ = ${h2_input} ${headUnits.find(u=>u.value===h2Unit)?.label} = ${parseFloat(h2_SI!.toString()).toFixed(4)} m`)
+      if (v1_input !== null) conversionsList.push(`${symbol}₁ = ${v1_input} ${unit}`)
+      if (v2_input !== null) conversionsList.push(`${symbol}₂ = ${v2_input} ${unit}`)
 
+      const baseHead = { leftNum: 'H₁', leftDenom: 'H₂', rightNum: `${symbol}₁`, rightDenom: `${symbol}₂`, exponent: "2" }
       const result = calculateHead(h1_SI, h2_SI, v1_SI, v2_SI)
       
       if (result) {
@@ -274,7 +293,7 @@ export default function PumpAffinityCalculator() {
           resultValueSI = calc_SI.toFixed(3)
           const finalUnit = headUnits.find(u => u.value === h2Unit)?.label || ""
           resultLabel = `H₂ = ${resultValue} ${finalUnit}`
-          displayData = { type: 'power', targetVariable: 'H₂', varMultiplier: 'H₁', varNum: `${symbol}₂`, varDenom: `${symbol}₁`, multiplier: formatExact(h1_SI!), num: formatValue(v2_SI!, isConstantDiameter), denom: formatValue(v1_SI!, isConstantDiameter), exponent: "2", result: resultValue, resultUnit: finalUnit }
+          displayData = { type: 'power', targetVariable: 'H₂', varMultiplier: 'H₁', varNum: `${symbol}₂`, varDenom: `${symbol}₁`, multiplier: formatExact(h1_SI!), num: formatValue(v2_SI!, isConstantDiameter), denom: formatValue(v1_SI!, isConstantDiameter), exponent: "2", result: resultValue, resultUnit: finalUnit, baseFormula: baseHead, conversions: conversionsList }
         } else if (result.variable === 'h1') {
           const calc_output = convertFromSI(calc_SI, h1Unit, 'head')
           fullResultValue = calc_output.toString()
@@ -283,7 +302,7 @@ export default function PumpAffinityCalculator() {
           resultValueSI = calc_SI.toFixed(3)
           const finalUnit = headUnits.find(u => u.value === h1Unit)?.label || ""
           resultLabel = `H₁ = ${resultValue} ${finalUnit}`
-          displayData = { type: 'power', targetVariable: 'H₁', varMultiplier: 'H₂', varNum: `${symbol}₁`, varDenom: `${symbol}₂`, multiplier: formatExact(h2_SI!), num: formatValue(v1_SI!, isConstantDiameter), denom: formatValue(v2_SI!, isConstantDiameter), exponent: "2", result: resultValue, resultUnit: finalUnit }
+          displayData = { type: 'power', targetVariable: 'H₁', varMultiplier: 'H₂', varNum: `${symbol}₁`, varDenom: `${symbol}₂`, multiplier: formatExact(h2_SI!), num: formatValue(v1_SI!, isConstantDiameter), denom: formatValue(v2_SI!, isConstantDiameter), exponent: "2", result: resultValue, resultUnit: finalUnit, baseFormula: baseHead, conversions: conversionsList }
         } else if (result.variable === 'v2') {
           const calc_rounded = isConstantDiameter ? Math.round(parseFloat(result.value)) : parseFloat(result.value)
           fullResultValue = isConstantDiameter ? calc_rounded.toString() : result.value
@@ -291,7 +310,7 @@ export default function PumpAffinityCalculator() {
           resultValue = isConstantDiameter ? calc_rounded.toString() : calc_SI.toFixed(3)
           resultValueSI = resultValue
           resultLabel = isConstantDiameter ? `${symbol}₂ ≈ ${resultValue} ${unit}` : `${symbol}₂ = ${resultValue} ${unit}`
-          displayData = { type: 'root', targetVariable: `${symbol}₂`, varMultiplier: `${symbol}₁`, varNum: 'H₂', varDenom: 'H₁', multiplier: formatValue(v1_SI!, isConstantDiameter), num: formatExact(h2_SI!), denom: formatExact(h1_SI!), exponent: "2", result: resultValue, resultUnit: unit }
+          displayData = { type: 'root', targetVariable: `${symbol}₂`, varMultiplier: `${symbol}₁`, varNum: 'H₂', varDenom: 'H₁', multiplier: formatValue(v1_SI!, isConstantDiameter), num: formatExact(h2_SI!), denom: formatExact(h1_SI!), exponent: "2", result: resultValue, resultUnit: unit, baseFormula: baseHead, conversions: conversionsList }
         } else if (result.variable === 'v1') {
           const calc_rounded = isConstantDiameter ? Math.round(parseFloat(result.value)) : parseFloat(result.value)
           fullResultValue = isConstantDiameter ? calc_rounded.toString() : result.value
@@ -299,7 +318,7 @@ export default function PumpAffinityCalculator() {
           resultValue = isConstantDiameter ? calc_rounded.toString() : calc_SI.toFixed(3)
           resultValueSI = resultValue
           resultLabel = isConstantDiameter ? `${symbol}₁ ≈ ${resultValue} ${unit}` : `${symbol}₁ = ${resultValue} ${unit}`
-          displayData = { type: 'root', targetVariable: `${symbol}₁`, varMultiplier: `${symbol}₂`, varNum: 'H₁', varDenom: 'H₂', multiplier: formatValue(v2_SI!, isConstantDiameter), num: formatExact(h1_SI!), denom: formatExact(h2_SI!), exponent: "2", result: resultValue, resultUnit: unit }
+          displayData = { type: 'root', targetVariable: `${symbol}₁`, varMultiplier: `${symbol}₂`, varNum: 'H₁', varDenom: 'H₂', multiplier: formatValue(v2_SI!, isConstantDiameter), num: formatExact(h1_SI!), denom: formatExact(h2_SI!), exponent: "2", result: resultValue, resultUnit: unit, baseFormula: baseHead, conversions: conversionsList }
         }
       }
     }
@@ -335,8 +354,12 @@ export default function PumpAffinityCalculator() {
       const v1_SI = v1_input 
       const v2_SI = v2_input 
 
-      steps.push("Step 1: Converted inputs to SI units")
+      if (p1_input !== null) conversionsList.push(`P₁ = ${p1_input} ${powerUnits.find(u=>u.value===p1Unit)?.label} = ${parseFloat(p1_SI!.toString()).toFixed(4)} kW`)
+      if (p2_input !== null) conversionsList.push(`P₂ = ${p2_input} ${powerUnits.find(u=>u.value===p2Unit)?.label} = ${parseFloat(p2_SI!.toString()).toFixed(4)} kW`)
+      if (v1_input !== null) conversionsList.push(`${symbol}₁ = ${v1_input} ${unit}`)
+      if (v2_input !== null) conversionsList.push(`${symbol}₂ = ${v2_input} ${unit}`)
 
+      const basePower = { leftNum: 'P₁', leftDenom: 'P₂', rightNum: `${symbol}₁`, rightDenom: `${symbol}₂`, exponent: "3" }
       const result = calculatePower(p1_SI, p2_SI, v1_SI, v2_SI)
       
       if (result) {
@@ -350,7 +373,7 @@ export default function PumpAffinityCalculator() {
           resultValueSI = calc_SI.toFixed(3)
           const finalUnit = powerUnits.find(u => u.value === p2Unit)?.label || ""
           resultLabel = `P₂ = ${resultValue} ${finalUnit}`
-          displayData = { type: 'power', targetVariable: 'P₂', varMultiplier: 'P₁', varNum: `${symbol}₂`, varDenom: `${symbol}₁`, multiplier: formatExact(p1_SI!), num: formatValue(v2_SI!, isConstantDiameter), denom: formatValue(v1_SI!, isConstantDiameter), exponent: "3", result: resultValue, resultUnit: finalUnit }
+          displayData = { type: 'power', targetVariable: 'P₂', varMultiplier: 'P₁', varNum: `${symbol}₂`, varDenom: `${symbol}₁`, multiplier: formatExact(p1_SI!), num: formatValue(v2_SI!, isConstantDiameter), denom: formatValue(v1_SI!, isConstantDiameter), exponent: "3", result: resultValue, resultUnit: finalUnit, baseFormula: basePower, conversions: conversionsList }
         } else if (result.variable === 'p1') {
           const calc_output = convertFromSI(calc_SI, p1Unit, 'power')
           fullResultValue = calc_output.toString()
@@ -359,7 +382,7 @@ export default function PumpAffinityCalculator() {
           resultValueSI = calc_SI.toFixed(3)
           const finalUnit = powerUnits.find(u => u.value === p1Unit)?.label || ""
           resultLabel = `P₁ = ${resultValue} ${finalUnit}`
-          displayData = { type: 'power', targetVariable: 'P₁', varMultiplier: 'P₂', varNum: `${symbol}₁`, varDenom: `${symbol}₂`, multiplier: formatExact(p2_SI!), num: formatValue(v1_SI!, isConstantDiameter), denom: formatValue(v2_SI!, isConstantDiameter), exponent: "3", result: resultValue, resultUnit: finalUnit }
+          displayData = { type: 'power', targetVariable: 'P₁', varMultiplier: 'P₂', varNum: `${symbol}₁`, varDenom: `${symbol}₂`, multiplier: formatExact(p2_SI!), num: formatValue(v1_SI!, isConstantDiameter), denom: formatValue(v2_SI!, isConstantDiameter), exponent: "3", result: resultValue, resultUnit: finalUnit, baseFormula: basePower, conversions: conversionsList }
         } else if (result.variable === 'v2') {
           const calc_rounded = isConstantDiameter ? Math.round(parseFloat(result.value)) : parseFloat(result.value)
           fullResultValue = isConstantDiameter ? calc_rounded.toString() : result.value
@@ -367,7 +390,7 @@ export default function PumpAffinityCalculator() {
           resultValue = isConstantDiameter ? calc_rounded.toString() : calc_SI.toFixed(3)
           resultValueSI = resultValue
           resultLabel = isConstantDiameter ? `${symbol}₂ ≈ ${resultValue} ${unit}` : `${symbol}₂ = ${resultValue} ${unit}`
-          displayData = { type: 'root', targetVariable: `${symbol}₂`, varMultiplier: `${symbol}₁`, varNum: 'P₂', varDenom: 'P₁', multiplier: formatValue(v1_SI!, isConstantDiameter), num: formatExact(p2_SI!), denom: formatExact(p1_SI!), exponent: "3", result: resultValue, resultUnit: unit }
+          displayData = { type: 'root', targetVariable: `${symbol}₂`, varMultiplier: `${symbol}₁`, varNum: 'P₂', varDenom: 'P₁', multiplier: formatValue(v1_SI!, isConstantDiameter), num: formatExact(p2_SI!), denom: formatExact(p1_SI!), exponent: "3", result: resultValue, resultUnit: unit, baseFormula: basePower, conversions: conversionsList }
         } else if (result.variable === 'v1') {
           const calc_rounded = isConstantDiameter ? Math.round(parseFloat(result.value)) : parseFloat(result.value)
           fullResultValue = isConstantDiameter ? calc_rounded.toString() : result.value
@@ -375,7 +398,7 @@ export default function PumpAffinityCalculator() {
           resultValue = isConstantDiameter ? calc_rounded.toString() : calc_SI.toFixed(3)
           resultValueSI = resultValue
           resultLabel = isConstantDiameter ? `${symbol}₁ ≈ ${resultValue} ${unit}` : `${symbol}₁ = ${resultValue} ${unit}`
-          displayData = { type: 'root', targetVariable: `${symbol}₁`, varMultiplier: `${symbol}₂`, varNum: 'P₁', varDenom: 'P₂', multiplier: formatValue(v2_SI!, isConstantDiameter), num: formatExact(p1_SI!), denom: formatExact(p2_SI!), exponent: "3", result: resultValue, resultUnit: unit }
+          displayData = { type: 'root', targetVariable: `${symbol}₁`, varMultiplier: `${symbol}₂`, varNum: 'P₁', varDenom: 'P₂', multiplier: formatValue(v2_SI!, isConstantDiameter), num: formatExact(p1_SI!), denom: formatExact(p2_SI!), exponent: "3", result: resultValue, resultUnit: unit, baseFormula: basePower, conversions: conversionsList }
         }
       }
     }
@@ -1105,20 +1128,97 @@ export default function PumpAffinityCalculator() {
             </div>
 
             {/* Mathematical Step-by-Step Calculation Block */}
-            <div className="bg-background rounded-lg border border-border overflow-hidden shadow-sm mb-4">
-              <div className="bg-muted px-3 py-2 border-b border-border">
-                <h4 className="font-bold text-foreground uppercase text-xs">Step-by-Step Calculation</h4>
-              </div>
-              
-              {result.calculated && result.displayData ? (
-                <div className="p-6 overflow-x-auto flex justify-center w-full">
-                  <div className="grid grid-cols-[minmax(0,auto)_auto_minmax(0,1fr)] items-center gap-y-4 gap-x-4 font-serif text-xl min-w-max">
+            {result.calculated && result.displayData ? (
+              <div className="bg-background rounded-lg border border-border overflow-hidden shadow-sm mb-4">
+                <div className="bg-muted px-3 py-2 border-b border-border">
+                  <h4 className="font-bold text-foreground uppercase text-xs">Step-by-Step Calculation</h4>
+                </div>
+                
+                {/* Step 1: Collapsible Unit Conversions */}
+                {result.displayData.conversions && result.displayData.conversions.length > 0 && (
+                  <div className="border-b border-border">
+                    <button
+                      onClick={() => setShowStep1(!showStep1)}
+                      className="w-full px-6 py-3 flex items-center justify-between hover:bg-muted/50 transition-colors"
+                    >
+                      <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">
+                        Step 1: Standardize Units
+                      </span>
+                      <ChevronDown className={`h-4 w-4 transition-transform ${showStep1 ? 'rotate-180' : ''}`} />
+                    </button>
+                    {showStep1 && (
+                      <div className="px-6 pb-4 space-y-1 text-sm font-mono bg-blue-50/50 dark:bg-blue-950/20">
+                        {result.displayData.conversions.map((conv, idx) => (
+                          <div key={idx}>{conv}</div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="p-6 overflow-x-auto">
+                  <div className="text-sm font-semibold text-blue-700 dark:text-blue-300 mb-4">
+                    Step 2: Calculate Missing Value
+                  </div>
+                  <div className="grid grid-cols-[auto_auto_1fr] items-center gap-y-4 gap-x-4 font-serif text-xl min-w-max pl-4 sm:pl-8">
                     
+                    {/* Base Formula Render Block */}
+                    {result.displayData.baseFormula && (
+                      <>
+                        <div className="flex flex-col items-center justify-self-end font-bold pr-2">
+                          <span className="border-b-[3px] border-foreground px-4 pb-1.5 text-lg whitespace-nowrap">
+                            {result.displayData.baseFormula.leftNum}
+                          </span>
+                          <span className="pt-1.5 text-lg whitespace-nowrap">
+                            {result.displayData.baseFormula.leftDenom}
+                          </span>
+                        </div>
+                        <div className="text-center px-2 text-2xl">=</div>
+                        <div className="flex items-center justify-self-start font-bold">
+                          {result.displayData.baseFormula.exponent ? (
+                            <>
+                              <span className="text-[40px] text-muted-foreground font-light mr-1 leading-none mb-2">(</span>
+                              <div className="flex flex-col items-center">
+                                <span className="border-b-[3px] border-foreground px-4 pb-1.5 text-lg whitespace-nowrap">
+                                  {result.displayData.baseFormula.rightNum}
+                                </span>
+                                <span className="pt-1.5 text-lg whitespace-nowrap">
+                                  {result.displayData.baseFormula.rightDenom}
+                                </span>
+                              </div>
+                              <span className="text-[40px] text-muted-foreground font-light ml-1 leading-none mb-2">)</span>
+                              <sup className="text-base font-bold -ml-1 mt-[-30px]">{result.displayData.baseFormula.exponent}</sup>
+                            </>
+                          ) : (
+                            <div className="flex flex-col items-center">
+                              <span className="border-b-[3px] border-foreground px-4 pb-1.5 text-lg whitespace-nowrap">
+                                {result.displayData.baseFormula.rightNum}
+                              </span>
+                              <span className="pt-1.5 text-lg whitespace-nowrap">
+                                {result.displayData.baseFormula.rightDenom}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Visual Separator leading to the next step */}
+                        <div></div> {/* Empty Col 1 */}
+                        <div className="flex items-center justify-center py-2">
+                          <div className="bg-muted-foreground/10 rounded-full p-1.5">
+                            <svg className="w-4 h-4 text-muted-foreground/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                            </svg>
+                          </div>
+                        </div>
+                        <div></div> {/* Empty Col 3 */}
+                      </>
+                    )}
+
                     {/* Simple Fraction Block */}
                     {result.displayData.type === 'simple_fraction' && (
                       <>
                         {/* Step 1: Variable Formula */}
-                        <div className="font-bold text-right pr-2">{result.displayData.targetVariable}</div>
+                        <div className="font-bold text-right justify-self-end pr-2">{result.displayData.targetVariable}</div>
                         <div className="text-center px-2 text-2xl">=</div>
                         <div className="flex flex-col items-center justify-self-start">
                           <span className="border-b-[3px] border-foreground px-6 pb-2 text-lg whitespace-nowrap flex items-center font-bold">
@@ -1132,7 +1232,7 @@ export default function PumpAffinityCalculator() {
                         </div>
 
                         {/* Step 2: Substituted Numbers */}
-                        <div></div>
+                        <div className="justify-self-end"></div>
                         <div className="text-center px-2 text-2xl">=</div>
                         <div className="flex flex-col items-center justify-self-start">
                           <span className="border-b-[3px] border-foreground px-6 pb-2 text-lg whitespace-nowrap flex items-center">
@@ -1151,7 +1251,7 @@ export default function PumpAffinityCalculator() {
                     {result.displayData.type === 'power' && (
                       <>
                         {/* Step 1: Variable Formula */}
-                        <div className="font-bold text-right pr-2">{result.displayData.targetVariable}</div>
+                        <div className="font-bold text-right justify-self-end pr-2">{result.displayData.targetVariable}</div>
                         <div className="text-center px-2 text-2xl">=</div>
                         <div className="flex items-center justify-self-start font-bold">
                           <span>{result.displayData.varMultiplier}</span>
@@ -1170,7 +1270,7 @@ export default function PumpAffinityCalculator() {
                         </div>
 
                         {/* Step 2: Substituted Numbers */}
-                        <div></div>
+                        <div className="justify-self-end"></div>
                         <div className="text-center px-2 text-2xl">=</div>
                         <div className="flex items-center justify-self-start">
                           <MathPill>{result.displayData.multiplier}</MathPill>
@@ -1194,7 +1294,7 @@ export default function PumpAffinityCalculator() {
                     {result.displayData.type === 'root' && (
                       <>
                         {/* Step 1: Variable Formula */}
-                        <div className="font-bold text-right pr-2">{result.displayData.targetVariable}</div>
+                        <div className="font-bold text-right justify-self-end pr-2">{result.displayData.targetVariable}</div>
                         <div className="text-center px-2 text-2xl">=</div>
                         <div className="flex items-center justify-self-start font-bold">
                           <span>{result.displayData.varMultiplier}</span>
@@ -1213,7 +1313,7 @@ export default function PumpAffinityCalculator() {
                         </div>
 
                         {/* Step 2: Substituted Numbers */}
-                        <div></div>
+                        <div className="justify-self-end"></div>
                         <div className="text-center px-2 text-2xl">=</div>
                         <div className="flex items-center justify-self-start">
                           <MathPill>{result.displayData.multiplier}</MathPill>
@@ -1234,22 +1334,27 @@ export default function PumpAffinityCalculator() {
                     )}
 
                     {/* Final Result Evaluation Row */}
-                    <div></div>
+                    <div className="justify-self-end"></div>
                     <div className="text-center px-2 font-bold text-2xl mt-4">≈</div>
                     <div className="font-bold text-[22px] justify-self-start mt-4 tracking-tight">
                       {result.displayData.result} <span className="font-sans opacity-90">{result.displayData.resultUnit}</span>
                     </div>
                   </div>
                 </div>
-              ) : (
+              </div>
+            ) : (
+              <div className="bg-background rounded-lg border border-border overflow-hidden shadow-sm mb-4">
+                <div className="bg-muted px-3 py-2 border-b border-border">
+                  <h4 className="font-bold text-foreground uppercase text-xs">Step-by-Step Calculation</h4>
+                </div>
                 <div className="p-8 text-center flex flex-col items-center justify-center text-muted-foreground min-h-[120px]">
                   <svg className="w-8 h-8 opacity-20 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                   </svg>
                   <span className="text-sm font-medium">Enter values and click calculate to see step-by-step breakdown</span>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Final Result Container */}
             <div className="mt-auto" ref={resultRef}>
