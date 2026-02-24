@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useRef } from "react"
@@ -457,7 +456,7 @@ export default function PumpAffinityCalculator() {
   }
 
   const MathPill = ({ children }: { children: React.ReactNode }) => (
-    <span className="bg-amber-100/80 text-amber-900 dark:bg-[#38260a] dark:text-[#eebb77] px-2 py-0.5 rounded text-[16px] font-mono mx-[2px] shadow-sm">
+    <span className="bg-amber-100/80 text-amber-900 dark:bg-[#38260a] dark:text-[#eebb77] px-1.5 py-0.5 rounded text-sm font-mono mx-[2px] shadow-sm">
       {children}
     </span>
   );
@@ -935,7 +934,7 @@ export default function PumpAffinityCalculator() {
              <h2 className="font-bold text-xl uppercase text-foreground">Calculation & Result</h2>
           </div>
 
-          <div className="p-6 flex-1 flex flex-col relative z-10">
+          <div className="p-4 sm:p-6 flex-1 flex flex-col relative z-10">
             
             {/* Given Data Section */}
             <div className="bg-background rounded-lg border border-border overflow-hidden shadow-sm mb-4">
@@ -1156,61 +1155,50 @@ export default function PumpAffinityCalculator() {
                   </div>
                 )}
 
-                <div className="p-6 overflow-x-auto">
+                <div className="p-4 sm:p-5 overflow-x-auto">
                   <div className="text-sm font-semibold text-blue-700 dark:text-blue-300 mb-4">
                     Step 2: Calculate Missing Value
                   </div>
-                  <div className="grid grid-cols-[auto_auto_1fr] items-center gap-y-4 gap-x-4 font-serif text-xl min-w-max pl-4 sm:pl-8">
+                  <div className="grid grid-cols-[auto_auto_1fr] items-center gap-y-2 gap-x-3 font-serif text-base min-w-max pl-2 sm:pl-6">
                     
                     {/* Base Formula Render Block */}
                     {result.displayData.baseFormula && (
                       <>
-                        <div className="flex flex-col items-center justify-self-end font-bold pr-2">
-                          <span className="border-b-[3px] border-foreground px-4 pb-1.5 text-lg whitespace-nowrap">
+                        <div className="flex flex-col items-center justify-self-end font-bold pr-1">
+                          <span className="border-b-2 border-foreground px-3 pb-1 text-base whitespace-nowrap">
                             {result.displayData.baseFormula.leftNum}
                           </span>
-                          <span className="pt-1.5 text-lg whitespace-nowrap">
+                          <span className="pt-1 text-base whitespace-nowrap">
                             {result.displayData.baseFormula.leftDenom}
                           </span>
                         </div>
-                        <div className="text-center px-2 text-2xl">=</div>
+                        <div className="text-center px-2 text-xl">=</div>
                         <div className="flex items-center justify-self-start font-bold">
                           {result.displayData.baseFormula.exponent ? (
                             <>
-                              <span className="text-[40px] text-muted-foreground font-light mr-1 leading-none mb-2">(</span>
+                              <span className="text-3xl text-muted-foreground font-light mr-0.5 leading-none mb-1">(</span>
                               <div className="flex flex-col items-center">
-                                <span className="border-b-[3px] border-foreground px-4 pb-1.5 text-lg whitespace-nowrap">
+                                <span className="border-b-2 border-foreground px-3 pb-1 text-base whitespace-nowrap">
                                   {result.displayData.baseFormula.rightNum}
                                 </span>
-                                <span className="pt-1.5 text-lg whitespace-nowrap">
+                                <span className="pt-1 text-base whitespace-nowrap">
                                   {result.displayData.baseFormula.rightDenom}
                                 </span>
                               </div>
-                              <span className="text-[40px] text-muted-foreground font-light ml-1 leading-none mb-2">)</span>
-                              <sup className="text-base font-bold -ml-1 mt-[-30px]">{result.displayData.baseFormula.exponent}</sup>
+                              <span className="text-3xl text-muted-foreground font-light ml-0.5 leading-none mb-1">)</span>
+                              <sup className="text-xs font-bold -ml-0.5 mt-[-14px]">{result.displayData.baseFormula.exponent}</sup>
                             </>
                           ) : (
                             <div className="flex flex-col items-center">
-                              <span className="border-b-[3px] border-foreground px-4 pb-1.5 text-lg whitespace-nowrap">
+                              <span className="border-b-2 border-foreground px-3 pb-1 text-base whitespace-nowrap">
                                 {result.displayData.baseFormula.rightNum}
                               </span>
-                              <span className="pt-1.5 text-lg whitespace-nowrap">
+                              <span className="pt-1 text-base whitespace-nowrap">
                                 {result.displayData.baseFormula.rightDenom}
                               </span>
                             </div>
                           )}
                         </div>
-
-                        {/* Visual Separator leading to the next step */}
-                        <div></div> {/* Empty Col 1 */}
-                        <div className="flex items-center justify-center py-2">
-                          <div className="bg-muted-foreground/10 rounded-full p-1.5">
-                            <svg className="w-4 h-4 text-muted-foreground/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                            </svg>
-                          </div>
-                        </div>
-                        <div></div> {/* Empty Col 3 */}
                       </>
                     )}
 
@@ -1218,29 +1206,29 @@ export default function PumpAffinityCalculator() {
                     {result.displayData.type === 'simple_fraction' && (
                       <>
                         {/* Step 1: Variable Formula */}
-                        <div className="font-bold text-right justify-self-end pr-2">{result.displayData.targetVariable}</div>
-                        <div className="text-center px-2 text-2xl">=</div>
-                        <div className="flex flex-col items-center justify-self-start">
-                          <span className="border-b-[3px] border-foreground px-6 pb-2 text-lg whitespace-nowrap flex items-center font-bold">
+                        <div className="font-bold text-right justify-self-end pr-1 mt-3">{result.displayData.targetVariable}</div>
+                        <div className="text-center px-2 text-xl mt-3">=</div>
+                        <div className="flex flex-col items-center justify-self-start mt-3">
+                          <span className="border-b-2 border-foreground px-3 pb-1 text-base whitespace-nowrap flex items-center font-bold">
                             <span>{result.displayData.varNum1}</span>
-                            <span className="mx-2 text-base font-sans opacity-70">×</span>
+                            <span className="mx-2 text-sm font-sans opacity-70">×</span>
                             <span>{result.displayData.varNum2}</span>
                           </span>
-                          <span className="pt-2 text-lg whitespace-nowrap font-bold">
+                          <span className="pt-1 text-base whitespace-nowrap font-bold">
                             <span>{result.displayData.varDenom}</span>
                           </span>
                         </div>
 
                         {/* Step 2: Substituted Numbers */}
-                        <div className="justify-self-end"></div>
-                        <div className="text-center px-2 text-2xl">=</div>
-                        <div className="flex flex-col items-center justify-self-start">
-                          <span className="border-b-[3px] border-foreground px-6 pb-2 text-lg whitespace-nowrap flex items-center">
+                        <div className="justify-self-end mt-3"></div>
+                        <div className="text-center px-2 text-xl mt-3">=</div>
+                        <div className="flex flex-col items-center justify-self-start mt-3">
+                          <span className="border-b-2 border-foreground px-3 pb-1 text-base whitespace-nowrap flex items-center">
                             <MathPill>{result.displayData.num1}</MathPill>
-                            <span className="mx-2 text-base font-sans opacity-70">×</span>
+                            <span className="mx-2 text-sm font-sans opacity-70">×</span>
                             <MathPill>{result.displayData.num2}</MathPill>
                           </span>
-                          <span className="pt-2 text-lg whitespace-nowrap">
+                          <span className="pt-1 text-base whitespace-nowrap">
                             <MathPill>{result.displayData.denom}</MathPill>
                           </span>
                         </div>
@@ -1251,41 +1239,41 @@ export default function PumpAffinityCalculator() {
                     {result.displayData.type === 'power' && (
                       <>
                         {/* Step 1: Variable Formula */}
-                        <div className="font-bold text-right justify-self-end pr-2">{result.displayData.targetVariable}</div>
-                        <div className="text-center px-2 text-2xl">=</div>
-                        <div className="flex items-center justify-self-start font-bold">
+                        <div className="font-bold text-right justify-self-end pr-1 mt-3">{result.displayData.targetVariable}</div>
+                        <div className="text-center px-2 text-xl mt-3">=</div>
+                        <div className="flex items-center justify-self-start font-bold mt-3">
                           <span>{result.displayData.varMultiplier}</span>
-                          <span className="mx-3 text-base font-sans opacity-70">×</span>
-                          <span className="text-[40px] text-muted-foreground font-light mr-1 leading-none mb-2">(</span>
+                          <span className="mx-2 text-sm font-sans opacity-70">×</span>
+                          <span className="text-3xl text-muted-foreground font-light mr-0.5 leading-none mb-1">(</span>
                           <div className="flex flex-col items-center">
-                            <span className="border-b-[3px] border-foreground px-4 pb-1.5 text-lg whitespace-nowrap">
+                            <span className="border-b-2 border-foreground px-3 pb-1 text-base whitespace-nowrap">
                               <span>{result.displayData.varNum}</span>
                             </span>
-                            <span className="pt-1.5 text-lg whitespace-nowrap">
+                            <span className="pt-1 text-base whitespace-nowrap">
                               <span>{result.displayData.varDenom}</span>
                             </span>
                           </div>
-                          <span className="text-[40px] text-muted-foreground font-light ml-1 leading-none mb-2">)</span>
-                          <sup className="text-base font-bold -ml-1 mt-[-30px]">{result.displayData.exponent}</sup>
+                          <span className="text-3xl text-muted-foreground font-light ml-0.5 leading-none mb-1">)</span>
+                          <sup className="text-xs font-bold -ml-0.5 mt-[-14px]">{result.displayData.exponent}</sup>
                         </div>
 
                         {/* Step 2: Substituted Numbers */}
-                        <div className="justify-self-end"></div>
-                        <div className="text-center px-2 text-2xl">=</div>
-                        <div className="flex items-center justify-self-start">
+                        <div className="justify-self-end mt-3"></div>
+                        <div className="text-center px-2 text-xl mt-3">=</div>
+                        <div className="flex items-center justify-self-start mt-3">
                           <MathPill>{result.displayData.multiplier}</MathPill>
-                          <span className="mx-3 text-base font-sans opacity-70">×</span>
-                          <span className="text-[40px] text-muted-foreground font-light mr-1 leading-none mb-2">(</span>
+                          <span className="mx-2 text-sm font-sans opacity-70">×</span>
+                          <span className="text-3xl text-muted-foreground font-light mr-0.5 leading-none mb-1">(</span>
                           <div className="flex flex-col items-center">
-                            <span className="border-b-[3px] border-foreground px-4 pb-1.5 text-lg whitespace-nowrap">
+                            <span className="border-b-2 border-foreground px-3 pb-1 text-base whitespace-nowrap">
                               <MathPill>{result.displayData.num}</MathPill>
                             </span>
-                            <span className="pt-1.5 text-lg whitespace-nowrap">
+                            <span className="pt-1 text-base whitespace-nowrap">
                               <MathPill>{result.displayData.denom}</MathPill>
                             </span>
                           </div>
-                          <span className="text-[40px] text-muted-foreground font-light ml-1 leading-none mb-2">)</span>
-                          <sup className="text-base font-bold -ml-1 mt-[-30px]">{result.displayData.exponent}</sup>
+                          <span className="text-3xl text-muted-foreground font-light ml-0.5 leading-none mb-1">)</span>
+                          <sup className="text-xs font-bold -ml-0.5 mt-[-14px]">{result.displayData.exponent}</sup>
                         </div>
                       </>
                     )}
@@ -1294,49 +1282,49 @@ export default function PumpAffinityCalculator() {
                     {result.displayData.type === 'root' && (
                       <>
                         {/* Step 1: Variable Formula */}
-                        <div className="font-bold text-right justify-self-end pr-2">{result.displayData.targetVariable}</div>
-                        <div className="text-center px-2 text-2xl">=</div>
-                        <div className="flex items-center justify-self-start font-bold">
+                        <div className="font-bold text-right justify-self-end pr-1 mt-3">{result.displayData.targetVariable}</div>
+                        <div className="text-center px-2 text-xl mt-3">=</div>
+                        <div className="flex items-center justify-self-start font-bold mt-3">
                           <span>{result.displayData.varMultiplier}</span>
-                          <span className="mx-3 text-base font-sans opacity-70">×</span>
-                          <span className="text-[40px] text-muted-foreground font-light mr-1 leading-none mb-2">(</span>
+                          <span className="mx-2 text-sm font-sans opacity-70">×</span>
+                          <span className="text-3xl text-muted-foreground font-light mr-0.5 leading-none mb-1">(</span>
                           <div className="flex flex-col items-center">
-                            <span className="border-b-[3px] border-foreground px-4 pb-1.5 text-lg whitespace-nowrap">
+                            <span className="border-b-2 border-foreground px-3 pb-1 text-base whitespace-nowrap">
                               <span>{result.displayData.varNum}</span>
                             </span>
-                            <span className="pt-1.5 text-lg whitespace-nowrap">
+                            <span className="pt-1 text-base whitespace-nowrap">
                               <span>{result.displayData.varDenom}</span>
                             </span>
                           </div>
-                          <span className="text-[40px] text-muted-foreground font-light ml-1 leading-none mb-2">)</span>
-                          <sup className="text-sm font-bold -ml-1 mt-[-30px]">1/{result.displayData.exponent}</sup>
+                          <span className="text-3xl text-muted-foreground font-light ml-0.5 leading-none mb-1">)</span>
+                          <sup className="text-xs font-bold -ml-0.5 mt-[-14px]">1/{result.displayData.exponent}</sup>
                         </div>
 
                         {/* Step 2: Substituted Numbers */}
-                        <div className="justify-self-end"></div>
-                        <div className="text-center px-2 text-2xl">=</div>
-                        <div className="flex items-center justify-self-start">
+                        <div className="justify-self-end mt-3"></div>
+                        <div className="text-center px-2 text-xl mt-3">=</div>
+                        <div className="flex items-center justify-self-start mt-3">
                           <MathPill>{result.displayData.multiplier}</MathPill>
-                          <span className="mx-3 text-base font-sans opacity-70">×</span>
-                          <span className="text-[40px] text-muted-foreground font-light mr-1 leading-none mb-2">(</span>
+                          <span className="mx-2 text-sm font-sans opacity-70">×</span>
+                          <span className="text-3xl text-muted-foreground font-light mr-0.5 leading-none mb-1">(</span>
                           <div className="flex flex-col items-center">
-                            <span className="border-b-[3px] border-foreground px-4 pb-1.5 text-lg whitespace-nowrap">
+                            <span className="border-b-2 border-foreground px-3 pb-1 text-base whitespace-nowrap">
                               <MathPill>{result.displayData.num}</MathPill>
                             </span>
-                            <span className="pt-1.5 text-lg whitespace-nowrap">
+                            <span className="pt-1 text-base whitespace-nowrap">
                               <MathPill>{result.displayData.denom}</MathPill>
                             </span>
                           </div>
-                          <span className="text-[40px] text-muted-foreground font-light ml-1 leading-none mb-2">)</span>
-                          <sup className="text-sm font-bold -ml-1 mt-[-30px]">1/{result.displayData.exponent}</sup>
+                          <span className="text-3xl text-muted-foreground font-light ml-0.5 leading-none mb-1">)</span>
+                          <sup className="text-xs font-bold -ml-0.5 mt-[-14px]">1/{result.displayData.exponent}</sup>
                         </div>
                       </>
                     )}
 
                     {/* Final Result Evaluation Row */}
                     <div className="justify-self-end"></div>
-                    <div className="text-center px-2 font-bold text-2xl mt-4">≈</div>
-                    <div className="font-bold text-[22px] justify-self-start mt-4 tracking-tight">
+                    <div className="text-center px-2 font-bold text-xl mt-4">≈</div>
+                    <div className="font-bold text-lg justify-self-start mt-4 tracking-tight">
                       {result.displayData.result} <span className="font-sans opacity-90">{result.displayData.resultUnit}</span>
                     </div>
                   </div>
@@ -1371,15 +1359,15 @@ export default function PumpAffinityCalculator() {
                  
                  {result.calculated ? (
                    <div className="flex items-center justify-center gap-4 overflow-hidden">
-                     <div className="w-12 h-12 rounded-full border-4 border-white flex items-center justify-center flex-shrink-0">
-                       <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <div className="w-10 h-10 rounded-full border-[3px] border-white flex items-center justify-center flex-shrink-0">
+                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
                        </svg>
                      </div>
                      
                      <div className="flex items-center gap-3 min-w-0 flex-1">
-                       <h2 className="text-xl font-bold uppercase opacity-90 whitespace-nowrap">Result:</h2>
-                       <div className="text-[28px] font-black truncate min-w-0 tracking-tight" title={result.label}>
+                       <h2 className="text-lg font-bold uppercase opacity-90 whitespace-nowrap">Result:</h2>
+                       <div className="text-2xl font-black truncate min-w-0 tracking-tight" title={result.label}>
                          {result.label}
                        </div>
                      </div>
