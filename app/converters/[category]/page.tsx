@@ -161,12 +161,51 @@ export default function CategoryConverterPage() {
     }
   }
 
+  const convertDensity = (value: number, from: string, to: string): number => {
+    // First convert to base unit (kg/m³)
+    let kgm3: number
+    
+    if (from === "°API") {
+      // API to kg/m³: SG = 141.5 / (131.5 + API), then kg/m³ = SG * 1000
+      const sg = 141.5 / (131.5 + value)
+      kgm3 = sg * 1000
+    } else if (from === "SG") {
+      // SG to kg/m³
+      kgm3 = value * 1000
+    } else {
+      // Standard conversion using factor
+      const fromUnit = allUnits.find((u) => u.value === from)
+      kgm3 = fromUnit ? value * fromUnit.factor : value
+    }
+
+    // Then convert from base unit to target
+    if (to === "°API") {
+      // kg/m³ to API: SG = kg/m³ / 1000, then API = (141.5 / SG) - 131.5
+      const sg = kgm3 / 1000
+      return (141.5 / sg) - 131.5
+    } else if (to === "SG") {
+      // kg/m³ to SG
+      return kgm3 / 1000
+    } else {
+      // Standard conversion using factor
+      const toUnit = allUnits.find((u) => u.value === to)
+      return toUnit ? kgm3 / toUnit.factor : kgm3
+    }
+  }
+
   const convert = (): string => {
     const value = parseFloat(fromValue)
     if (isNaN(value)) return "0"
 
     if (currentConverter?.formula === "special") {
-      const result = convertTemperature(value, fromUnit, toUnit)
+      let result: number
+      if (currentConverter.id === "temperature") {
+        result = convertTemperature(value, fromUnit, toUnit)
+      } else if (currentConverter.id === "density") {
+        result = convertDensity(value, fromUnit, toUnit)
+      } else {
+        result = 0
+      }
       return newRound(result, 4).toString()
     }
 
@@ -213,7 +252,14 @@ export default function CategoryConverterPage() {
       let convertedValue: string
       
       if (currentConverter?.formula === "special") {
-        const result = convertTemperature(inputValue, fromUnit, unit.value)
+        let result: number
+        if (currentConverter.id === "temperature") {
+          result = convertTemperature(inputValue, fromUnit, unit.value)
+        } else if (currentConverter.id === "density") {
+          result = convertDensity(inputValue, fromUnit, unit.value)
+        } else {
+          result = 0
+        }
         convertedValue = newRound(result, 4).toString()
       } else {
         const baseValue = inputValue * fromUnitData.factor

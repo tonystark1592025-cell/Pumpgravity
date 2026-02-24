@@ -3,6 +3,9 @@
 # dependencies
 /node_modules
 
+#files to ign
+/oldstatic
+
 # next.js
 /.next/
 /out/
