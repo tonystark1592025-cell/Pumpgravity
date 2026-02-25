@@ -18,7 +18,7 @@ import { formatDisplayNumber } from "@/lib/number-formatter"
 
 export default function PumpPowerCalculator() {
   const { toast } = useToast()
-  const[showStep1, setShowStep1] = useState(false)
+  const [showStep1, setShowStep1] = useState(false)
   const resultRef = useRef<HTMLDivElement>(null)
   const[flowRate, setFlowRate] = useState<string>("")
   const [flowUnit, setFlowUnit] = useState<string>("m3h")
@@ -26,7 +26,7 @@ export default function PumpPowerCalculator() {
   const [head, setHead] = useState<string>("")
   const [headUnit, setHeadUnit] = useState<string>("m")
   
-  const [specificGravity, setSpecificGravity] = useState<string>("1.0")
+  const[specificGravity, setSpecificGravity] = useState<string>("1.0")
   const[efficiency, setEfficiency] = useState<string>("75")
   
   const [resultUnit, setResultUnit] = useState<string>("kw")
@@ -337,11 +337,10 @@ export default function PumpPowerCalculator() {
         </div>
       </div>
 
-      {/* Reduced max-w from 6xl to 5xl to scale everything down horizontally */}
       <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-5">
         
         {/* Left Panel - Inputs */}
-        <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden flex flex-col w-full">
+        <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden flex flex-col w-full h-full">
           <div className="bg-blue-50 dark:bg-blue-950/30 px-4 py-2.5 border-b border-border">
              <h2 className="font-bold text-sm uppercase text-foreground tracking-wide">Inputs & Parameters </h2>
           </div>
@@ -430,7 +429,35 @@ export default function PumpPowerCalculator() {
               </div>
             </div>
 
-            {/* Density / Specific Gravity Input (Modified UI) */}
+            {/* Pump Efficiency Input */}
+            <div>
+              <div className="flex items-center gap-2.5">
+                <label className="font-semibold text-foreground text-xs w-24 flex-shrink-0">Efficiency (η):</label>
+                <div className="flex-[2] min-w-0 flex gap-2">
+                  <input 
+                    type="number" 
+                    value={efficiency} 
+                    onChange={e => handleEfficiencyChange(e.target.value)} 
+                    placeholder="75"
+                    min="0.01"
+                    max="100"
+                    step="0.01"
+                    className={`flex-1 min-w-0 border ${efficiencyError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-md px-3 h-9 text-center text-sm focus:border-blue-500 focus:outline-none transition-colors`}
+                  />
+                </div>
+                <div className="flex-1 min-w-[80px] text-[11px] text-muted-foreground text-center">
+                  {efficiencyError ? "%" : "0.01 to 100%"}
+                </div>
+              </div>
+              {efficiencyError && (
+                <div className="mt-1 flex items-center gap-1 text-[11px] text-red-600 dark:text-red-400">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  <span className="font-medium">{efficiencyError}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Density / Specific Gravity Input */}
             <div>
               <div className="flex items-center gap-2.5">
                 <label className="font-semibold text-foreground text-xs w-24 flex-shrink-0">Density (ρ):</label>
@@ -464,39 +491,12 @@ export default function PumpPowerCalculator() {
               )}
             </div>
 
-            {/* Pump Efficiency Input */}
-            <div>
-              <div className="flex items-center gap-2.5">
-                <label className="font-semibold text-foreground text-xs w-24 flex-shrink-0">Efficiency (η):</label>
-                <div className="flex-[2] min-w-0 flex gap-2">
-                  <input 
-                    type="number" 
-                    value={efficiency} 
-                    onChange={e => handleEfficiencyChange(e.target.value)} 
-                    placeholder="75"
-                    min="0.01"
-                    max="100"
-                    step="0.01"
-                    className={`flex-1 min-w-0 border ${efficiencyError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-md px-3 h-9 text-center text-sm focus:border-blue-500 focus:outline-none transition-colors`}
-                  />
-                </div>
-                <div className="flex-1 min-w-[80px] text-[11px] text-muted-foreground text-center">
-                  {efficiencyError ? "%" : "0.01 to 100%"}
-                </div>
-              </div>
-              {efficiencyError && (
-                <div className="mt-1 flex items-center gap-1 text-[11px] text-red-600 dark:text-red-400">
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  <span className="font-medium">{efficiencyError}</span>
-                </div>
-              )}
-            </div>
-
             {/* Result Unit Selector */}
             <div className="flex items-center gap-2.5">
               <label className="font-semibold text-foreground text-xs w-24 flex-shrink-0">Result Unit:</label>
               <div className="flex-[2] min-w-0 flex gap-2">
                 <Select value={resultUnit} onValueChange={(value) => { setResultUnit(value); resetCalculation(); }}>
+                  {/* Added spaces correctly to ensure the nested span rules apply to center the text */}
                   <SelectTrigger className="flex-1 min-w-0 border border-border bg-background text-sm h-9 justify-center [&>span]:flex [&>span]:justify-center [&>span]:w-full font-medium">
                     <SelectValue />
                   </SelectTrigger>
@@ -512,7 +512,7 @@ export default function PumpPowerCalculator() {
               <div className="flex-1 min-w-[80px]"></div>
             </div>
 
-            {/* Universal Formula Display - Scaled down & formatted like the image */}
+            {/* Universal Formula Display */}
             <div className="mt-auto mb-3 bg-muted/40 rounded-lg p-3 border border-border flex flex-col items-center shadow-sm">
               <h4 className="font-bold text-foreground mb-2 uppercase text-[10px] tracking-wider">Universal Formula:</h4>
               <div className="font-serif text-lg flex items-center gap-2.5">
@@ -545,7 +545,7 @@ export default function PumpPowerCalculator() {
 
           <div className="p-3.5 flex-1 flex flex-col gap-3 relative z-10">
             
-            {/* Given Data Section */}
+            {/* Given Data Section - Live Updating */}
             <div className="bg-background rounded-md border border-border overflow-hidden shadow-sm">
               <div className="bg-muted px-3 py-1.5 border-b border-border">
                 <h4 className="font-bold text-foreground uppercase text-[11px]">Given Data</h4>
@@ -566,11 +566,11 @@ export default function PumpPowerCalculator() {
                   </div>
                   <div className="inline-flex items-center bg-background border border-blue-200 dark:border-blue-800 rounded px-2 py-1 font-mono text-xs shadow-sm">
                     <strong className="text-blue-600 dark:text-blue-400 mr-1">ρ</strong> 
-                    <span className="text-foreground">= {specificGravity ? (parseFloat(specificGravity) * 1000).toFixed(0) : "?"} kg/m³</span>
+                    <span className="text-foreground">= {specificGravity && !isNaN(parseFloat(specificGravity)) ? (parseFloat(specificGravity) * 1000).toFixed(0) : "?"} kg/m³</span>
                   </div>
                   <div className="inline-flex items-center bg-background border border-blue-200 dark:border-blue-800 rounded px-2 py-1 font-mono text-xs shadow-sm">
                     <strong className="text-blue-600 dark:text-blue-400 mr-1">η</strong> 
-                    <span className="text-foreground">= {efficiency ? (parseFloat(efficiency) / 100).toFixed(2) : "?"}</span>
+                    <span className="text-foreground">= {efficiency && !isNaN(parseFloat(efficiency)) ? (parseFloat(efficiency) / 100).toFixed(2) : "?"}</span>
                   </div>
                 </div>
               </div>
@@ -589,99 +589,128 @@ export default function PumpPowerCalculator() {
               </div>
             </div>
 
-            {/* Calculation Steps */}
-            {result.calculated && (
-              <div className="bg-background rounded-md border border-border overflow-hidden shadow-sm">
-                <div className="bg-muted px-3 py-1.5 border-b border-border">
-                  <h4 className="font-bold text-foreground uppercase text-[11px]">Calculation</h4>
-                </div>
-                
-                {/* Step 1: Base SI Conversion - Collapsible */}
-                <div className="border-b border-border">
-                  <button
-                    onClick={() => setShowStep1(!showStep1)}
-                    className="w-full px-4 py-2 flex items-center justify-between hover:bg-muted/50 transition-colors"
-                  >
-                    <span className="text-[11px] font-semibold text-blue-700 dark:text-blue-300">
-                      Step 1: Convert internally to base SI units
-                    </span>
-                    <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showStep1 ? 'rotate-180' : ''}`} />
-                  </button>
-                  {showStep1 && (
-                    <div className="px-4 pb-3 space-y-1 text-xs font-mono bg-blue-50/50 dark:bg-blue-950/20">
-                      <div>Q = {flowRate} {flowUnits.find(u => u.value === flowUnit)?.label} = {result.steps[1]?.split('=')[2]?.trim() || "..."} m³/s</div>
-                      <div>H = {head} {headUnits.find(u => u.value === headUnit)?.label} = {result.steps[2]?.split('=')[2]?.trim() || "..."} m</div>
-                      <div>ρ = 1000 × {specificGravity} = {result.steps[3]?.split('=')[2]?.trim() || "..."} kg/m³</div>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Step 2: Calculate using formula */}
-                <div className="p-4 overflow-x-auto">
-                  <div className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-3">Step 2: Calculate using universal formula</div>
-                  <div className="grid grid-cols-[auto_auto_1fr] items-center gap-y-4 gap-x-3 font-serif text-base min-w-max">
-                    
-                    {/* Formula with substitution */}
-                    <span className="font-bold italic text-right whitespace-nowrap">P</span>
-                    <span className="text-center">=</span>
-                    <div className="flex flex-col items-center justify-self-start">
-                      <span className="border-b border-foreground px-3 pb-1 text-sm whitespace-nowrap">
-                        <span className="bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1 py-0.5 rounded" title="ρ (Density)">{specificGravity ? parseFloat(specificGravity) * 1000 : "?"}</span>
-                        {" × "}
-                        <span className="bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1 py-0.5 rounded" title="g (Gravity)">9.81</span>
-                        {" × "}
-                        <span className="bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1 py-0.5 rounded" title="Q (Flow in m³/s)">{result.steps[1]?.split('=')[2]?.replace('m³/s', '')?.trim() || "Q"}</span>
-                        {" × "}
-                        <span className="bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1 py-0.5 rounded" title="H (Head in m)">{result.steps[2]?.split('=')[2]?.replace('m', '')?.trim() || "H"}</span>
-                      </span>
-                      <span className="pt-1 text-sm whitespace-nowrap">
-                        <span className="bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1 py-0.5 rounded" title="η (Efficiency)">{efficiency ? (parseFloat(efficiency) / 100).toFixed(4).replace(/\.?0+$/, '') : "?"}</span>
-                      </span>
-                    </div>
-                    
-                    {/* Simplified Numerator / Denominator */}
-                    <span></span>
-                    <span className="text-center">=</span>
-                    <div className="flex flex-col items-center justify-self-start">
-                      <span className="border-b border-foreground px-3 pb-1 text-sm whitespace-nowrap">
-                        {result.steps[8]?.split('=')[1]?.split('/')[0]?.trim() || "..."}
-                      </span>
-                      <span className="pt-1 text-sm whitespace-nowrap">
-                        {result.steps[8]?.split('=')[1]?.split('/')[1]?.trim() || "..."}
-                      </span>
-                    </div>
-                    
-                    {/* Final Result in Watts */}
-                    <span></span>
-                    <span className="text-center font-bold">=</span>
-                    <span className="font-bold text-base justify-self-start">{result.steps[9]?.split('=')[1]?.trim() || "..."}</span>
-
-                    {/* Final Result in kW */}
-                    <span></span>
-                    <span className="text-center font-bold">=</span>
-                    <span className="font-bold text-base justify-self-start text-blue-600 dark:text-blue-400">{result.valueSI} kW</span>
-                  </div>
-                </div>
-                
-                {/* Step 3: Unit Conversion (if not kW) */}
-                {resultUnit !== 'kw' && (
-                  <div className="px-4 pb-3 border-t border-border">
-                    <div className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-1.5 mt-3">Step 3: Convert to {powerUnits.find(u => u.value === resultUnit)?.label}</div>
-                    <div className="font-mono text-sm">
-                      P = {result.value} {powerUnits.find(u => u.value === resultUnit)?.label}
-                    </div>
+            {/* Calculation Steps - Always visible to prevent jumping */}
+            <div className="bg-background rounded-md border border-border overflow-hidden shadow-sm transition-all">
+              <div className="bg-muted px-3 py-1.5 border-b border-border">
+                <h4 className="font-bold text-foreground uppercase text-[11px]">Calculation</h4>
+              </div>
+              
+              {/* Step 1: Base SI Conversion - Collapsible */}
+              <div className="border-b border-border">
+                <button
+                  onClick={() => setShowStep1(!showStep1)}
+                  className={`w-full px-4 py-2 flex items-center justify-between hover:bg-muted/50 transition-colors ${showStep1 ? 'bg-muted/30' : ''}`}
+                >
+                  <span className="text-[11px] font-semibold text-blue-700 dark:text-blue-300">
+                    Step 1: Convert internally to base SI units
+                  </span>
+                  <ChevronDown className={`h-3.5 w-3.5 text-blue-700 dark:text-blue-300 transition-transform ${showStep1 ? 'rotate-180' : ''}`} />
+                </button>
+                {showStep1 && (
+                  <div className="px-4 pb-3 space-y-1 text-xs font-mono bg-blue-50/50 dark:bg-blue-950/20 pt-1">
+                    <div>Q = {flowRate || "?"} {flowUnits.find(u => u.value === flowUnit)?.label} = {result.calculated ? (result.steps[1]?.split('=')[2]?.trim() || "?") : "?"} m³/s</div>
+                    <div>H = {head || "?"} {headUnits.find(u => u.value === headUnit)?.label} = {result.calculated ? (result.steps[2]?.split('=')[2]?.trim() || "?") : "?"} m</div>
+                    <div>ρ = 1000 × {specificGravity || "?"} = {result.calculated ? (result.steps[3]?.split('=')[2]?.trim() || "?") : "?"} kg/m³</div>
                   </div>
                 )}
               </div>
-            )}
+              
+              {/* Step 2: Calculate using formula */}
+              <div className="p-4 overflow-x-auto">
+                <div className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-3">Step 2: Calculate using universal formula</div>
+                <div className="grid grid-cols-[auto_auto_1fr] items-center gap-y-4 gap-x-3 font-serif text-base">
+                  
+                  {/* Formula with substitution and compact indicator */}
+                  <span className="font-bold italic text-right whitespace-nowrap">P</span>
+                  <span className="text-center">=</span>
+                  <div className="flex flex-wrap items-center justify-self-start gap-y-2">
+                    
+                    {/* The Fraction */}
+                    <div className="flex flex-col items-center">
+                      <span className="border-b border-foreground px-3 pb-1 text-sm whitespace-nowrap">
+                        <span className={`bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1 py-0.5 rounded ${!result.calculated && 'italic font-medium text-muted-foreground bg-transparent border border-dashed border-muted-foreground'}`} title="ρ (Density)">
+                          {result.calculated && specificGravity ? (parseFloat(specificGravity) * 1000).toString() : "ρ"}
+                        </span>
+                        {" × "}
+                        <span className={`bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1 py-0.5 rounded ${!result.calculated && 'font-medium text-muted-foreground bg-transparent border border-dashed border-muted-foreground'}`} title="g (Gravity)">
+                          9.81
+                        </span>
+                        {" × "}
+                        <span className={`bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1 py-0.5 rounded ${!result.calculated && 'italic font-medium text-muted-foreground bg-transparent border border-dashed border-muted-foreground'}`} title="Q (Flow in m³/s)">
+                          {result.calculated ? (result.steps[1]?.split('=')[2]?.replace('m³/s', '')?.trim() || "Q") : "Q"}
+                        </span>
+                        {" × "}
+                        <span className={`bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1 py-0.5 rounded ${!result.calculated && 'italic font-medium text-muted-foreground bg-transparent border border-dashed border-muted-foreground'}`} title="H (Head in m)">
+                          {result.calculated ? (result.steps[2]?.split('=')[2]?.replace('m', '')?.trim() || "H") : "H"}
+                        </span>
+                      </span>
+                      <span className="pt-1 text-sm whitespace-nowrap">
+                        <span className={`bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1 py-0.5 rounded ${!result.calculated && 'italic font-medium text-muted-foreground bg-transparent border border-dashed border-muted-foreground'}`} title="η (Efficiency)">
+                          {result.calculated && efficiency ? (parseFloat(efficiency) / 100).toFixed(4).replace(/\.?0+$/, '') : "η"}
+                        </span>
+                      </span>
+                    </div>
+                    &nbsp; &nbsp; ...
+                    {/* Highly Compact "Step 1" Indicator to prevent scrollbars */}
+                    {result.calculated && (
+                      <button 
+                        onClick={() => setShowStep1(true)}
+                        className="flex items-center gap-1 text-blue-600 dark:text-blue-400 font-sans text-[10px] font-semibold bg-blue-50/80 dark:bg-blue-900/40 px-1.5 py-0.5 rounded border border-blue-200/80 dark:border-blue-800/80 hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-all ml-2 focus:outline-none whitespace-nowrap"
+                        title="View Step 1 conversions"
+                      > 
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
+                        From Step 1
+                      </button>
+                    )}
 
-            {/* Result Display */}
+                  </div>
+                  
+                  {/* Simplified Numerator / Denominator */}
+                  <span></span>
+                  <span className="text-center">=</span>
+                  <div className="flex flex-col items-center justify-self-start">
+                    <span className="border-b border-foreground px-3 pb-1 text-sm whitespace-nowrap">
+                      {result.calculated ? (result.steps[8]?.split('=')[1]?.split('/')[0]?.trim() || "...") : "?"}
+                    </span>
+                    <span className="pt-1 text-sm whitespace-nowrap">
+                      {result.calculated ? (result.steps[8]?.split('=')[1]?.split('/')[1]?.trim() || "...") : "?"}
+                    </span>
+                  </div>
+                  
+                  {/* Final Result in Watts */}
+                  <span></span>
+                  <span className="text-center font-bold">=</span>
+                  <span className={`font-bold text-base justify-self-start ${!result.calculated && 'text-muted-foreground'}`}>
+                    {result.calculated ? (result.steps[9]?.split('=')[1]?.trim() || "...") : "? W"}
+                  </span>
+
+                  {/* Final Result in kW */}
+                  <span></span>
+                  <span className="text-center font-bold">=</span>
+                  <span className={`font-bold text-base justify-self-start ${result.calculated ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground'}`}>
+                    {result.calculated ? `${result.valueSI} kW` : "? kW"}
+                  </span>
+                </div>
+              </div>
+              
+              {/* Step 3: Unit Conversion (if not kW) */}
+              {resultUnit !== 'kw' && (
+                <div className="px-4 pb-3 border-t border-border">
+                  <div className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-1.5 mt-3">Step 3: Convert to {powerUnits.find(u => u.value === resultUnit)?.label}</div>
+                  <div className="font-mono text-sm text-muted-foreground">
+                    P = {result.calculated ? <span className="text-foreground">{result.value}</span> : "?"} {powerUnits.find(u => u.value === resultUnit)?.label}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Result Display - Fixed height to avoid layout shift */}
             <div className="mt-auto" ref={resultRef}>
-              <div className={`rounded-lg px-5 py-3.5 text-white shadow-lg transition-all duration-500 relative ${result.calculated ? "bg-gradient-to-br from-green-500 to-green-600" : "bg-muted"}`}>
+              <div className={`rounded-lg px-5 py-3.5 text-white shadow-lg transition-all duration-500 relative flex items-center justify-center min-h-[68px] ${result.calculated ? "bg-gradient-to-br from-green-500 to-green-600" : "bg-muted"}`}>
                  {result.calculated && (
                    <button
                      onClick={copyResult}
-                     className="absolute top-2.5 right-2.5 p-1.5 rounded-md bg-white/20 hover:bg-white/30 transition-colors"
+                     className="absolute top-1/2 -translate-y-1/2 right-3.5 p-1.5 rounded-md bg-white/20 hover:bg-white/30 transition-colors"
                      title="Copy result"
                    >
                      {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
@@ -689,14 +718,14 @@ export default function PumpPowerCalculator() {
                  )}
                  
                  {result.calculated ? (
-                   <div className="flex items-center justify-center gap-3 overflow-hidden">
+                   <div className="flex items-center justify-center gap-3 overflow-hidden w-full px-8">
                      <div className="w-10 h-10 rounded-full border-[3px] border-white flex items-center justify-center flex-shrink-0">
                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                        </svg>
                      </div>
                      
-                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                     <div className="flex items-center gap-2.5 min-w-0">
                        <h2 className="text-lg font-bold uppercase opacity-90 whitespace-nowrap">Result:</h2>
                        <div className="text-2xl font-black truncate min-w-0" title={`P = ${result.value} ${powerUnits.find(u => u.value === resultUnit)?.label}`}>
                          P = {formatDisplayNumber(result.value)} <span className="text-xl">{powerUnits.find(u => u.value === resultUnit)?.label}</span>
@@ -704,14 +733,13 @@ export default function PumpPowerCalculator() {
                      </div>
                    </div>
                  ) : (
-                   <div className="text-center">
-                     <div className="text-sm font-medium opacity-70 italic text-muted-foreground">
-                       {result.steps[0] || "Enter values and click Calculate..."}
-                     </div>
+                   <div className="text-sm font-medium opacity-70 italic text-muted-foreground">
+                     Enter values and click Calculate...
                    </div>
                  )}
               </div>
             </div>
+            
           </div>
         </div>
 
