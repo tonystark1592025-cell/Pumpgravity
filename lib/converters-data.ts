@@ -1,4 +1,4 @@
-import { Ruler, Weight, Square, Droplet, Thermometer, Clock, Gauge, Zap, Power, HardDrive, Bolt, Cog, Wind, Lightbulb, MoreHorizontal, LucideIcon, Waves, Activity } from "lucide-react"
+import { Ruler, Weight, Square, Droplet, Thermometer, Clock, Gauge, Zap, Power, HardDrive, Bolt, Cog, Wind, Lightbulb, MoreHorizontal, LucideIcon, Waves, Activity, ArrowUpFromLine } from "lucide-react"
 
 export interface UnitConfig {
   value: string
@@ -37,7 +37,8 @@ export const categories: CategoryConfig[] = [
   { id: "time", name: "Time", icon: Clock, color: "text-indigo-500", bgColor: "bg-indigo-500/10", description: "Convert time units like s, min, hr, day", hidden: true },
   { id: "speed", name: "Speed", icon: Gauge, color: "text-orange-500", bgColor: "bg-orange-500/10", description: "Convert speed units like km/h, mph, m/s" },
   { id: "pressure", name: "Pressure", icon: Gauge, color: "text-pink-500", bgColor: "bg-pink-500/10", description: "Convert pressure units like Pa, bar, psi" },
-  { id: "head", name: "Head & NPSH", icon: Waves, color: "text-blue-600", bgColor: "bg-blue-600/10", description: "Convert pump head and NPSH units like m, ft" },
+  { id: "head", name: "Pump Head", icon: Waves, color: "text-blue-600", bgColor: "bg-blue-600/10", description: "Convert pump head units like m, ft" },
+  { id: "npsh", name: "NPSH", icon: ArrowUpFromLine, color: "text-cyan-600", bgColor: "bg-cyan-600/10", description: "Convert NPSH units like m, ft" },
   { id: "energy", name: "Energy", icon: Zap, color: "text-amber-500", bgColor: "bg-amber-500/10", description: "Convert energy units like J, kWh, cal", hidden: true },
   { id: "power", name: "Power", icon: Power, color: "text-lime-500", bgColor: "bg-lime-500/10", description: "Convert power units like W, kW, hp" },
   { id: "digital", name: "Digital", icon: HardDrive, color: "text-teal-500", bgColor: "bg-teal-500/10", description: "Convert digital storage units like KB, MB, GB", hidden: true },
@@ -457,7 +458,7 @@ export const converters: ConverterConfig[] = [
   {
     id: "npsh",
     name: "NPSH Converter",
-    category: "head",
+    category: "npsh",
     baseUnit: "meter",
     about: "Convert between Net Positive Suction Head (NPSH) units including meters (m), feet (ft), and water column measurements. NPSH is critical for preventing cavitation in centrifugal pumps. Essential for pump installation and suction system design.",
     units: [

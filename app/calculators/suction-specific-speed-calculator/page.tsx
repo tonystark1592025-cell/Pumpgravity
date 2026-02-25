@@ -8,44 +8,51 @@ import { useToast } from "@/hooks/use-toast"
 import { Copy, Check, ChevronDown } from "lucide-react"
 import { 
   convertToSI, 
+  convertFromSI, // Imported to allow conversion backwards to US units
   flowUnits, 
   headUnits 
 } from "@/lib/unit-conversions"
 import { formatDisplayNumber } from "@/lib/number-formatter"
 
 // Local constant for Speed Units
-const speedUnits =[
+const speedUnits = [
   { value: "rpm", label: "RPM" }
 ]
 
 export default function SuctionSpecificSpeedCalculator() {
   const { toast } = useToast()
-  const [showStep1, setShowStep1] = useState(false)
+  const[showStep1, setShowStep1] = useState(false)
   const resultRef = useRef<HTMLDivElement>(null)
   
-  const[speed, setSpeed] = useState<string>("")
-  const [speedUnit, setSpeedUnit] = useState<string>("rpm")
+  const [speed, setSpeed] = useState<string>("")
+  const[speedUnit, setSpeedUnit] = useState<string>("rpm")
   
   const [flowRate, setFlowRate] = useState<string>("")
-  const[flowUnit, setFlowUnit] = useState<string>("m3h")
+  const [flowUnit, setFlowUnit] = useState<string>("m3h")
   
-  const[npshr, setNpshr] = useState<string>("")
+  const [npshr, setNpshr] = useState<string>("")
   const[npshrUnit, setNpshrUnit] = useState<string>("m")
+
+  // New state to define Calculation Standard (SI vs US)
+  const [resultStandard, setResultStandard] = useState<string>("si")
   
-  const[copied, setCopied] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   // Validation states
   const [speedError, setSpeedError] = useState<string>("")
-  const [flowError, setFlowError] = useState<string>("")
-  const[npshrError, setNpshrError] = useState<string>("")
+  const[flowError, setFlowError] = useState<string>("")
+  const [npshrError, setNpshrError] = useState<string>("")
 
-  const[result, setResult] = useState<{
+  const [result, setResult] = useState<{
     value: string
     fullValue: string
     numerator: string
     denominator: string
     calculated: boolean
     steps: string[]
+    unitStandard?: string
+    qTargetLabel?: string
+    hTargetLabel?: string
   }>({
     value: "",
     fullValue: "",
@@ -124,14 +131,29 @@ export default function SuctionSpecificSpeedCalculator() {
     resetCalculation()
   }
 
+  // Auto-change flow and head input units based on result standard
+  const handleStandardChange = (value: string) => {
+    setResultStandard(value)
+    if (value === "us") {
+      // Find exact key for GPM (usually 'usgpm' or 'gpm')
+      const hasUsGpm = flowUnits.some(u => u.value === 'usgpm')
+      setFlowUnit(hasUsGpm ? "usgpm" : "gpm")
+      setNpshrUnit("ft")
+    } else {
+      setFlowUnit("m3h")
+      setNpshrUnit("m")
+    }
+    resetCalculation()
+  }
+
   const copyResult = () => {
-    const resultText = `${result.value}`
+    const resultText = `Nss = ${result.value} ${result.unitStandard}`
     navigator.clipboard.writeText(resultText)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
     toast({
       title: "Copied to clipboard!",
-      description: `Nss = ${resultText}`,
+      description: resultText,
     })
   }
 
@@ -171,34 +193,63 @@ export default function SuctionSpecificSpeedCalculator() {
 
     if (N_input <= 0 || Q_input <= 0 || NPSHr_input <= 0) {
       toast({ title: "Invalid Input", description: "Values must be greater than zero.", variant: "destructive" })
-      setResult({ ...result, calculated: false, steps:["Input values must be greater than zero"] })
+      setResult({ ...result, calculated: false, steps: ["Input values must be greater than zero"] })
       return
     }
 
-    // Step 1: Convert to Standard Metric Units (RPM, m³/h, m)
-    const Q_SI = convertToSI(Q_input, flowUnit, 'flow') // Standard metric context assumes m³/h
-    const NPSHr_SI = convertToSI(NPSHr_input, npshrUnit, 'head') // Standard metric context assumes m
+    // Convert inputs internally to strict base Metric to normalize everything
+    const Q_base = convertToSI(Q_input, flowUnit, 'flow') // Usually m³/h
+    const NPSHr_base = convertToSI(NPSHr_input, npshrUnit, 'head') // Usually meters
 
-    // Step 2: Calculate Nss -> Nss = (N × √Q) / (NPSHr^0.75)
-    const sqrt_Q = Math.sqrt(Q_SI)
+    let Q_target = Q_base
+    let NPSHr_target = NPSHr_base
+    let flowTargetLabel = 'm³/h'
+    let headTargetLabel = 'm'
+
+    // Convert to US Units if Selected
+    if (resultStandard === 'us') {
+      flowTargetLabel = 'GPM'
+      headTargetLabel = 'ft'
+
+      // Hardcoded constant multipliers as fallback
+      Q_target = Q_base * 4.4028675393  // 1 m³/h = 4.4028675 US GPM
+      NPSHr_target = NPSHr_base * 3.280839895 // 1 m = 3.28084 ft
+      
+      // Attempt clean conversion using lib functions if imported properly
+      if (typeof convertFromSI === 'function') {
+        try {
+          const key = flowUnits.some(u => u.value === 'usgpm') ? 'usgpm' : 'gpm'
+          const valQ = convertFromSI(Q_base, key, 'flow')
+          if(!isNaN(valQ)) Q_target = valQ
+        } catch(e) {}
+        try {
+          const valH = convertFromSI(NPSHr_base, 'ft', 'head')
+          if(!isNaN(valH)) NPSHr_target = valH
+        } catch(e) {}
+      }
+    }
+
+    // Step 2: Calculate Nss -> Nss = (N × √Q) / (NPSHr^0.75) using targeted basis
+    const sqrt_Q = Math.sqrt(Q_target)
     const numerator = N_input * sqrt_Q
-    const denominator = Math.pow(NPSHr_SI, 0.75)
+    const denominator = Math.pow(NPSHr_target, 0.75)
     const nss_exact = numerator / denominator
 
     const flowUnitLabel = flowUnits.find(u => u.value === flowUnit)?.label || flowUnit
     const npshrUnitLabel = headUnits.find(u => u.value === npshrUnit)?.label || npshrUnit
+    const unitString = resultStandard === 'us' ? 'US units' : 'SI units'
 
     const steps =[
-      `Step 1: Convert internally to base metric units`,
+      `Step 1: Convert internally to target standard units`,
       `  N = ${N_input} RPM`,
-      `  Q = ${Q_input} ${flowUnitLabel} = ${Q_SI.toFixed(2)} m³/h`,
-      `  NPSHr = ${NPSHr_input} ${npshrUnitLabel} = ${NPSHr_SI.toFixed(2)} m`,
+      `  Q = ${Q_input} ${flowUnitLabel} = ${Q_target.toFixed(2)} ${flowTargetLabel}`,
+      `  NPSHr = ${NPSHr_input} ${npshrUnitLabel} = ${NPSHr_target.toFixed(2)} ${headTargetLabel}`,
       ``,
       `Step 2: Calculate using formula`,
       `  Nss = (N × √Q) / NPSHr^(3/4)`,
-      `  Nss = (${N_input} × √${Q_SI.toFixed(2)}) / ${NPSHr_SI.toFixed(2)}^(3/4)`,
+      `  Nss = (${N_input} × √${Q_target.toFixed(2)}) / ${NPSHr_target.toFixed(2)}^(3/4)`,
       `  Nss = ${numerator.toFixed(2)} / ${denominator.toFixed(4)}`,
-      `  Nss ≈ ${nss_exact.toFixed(2)}`
+      `  Nss ≈ ${nss_exact.toFixed(2)} ${unitString}`
     ]
 
     setResult({
@@ -207,7 +258,10 @@ export default function SuctionSpecificSpeedCalculator() {
       numerator: numerator.toFixed(2),
       denominator: denominator.toFixed(4),
       calculated: true,
-      steps
+      steps,
+      unitStandard: unitString,
+      qTargetLabel: flowTargetLabel,
+      hTargetLabel: headTargetLabel
     })
 
     setTimeout(() => {
@@ -291,7 +345,7 @@ export default function SuctionSpecificSpeedCalculator() {
                   className={`flex-[2] min-w-0 border ${flowError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-md px-3 h-9 text-center text-sm focus:border-blue-500 focus:outline-none transition-colors`}
                 />
                 <Select value={flowUnit} onValueChange={(value) => { setFlowUnit(value); resetCalculation(); }}>
-                  <SelectTrigger className="flex-1 min-w-[80px] border border-border bg-background text-sm h-9 justify-center[&>span]:flex [&>span]:justify-center [&>span]:w-full font-medium">
+                  <SelectTrigger className="flex-1 min-w-[80px] border border-border bg-background text-sm h-9 justify-center [&>span]:flex [&>span]:justify-center [&>span]:w-full font-medium">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="z-50">
@@ -323,7 +377,7 @@ export default function SuctionSpecificSpeedCalculator() {
                   className={`flex-[2] min-w-0 border ${npshrError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-md px-3 h-9 text-center text-sm focus:border-blue-500 focus:outline-none transition-colors`}
                 />
                 <Select value={npshrUnit} onValueChange={(value) => { setNpshrUnit(value); resetCalculation(); }}>
-                  <SelectTrigger className="flex-1 min-w-[80px] border border-border bg-background text-sm h-9 justify-center[&>span]:flex[&>span]:justify-center [&>span]:w-full font-medium">
+                  <SelectTrigger className="flex-1 min-w-[80px] border border-border bg-background text-sm h-9 justify-center [&>span]:flex [&>span]:justify-center [&>span]:w-full font-medium">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="z-50">
@@ -343,6 +397,25 @@ export default function SuctionSpecificSpeedCalculator() {
               )}
             </div>
 
+            {/* Result Unit Selector */}
+            <div>
+              <div className="flex items-center gap-2.5">
+                <label className="font-semibold text-foreground text-xs w-24 flex-shrink-0">Result Standard:</label>
+                <div className="flex-[2] min-w-0 flex gap-2">
+                  <Select value={resultStandard} onValueChange={handleStandardChange}>
+                    <SelectTrigger className="flex-1 min-w-0 border border-border bg-background text-sm h-9 justify-center [&>span]:flex[&>span]:justify-center [&>span]:w-full font-medium">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="z-50">
+                      <SelectItem value="si" className="text-sm">SI Units (m³/h, m)</SelectItem>
+                      <SelectItem value="us" className="text-sm">US Units (GPM, ft)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex-1 min-w-[80px]"></div>
+              </div>
+            </div>
+
             {/* Universal Formula Display */}
             <div className="mt-auto mb-3 bg-muted/40 rounded-lg p-3 border border-border flex flex-col items-center shadow-sm">
               <h4 className="font-bold text-foreground mb-2 uppercase text-[10px] tracking-wider">Formula:</h4>
@@ -357,7 +430,6 @@ export default function SuctionSpecificSpeedCalculator() {
                       <span className="border-t border-foreground px-0.5 italic">Q</span>
                     </span>
                   </span>
-                  {/* Removed flex items-start here to fix the sup positioning */}
                   <span className="pt-1 text-[15px] font-medium">
                     NPSHr<sup className="text-[10px] ml-0.5">3/4</sup>
                   </span>
@@ -434,7 +506,7 @@ export default function SuctionSpecificSpeedCalculator() {
                   className={`w-full px-4 py-2 flex items-center justify-between hover:bg-muted/50 transition-colors ${showStep1 ? 'bg-muted/30' : ''}`}
                 >
                   <span className="text-[11px] font-semibold text-blue-700 dark:text-blue-300">
-                    Step 1: Convert to SI units
+                    Step 1: Convert to target standard units
                   </span>
                   <ChevronDown className={`h-3.5 w-3.5 text-blue-700 dark:text-blue-300 transition-transform ${showStep1 ? 'rotate-180' : ''}`} />
                 </button>
@@ -465,7 +537,6 @@ export default function SuctionSpecificSpeedCalculator() {
                         <span className="border-t border-foreground px-0.5 italic">Q</span>
                       </span>
                     </span>
-                    {/* Removed flex items-start here to fix the sup positioning */}
                     <span className="pt-1 text-sm whitespace-nowrap">
                       NPSHr<sup className="text-[9px] ml-0.5">3/4</sup>
                     </span>
@@ -485,15 +556,14 @@ export default function SuctionSpecificSpeedCalculator() {
                         {" × "}
                         <span className="inline-flex items-center">
                           <span className="mr-0.5">&radic;</span>
-                          <span className={`border-t border-foreground px-0.5 bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 font-sans ${!result.calculated && 'italic font-medium text-muted-foreground bg-transparent border-t-0 border border-dashed border-muted-foreground'}`} title="Q (Flow in m³/h)">
-                            {result.calculated ? (result.steps[2]?.split('=')[2]?.replace('m³/h', '')?.trim() || "Q") : "Q"}
+                          <span className={`border-t border-foreground px-0.5 bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 font-sans ${!result.calculated && 'italic font-medium text-muted-foreground bg-transparent border-t-0 border border-dashed border-muted-foreground'}`} title={`Q (Flow in ${result.qTargetLabel || 'target unit'})`}>
+                            {result.calculated && result.steps[2] ? (result.steps[2].split('=')[2]?.replace(result.qTargetLabel || '', '')?.trim() || "Q") : "Q"}
                           </span>
                         </span>
                       </span>
-                      {/* Removed flex items-start here to fix the sup positioning */}
                       <span className="pt-1 text-sm whitespace-nowrap">
-                        <span className={`bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1 py-0.5 rounded font-sans ${!result.calculated && 'italic font-medium text-muted-foreground bg-transparent border border-dashed border-muted-foreground'}`} title="NPSHr (in m)">
-                          {result.calculated ? (result.steps[3]?.split('=')[2]?.replace('m', '')?.trim() || "NPSHr") : "NPSHr"}
+                        <span className={`bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-100 px-1 py-0.5 rounded font-sans ${!result.calculated && 'italic font-medium text-muted-foreground bg-transparent border border-dashed border-muted-foreground'}`} title={`NPSHr (in ${result.hTargetLabel || 'target unit'})`}>
+                          {result.calculated && result.steps[3] ? (result.steps[3].split('=')[2]?.replace(result.hTargetLabel || '', '')?.trim() || "NPSHr") : "NPSHr"}
                         </span>
                         <sup className="text-[10px] ml-0.5 font-sans">3/4</sup>
                       </span>
@@ -529,7 +599,7 @@ export default function SuctionSpecificSpeedCalculator() {
                   <span></span>
                   <span className="text-center font-bold">≈</span>
                   <span className={`font-bold text-base justify-self-start ${result.calculated ? 'font-sans' : 'text-muted-foreground'}`}>
-                    {result.calculated ? result.fullValue : "?"}
+                    {result.calculated ? `${result.fullValue} ${result.unitStandard}` : "?"}
                   </span>
                 </div>
               </div>
@@ -558,8 +628,9 @@ export default function SuctionSpecificSpeedCalculator() {
                      
                      <div className="flex items-center gap-2.5 min-w-0">
                        <h2 className="text-lg font-bold uppercase opacity-90 whitespace-nowrap">Result:</h2>
-                       <div className="text-2xl font-black truncate min-w-0" title={`Nss = ${result.value}`}>
-                         N<sub className="text-[14px] font-bold">ss</sub> = {formatDisplayNumber(result.value)}
+                       <div className="text-2xl font-black truncate min-w-0 flex items-center gap-2" title={`Nss = ${result.value} ${result.unitStandard}`}>
+                         <span>N<sub className="text-[14px] font-bold">ss</sub> = {formatDisplayNumber(result.value)}</span>
+                         {result.unitStandard && <span className="text-[17px] font-bold opacity-85 uppercase tracking-wide">({result.unitStandard})</span>}
                        </div>
                      </div>
                    </div>

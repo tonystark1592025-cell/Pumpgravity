@@ -16,7 +16,7 @@ export default function ConvertersPage() {
   const { primaryResults, crossResults, showCrossResults, crossType } = useCrossSearch(searchQuery, "converter")
 
   // Define pump-related and other categories
-  const pumpCategoryIds = ['head', 'flow', 'viscosity', 'power', 'pressure']
+  const pumpCategoryIds = ['head', 'npsh', 'flow', 'viscosity', 'power', 'pressure']
   
   const filteredCategories = useMemo(() => {
     if (!searchQuery.trim()) {
