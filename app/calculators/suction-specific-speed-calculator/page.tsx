@@ -449,6 +449,9 @@ export default function SuctionSpecificSpeedCalculator() {
               
               {/* Step 2: Calculate using formula */}
               <div className="p-4 overflow-x-auto">
+                <div className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-3">
+                  Step 2: Calculate using formula
+                </div>
                 <div className="grid grid-cols-[auto_auto_1fr] items-center gap-y-5 gap-x-3 font-serif text-base min-w-max">
                   
                   {/* General Formula */}
