@@ -4,7 +4,7 @@ import Link from "next/link"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { SearchBar } from "@/components/search-bar"
-import { Calculator, Activity, Zap, Power } from "lucide-react"
+import { Calculator, Activity, Zap, Power, Gauge } from "lucide-react"
 import { useState } from "react"
 import { useCrossSearch } from "@/hooks/use-cross-search"
 import { CrossSearchResults } from "@/components/cross-search-results"
@@ -62,6 +62,16 @@ export default function CalculatorsPage() {
       bgColor: "bg-cyan-500/10",
       features: ["Efficiency", "Performance", "Energy Analysis"],
       keywords: ["pump", "efficiency", "performance", "energy", "shaft", "power", "hydraulic", "analysis"]
+    },
+    {
+      title: "Impeller Diameter Check Calculator",
+      description: "Validate API 610 impeller diameter margin rules and check if rated diameter meets engineering conditions.",
+      icon: Gauge,
+      href: "/calculators/impeller-diameter-check-calculator",
+      color: "text-pink-500",
+      bgColor: "bg-pink-500/10",
+      features: ["API 610", "Diameter Check", "Margin Analysis"],
+      keywords: ["impeller", "diameter", "api", "610", "margin", "check", "validation", "rated", "minimum", "maximum"]
     }
   ]
 
