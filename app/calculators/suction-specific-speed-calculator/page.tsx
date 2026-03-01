@@ -134,15 +134,6 @@ export default function SuctionSpecificSpeedCalculator() {
   // Auto-change flow and head input units based on result standard
   const handleStandardChange = (value: string) => {
     setResultStandard(value)
-    if (value === "us") {
-      // Find exact key for GPM (usually 'usgpm' or 'gpm')
-      const hasUsGpm = flowUnits.some(u => u.value === 'usgpm')
-      setFlowUnit(hasUsGpm ? "usgpm" : "gpm")
-      setNpshrUnit("ft")
-    } else {
-      setFlowUnit("m3h")
-      setNpshrUnit("m")
-    }
     resetCalculation()
   }
 
