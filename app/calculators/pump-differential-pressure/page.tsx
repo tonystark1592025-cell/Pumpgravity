@@ -268,7 +268,7 @@ export default function PumpDifferentialPressureCalculator() {
                   type="number"
                   value={head}
                   onChange={e => handleHeadChange(e.target.value)}
-                  placeholder="56.1"
+                  placeholder="77"
                   className={`flex-[2] min-w-0 border ${headError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border'} bg-background rounded-md px-3 h-9 text-center text-sm focus:border-blue-500 focus:outline-none transition-colors`}
                 />
                 <Select value={headUnit} onValueChange={(value) => { setHeadUnit(value); resetCalculation(); }}>

@@ -72,6 +72,46 @@ export default function CalculatorsPage() {
       bgColor: "bg-pink-500/10",
       features: ["API 610", "Diameter Check", "Margin Analysis"],
       keywords: ["impeller", "diameter", "api", "610", "margin", "check", "validation", "rated", "minimum", "maximum"]
+    },
+    {
+      title: "Pump Differential Pressure Calculator",
+      description: "Calculate differential pressure from pump head, specific gravity using standard fluid mechanics formulas.",
+      icon: Gauge,
+      href: "/calculators/pump-differential-pressure",
+      color: "text-indigo-500",
+      bgColor: "bg-indigo-500/10",
+      features: ["Differential Pressure", "Head Conversion", "Specific Gravity"],
+      keywords: ["pump", "differential", "pressure", "head", "specific", "gravity", "conversion", "delta", "dp"]
+    },
+    {
+      title: "Pump Differential Head Calculator",
+      description: "Calculate pump differential head from discharge and suction pressures with specific gravity correction.",
+      icon: Activity,
+      href: "/calculators/pump-differential-head",
+      color: "text-teal-500",
+      bgColor: "bg-teal-500/10",
+      features: ["Differential Head", "Pressure Conversion", "SG Correction"],
+      keywords: ["pump", "differential", "head", "pressure", "discharge", "suction", "specific", "gravity", "conversion"]
+    },
+    {
+      title: "Density Calculator (By Mass/Volume Method)",
+      description: "Calculate density from mass and volume with support for multiple unit systems.",
+      icon: Calculator,
+      href: "/calculators/density-calculator",
+      color: "text-amber-500",
+      bgColor: "bg-amber-500/10",
+      features: ["Mass & Volume", "Multiple Units", "Density Calculation"],
+      keywords: ["density", "mass", "volume", "rho", "specific", "gravity", "material", "properties"]
+    },
+    {
+      title: "Kinematic Viscosity Calculator",
+      description: "Calculate kinematic viscosity from dynamic viscosity and density for fluid property analysis.",
+      icon: Activity,
+      href: "/calculators/kinematic-viscosity-calculator",
+      color: "text-rose-500",
+      bgColor: "bg-rose-500/10",
+      features: ["Kinematic Viscosity", "Dynamic Viscosity", "Density Input"],
+      keywords: ["kinematic", "viscosity", "dynamic", "density", "fluid", "properties", "nu", "mu", "centistokes"]
     }
   ]
 
