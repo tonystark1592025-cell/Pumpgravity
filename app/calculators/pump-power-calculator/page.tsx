@@ -457,16 +457,17 @@ export default function PumpPowerCalculator() {
               )}
             </div>
 
-            {/* Density / Specific Gravity Input */}
+            {/* Density / Specific Gravity Input - REFACTORED FOR ALIGNMENT */}
             <div>
               <div className="flex items-center gap-2.5">
                 <label className="font-semibold text-foreground text-xs w-24 flex-shrink-0">Density (ρ):</label>
-                <div className="flex-[2] min-w-0 flex items-center gap-2">
-                  <div className="flex items-center justify-center bg-muted/40 border border-border rounded-md px-3 h-9 shadow-sm">
+                {/* Modified container to look like a single input group matching width of other inputs */}
+                <div className={`flex-[2] min-w-0 flex items-center border ${sgError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border bg-background'} rounded-md h-9 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-colors overflow-hidden`}>
+                  <div className="flex items-center justify-center bg-muted/40 border-r border-border h-full px-3">
                     <span className="text-muted-foreground font-semibold text-xs whitespace-nowrap">1000 ×</span>
                   </div>
-                  <div className={`flex-1 flex items-center gap-1.5 border ${sgError ? 'border-red-500 bg-red-50 dark:bg-red-950/20' : 'border-border bg-background'} rounded-md px-2.5 h-9 focus-within:border-blue-500 transition-colors shadow-sm`}>
-                    <span className="text-foreground font-semibold text-xs whitespace-nowrap">SG:</span>
+                  <div className="flex-1 flex items-center h-full pl-2">
+                    <span className="text-foreground font-semibold text-xs whitespace-nowrap mr-1">SG:</span>
                     <input 
                       type="number" 
                       value={specificGravity} 
@@ -475,7 +476,7 @@ export default function PumpPowerCalculator() {
                       step="0.01"
                       min="0.01"
                       max="23"
-                      className="flex-1 w-full min-w-0 bg-transparent text-left text-sm font-medium focus:outline-none"
+                      className="flex-1 w-full min-w-0 bg-transparent text-center text-sm font-medium focus:outline-none h-full"
                     />
                   </div>
                 </div>
@@ -491,13 +492,12 @@ export default function PumpPowerCalculator() {
               )}
             </div>
 
-            {/* Result Unit Selector */}
+            {/* Result Unit Selector - FIX CENTER ALIGNMENT */}
             <div className="flex items-center gap-2.5">
               <label className="font-semibold text-foreground text-xs w-24 flex-shrink-0">Result Unit:</label>
               <div className="flex-[2] min-w-0 flex gap-2">
                 <Select value={resultUnit} onValueChange={(value) => { setResultUnit(value); resetCalculation(); }}>
-                  {/* Added spaces correctly to ensure the nested span rules apply to center the text */}
-                  <SelectTrigger className="flex-1 min-w-0 border border-border bg-background text-sm h-9 justify-center [&>span]:flex [&>span]:justify-center [&>span]:w-full font-medium">
+                  <SelectTrigger className="flex-1 min-w-0 border border-border bg-background text-sm h-9 justify-center text-center font-medium [&>span]:w-full [&>span]:text-center [&>svg]:ml-2">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="z-50">
@@ -554,19 +554,23 @@ export default function PumpPowerCalculator() {
                 <div className="flex flex-wrap gap-1.5">
                   <div className="inline-flex items-center bg-background border border-blue-200 dark:border-blue-800 rounded px-2 py-1 font-mono text-xs shadow-sm">
                     <strong className="text-blue-600 dark:text-blue-400 mr-1">Q</strong> 
-                    <span className="text-foreground">= {flowRate || "?"} {flowUnits.find(u => u.value === flowUnit)?.label}</span>
+                    <span className="text-foreground">= {flowRate || "?"}</span>
+                    <span className="text-muted-foreground ml-1">{flowUnits.find(u => u.value === flowUnit)?.label}</span>
                   </div>
                   <div className="inline-flex items-center bg-background border border-blue-200 dark:border-blue-800 rounded px-2 py-1 font-mono text-xs shadow-sm">
                     <strong className="text-blue-600 dark:text-blue-400 mr-1">H</strong> 
-                    <span className="text-foreground">= {head || "?"} {headUnits.find(u => u.value === headUnit)?.label}</span>
+                    <span className="text-foreground">= {head || "?"}</span>
+                    <span className="text-muted-foreground ml-1">{headUnits.find(u => u.value === headUnit)?.label}</span>
                   </div>
                   <div className="inline-flex items-center bg-background border border-blue-200 dark:border-blue-800 rounded px-2 py-1 font-mono text-xs shadow-sm">
                     <strong className="text-blue-600 dark:text-blue-400 mr-1">g</strong> 
-                    <span className="text-foreground">= 9.81 m/s²</span>
+                    <span className="text-foreground">= 9.81</span>
+                    <span className="text-muted-foreground ml-1">m/s²</span>
                   </div>
                   <div className="inline-flex items-center bg-background border border-blue-200 dark:border-blue-800 rounded px-2 py-1 font-mono text-xs shadow-sm">
                     <strong className="text-blue-600 dark:text-blue-400 mr-1">ρ</strong> 
-                    <span className="text-foreground">= {specificGravity && !isNaN(parseFloat(specificGravity)) ? (parseFloat(specificGravity) * 1000).toFixed(0) : "?"} kg/m³</span>
+                    <span className="text-foreground">= {specificGravity && !isNaN(parseFloat(specificGravity)) ? (parseFloat(specificGravity) * 1000).toFixed(0) : "?"}</span>
+                    <span className="text-muted-foreground ml-1">kg/m³</span>
                   </div>
                   <div className="inline-flex items-center bg-background border border-blue-200 dark:border-blue-800 rounded px-2 py-1 font-mono text-xs shadow-sm">
                     <strong className="text-blue-600 dark:text-blue-400 mr-1">η</strong> 
@@ -608,9 +612,10 @@ export default function PumpPowerCalculator() {
                 </button>
                 {showStep1 && (
                   <div className="px-4 pb-3 space-y-1 text-xs font-mono bg-blue-50/50 dark:bg-blue-950/20 pt-1">
-                    <div>Q = {flowRate || "?"} {flowUnits.find(u => u.value === flowUnit)?.label} = {result.calculated ? (result.steps[1]?.split('=')[2]?.trim() || "?") : "?"} m³/s</div>
-                    <div>H = {head || "?"} {headUnits.find(u => u.value === headUnit)?.label} = {result.calculated ? (result.steps[2]?.split('=')[2]?.trim() || "?") : "?"} m</div>
-                    <div>ρ = 1000 × {specificGravity || "?"} = {result.calculated ? (result.steps[3]?.split('=')[2]?.trim() || "?") : "?"} kg/m³</div>
+                    {/* FIX: Removed manually added units at the end of the line since the result string already contains them */}
+                    <div>Q = {flowRate || "?"} {flowUnits.find(u => u.value === flowUnit)?.label} = {result.calculated ? (result.steps[1]?.split('=')[2]?.trim() || "?") : "?"}</div>
+                    <div>H = {head || "?"} {headUnits.find(u => u.value === headUnit)?.label} = {result.calculated ? (result.steps[2]?.split('=')[2]?.trim() || "?") : "?"}</div>
+                    <div>ρ = 1000 × {specificGravity || "?"} = {result.calculated ? (result.steps[3]?.split('=')[2]?.trim() || "?") : "?"}</div>
                   </div>
                 )}
               </div>
